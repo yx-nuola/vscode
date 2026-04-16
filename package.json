@@ -1,0 +1,124 @@
+{
+  "name": "my-extension",
+  "displayName": "my-extension",
+  "description": "A simple validation helper extension for VS Code.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.103.1"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:my-extension.helloWorld",
+    "onView:my-extension.dataPanel"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "my-extension.helloWorld",
+        "title": "My Extension: Hello World"
+      },
+      {
+        "command": "my-extension.openDataPanel",
+        "title": "打开数据面板"
+      },
+      {
+        "command": "my-extension.openElectronWorkbench",
+        "title": "打开 Electron 工作台"
+      },
+      {
+        "command": "my-extension.closeElectronWorkbench",
+        "title": "关闭 Electron 工作台"
+      }
+    ],
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "my-extension-panel",
+          "title": "数据面板"
+        }
+      ]
+    },
+    "views": {
+      "my-extension-panel": [
+        {
+          "type": "webview",
+          "id": "my-extension.dataPanel",
+          "name": "数据表格",
+          "icon": "$(table)"
+        }
+      ]
+    },
+    "menus": {
+      "editor/title": [
+        {
+          "command": "my-extension.openElectronWorkbench",
+          "when": "editorTextFocus",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "my-extension.openElectronWorkbench",
+          "when": "view == my-extension.dataPanel",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test",
+    "build:webview": "vite build --config src/webview/vite.config.mts",
+    "dev:webview": "vite build --config src/webview/vite.config.mts --watch",
+    "build:electron": "tsc -p src/electron/tsconfig.json",
+    "build:electron:renderer": "vite build --config src/electron/renderer/vite.config.ts",
+    "build:electron:all": "npm run build:electron && npm run build:electron:renderer",
+    "dev:electron": "electron .",
+    "start:electron": "npm run build:electron:all && electron ."
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/vscode": "^1.103.1",
+    "@vitejs/plugin-react": "^5.1.4",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "electron": "^33.0.0",
+    "esbuild": "^0.27.1",
+    "eslint": "^9.39.1",
+    "jsdom": "^28.1.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.1",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "@arco-design/web-react": "^2.66.10",
+    "echarts": "^5.5.1",
+    "electron-store": "^10.0.0",
+    "konva": "^10.2.5",
+    "lru-cache": "^11.0.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-grid-layout": "^1.5.0",
+    "react-konva": "^19.2.3",
+    "vscode-messenger-common": "^0.6.0",
+    "vscode-messenger-webview": "^0.6.0"
+  }
+}

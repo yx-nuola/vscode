@@ -1,0 +1,33 @@
+.data-table-container {
+  padding: 16px;
+}
+
+.toolbar {
+  margin-bottom: 16px;
+}
+
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.status-green {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.status-red {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.status-orange {
+  background-color: #fff7ed;
+  color: #ea580c;
+}
+
+.status-default {
+  background-color: #f9fafb;
+  color: #6b7280;
+}
