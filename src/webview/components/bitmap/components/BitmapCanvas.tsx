@@ -223,7 +223,6 @@ export const BitmapCanvas: React.FC<BitmapCanvasProps> = ({ onCellClick, onCellH
 	useEffect(() => {
 		if (!stageRef.current || !state.data) return;
 
-		const stage = stageRef.current;
 		const cellsGroup = cellsGroupRef.current;
 		if (!cellsGroup) return;
 
