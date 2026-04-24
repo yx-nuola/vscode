@@ -55,13 +55,13 @@
 - [x] 7.2 将现有 RRAM 数据转换为通用 MatrixData 格式
 - [x] 7.3 将现有颜色配置转换为 ColorMappingConfig 格式
 - [x] 7.4 将现有事件处理转换为回调函数形式
-- [ ] 7.5 更新 BitmapVisualization 使用新的 MatrixGrid 组件
-- [ ] 7.6 保持现有功能不变，验证无回归
+- [x] 7.5 更新 BitmapVisualization 使用新的 MatrixGrid 组件
+- [x] 7.6 保持现有功能不变，验证无回归
 
 ## 8. 测试与文档
 
-- [ ] 8.1 编写 useCellSize hook 单元测试
-- [ ] 8.2 编写颜色映射工具函数单元测试
-- [ ] 8.3 编写数据合并函数单元测试
-- [ ] 8.4 编写 MatrixGrid 组件集成测试
-- [ ] 8.5 编写组件使用文档和示例
+- [x] 8.1 编写 useCellSize hook 单元测试
+- [x] 8.2 编写颜色映射工具函数单元测试
+- [x] 8.3 编写数据合并函数单元测试
+- [x] 8.4 编写 MatrixGrid 组件集成测试
+- [x] 8.5 编写组件使用文档和示例

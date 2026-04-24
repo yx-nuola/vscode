@@ -46,23 +46,41 @@ class ElectronLauncher {
       this.updateStatus('正在启动 Electron 工作台...');
       this.isReady = false;
 
-      const electronPath = this.findElectronPath();
-      if (!electronPath) {
-        throw new Error('未找到 Electron 可执行文件');
+      const electronInfo = this.findElectronPath();
+      if (!electronInfo) {
+        throw new Error('未找到 Electron 可执行文件，请确保已安装 electron: npm install electron --save-dev');
       }
 
       const mainPath = this.getMainProcessPath();
       if (!mainPath || !fs.existsSync(mainPath)) {
-        throw new Error('未找到 Electron 主进程入口文件');
+        throw new Error('未找到 Electron 主进程入口文件，请确保已编译: npm run compile');
       }
 
-      const childProcess = spawn(electronPath, [mainPath], {
-        stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-        env: {
-          ...process.env,
-          NODE_ENV: 'development'
-        }
-      });
+      let childProcess: ChildProcess;
+
+      if (electronInfo.useNpx) {
+        // 使用 npx electron
+        childProcess = spawn('npx', ['electron', mainPath], {
+          stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+          shell: true,
+          env: {
+            ...process.env,
+            NODE_ENV: 'development'
+          }
+        });
+      } else {
+        // 直接使用 electron 可执行文件
+        // Windows 上执行 .cmd 文件需要 shell: true
+        const isWindowsCmd = electronInfo.path.endsWith('.cmd');
+        childProcess = spawn(electronInfo.path, [mainPath], {
+          stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+          shell: isWindowsCmd,
+          env: {
+            ...process.env,
+            NODE_ENV: 'development'
+          }
+        });
+      }
 
       this.currentProcess = {
         process: childProcess,
@@ -85,6 +103,17 @@ class ElectronLauncher {
         this.currentProcess = null;
         this.isReady = false;
         this.updateStatus('Electron 工作台已关闭');
+      });
+
+      childProcess.on('exit', (code) => {
+        console.log(`[ElectronLauncher] Process exited with code: ${code}`);
+        this.currentProcess = null;
+        this.isReady = false;
+        this.updateStatus('Electron 工作台已退出');
+      });
+
+      childProcess.stdout?.on('data', (data) => {
+        console.log('[ElectronLauncher] stdout:', data.toString());
       });
 
       childProcess.stderr?.on('data', (data) => {
@@ -244,23 +273,28 @@ class ElectronLauncher {
     this.statusBarItem.text = `$(debug) ${text}`;
   }
 
-  private findElectronPath(): string {
+  private findElectronPath(): { path: string; useNpx: boolean } | null {
+    // 直接使用 electron.exe，避免 .cmd 文件调用全局版本
+    const electronExePath = path.join(__dirname, '../../node_modules/electron/dist/electron.exe');
+    if (fs.existsSync(electronExePath)) {
+      console.log('[ElectronLauncher] Found electron.exe:', electronExePath);
+      return { path: electronExePath, useNpx: false };
+    }
+
+    // 备选：查找其他可能的位置
     const possiblePaths = [
-      path.join(__dirname, '../../node_modules/electron/dist/electron.exe'),
-      path.join(process.env.APPDATA || '', 'npm/node_modules/electron/dist/electron.exe'),
-      path.join(process.env.LOCALAPPDATA || '', 'npm/node_modules/electron/dist/electron.exe'),
-      'C:\\Program Files\\electron\\electron.exe',
-      'electron',
-      'npx electron'
+      path.join(process.cwd(), 'node_modules/electron/dist/electron.exe'),
     ];
 
     for (const p of possiblePaths) {
       if (p && fs.existsSync(p)) {
-        return p;
+        console.log('[ElectronLauncher] Found electron.exe at:', p);
+        return { path: p, useNpx: false };
       }
     }
 
-    return 'npx electron';
+    console.error('[ElectronLauncher] Electron not found, falling back to npx');
+    return { path: 'npx electron', useNpx: true };
   }
 
   private getMainProcessPath(): string | null {
