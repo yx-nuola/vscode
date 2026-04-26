@@ -44,26 +44,40 @@
 
 **布局示意**：
 ```
-┌──────────────────────────────────────────────┐
-│  Y轴宽度  │         X 轴区域（xAxisHeight）   │
-│           │  刻度 + 标签                       │
-├───────────┼──────────────────────────────────┤
-│           │                                  │
-│  Y 轴区域 │      网格绘制区域（CellLayer）      │
-│ (yAxisW)  │                                  │
-│           │                                  │
-│           │                                  │
-├───────────┼──────────────────────────────────┤
-│  Y轴宽度  │   横向滚动条区域（scrollbarH）      │
-├───────────┼──────────────────────────────────┤
-│  纵向滚动条│            （右下角留空）           │
-│ (scrollW) │                                  │
-└───────────┴──────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│ ↖ ↗ ■ □  x1  +  -  Top                                                │
+│ ┌───┐                                                                 │
+│ │Y/X│  0    40    80    120   160   200   240   280                   │
+│ └───┘ ┌───────────────────────────────────────────────────────────────|
+│ 100 ┤ │▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌│ │ ▲ │
+│     │ │▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌│ │ █ │
+│ 200 ┤ │▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌│ │ █ │
+│     │ │▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌│ │ █ │
+│ 240 ┤ │▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌│ │ █ │
+│     │ │▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌│ │ █ │
+│ 280 ┤ │▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌│ │ █ │
+│     │ │▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌│ │ █ │
+│ 300 ┤ │▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌│ │ ▼ │
+│     │ └─────────────────────────────────────────────────────────┘ │   │
+├─────┴─────────────────────────────────────────────────────────────┼───┤
+│     |<──────────────────────────────────────────────────────────> │   │
+└───────────────────────────────────────────────────────────────────────┘
 ```
+
+**区域说明**：
+- **工具栏区域（Toolbar）**：顶部，包含缩放按钮、定位按钮等工具操作，高度 toolbarHeight
+- **X 轴区域**：工具栏下方，Y 轴右侧，显示列号/WL 刻度标签，高度 xAxisHeight
+- **Y 轴区域**：左侧，显示行号/BL 刻度标签，宽度 yAxisWidth
+- **Y/X 角落**：左上角 Y 轴与 X 轴交汇的小区域，属于 Y 轴区域的一部分
+- **网格绘制区域（CellLayer）**：中间主区域，渲染格子矩阵
+- **横向滚动条区域**：底部，网格区域下方
+- **纵向滚动条区域**：右侧，网格区域右方
+- **右下角**：横向滚动条与纵向滚动条的交汇区域
 
 **统一空间计算**：
 ```typescript
 interface LayoutConfig {
+  toolbarHeight: number;   // 工具栏区域高度（如 40px）
   xAxisHeight: number;     // X 轴区域高度（含刻度+标签，如 30px）
   yAxisWidth: number;      // Y 轴区域宽度（含刻度+标签，如 50px）
   scrollbarHeight: number; // 横向滚动条高度（如 12px）
@@ -73,13 +87,16 @@ interface LayoutConfig {
 
 // 统一计算各区域位置，所有 Layer 共享此配置
 function calculateLayout(config: LayoutConfig, containerWidth: number, containerHeight: number) {
+  const toolbarY = 0;
+  const xAxisY = config.toolbarHeight + config.spacing;
   const cellAreaX = config.yAxisWidth + config.spacing;
-  const cellAreaY = config.xAxisHeight + config.spacing;
+  const cellAreaY = xAxisY + config.xAxisHeight + config.spacing;
   const cellAreaWidth = containerWidth - config.yAxisWidth - config.spacing - config.scrollbarWidth - config.spacing;
-  const cellAreaHeight = containerHeight - config.xAxisHeight - config.spacing - config.scrollbarHeight - config.spacing;
+  const cellAreaHeight = containerHeight - cellAreaY - config.spacing - config.scrollbarHeight - config.spacing;
 
   return {
-    xAxis: { x: cellAreaX, y: 0, width: cellAreaWidth, height: config.xAxisHeight },
+    toolbar: { x: 0, y: toolbarY, width: containerWidth, height: config.toolbarHeight },
+    xAxis: { x: cellAreaX, y: xAxisY, width: cellAreaWidth, height: config.xAxisHeight },
     yAxis: { x: 0, y: cellAreaY, width: config.yAxisWidth, height: cellAreaHeight },
     cellArea: { x: cellAreaX, y: cellAreaY, width: cellAreaWidth, height: cellAreaHeight },
     horizontalScrollbar: { x: cellAreaX, y: containerHeight - config.scrollbarHeight, width: cellAreaWidth, height: config.scrollbarHeight },
