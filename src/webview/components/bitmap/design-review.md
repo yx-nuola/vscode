@@ -10,797 +10,699 @@
 ✅ **接口设计**：定义了清晰的接口
 ✅ **数据流设计**：各种流程都有详细说明
 
-### 1.2 存在的问题
+### 1.2 原设计确认正确的点
 
-❌ **坐标轴和滚动条的位置冲突**：X 轴在顶部，横向滚动条在底部，但它们在同一个 Layer 中，空间分配不明确
-❌ **滚动条和坐标轴的交互耦合**：横向滚动时，X 轴标签和横向滚动条滑块都需要更新，耦合度高
-❌ **虚拟滚动和滚动条的同步**：没有详细说明如何确保它们之间的同步
-❌ **定位功能的边界处理**：没有详细说明如何处理边界情况
-❌ **颜色映射的性能**：没有考虑缓存颜色映射结果
-❌ **表格-图形联动的性能**：没有考虑使用防抖或节流来优化
-❌ **内存管理**：没有考虑使用分页或懒加载来优化内存使用
-❌ **事件处理的性能**：没有考虑使用节流或防抖来优化事件处理
-❌ **响应式布局**：没有详细说明如何实现
-❌ **错误处理**：没有详细说明如何处理错误情况
-❌ **可访问性**：没有考虑可访问性
-❌ **国际化**：没有考虑国际化
-❌ **主题切换**：没有详细说明如何实现主题切换
-❌ **数据导入的性能**：没有详细说明如何优化导入性能
-❌ **滚动条的自定义**：没有详细说明如何实现滚动条的样式和交互
-❌ **坐标轴的自定义**：没有详细说明如何实现坐标轴的样式和交互
-❌ **格子的交互**：没有详细说明如何实现格子的交互
-❌ **缩放功能的边界**：没有详细说明如何处理缩放的边界
-❌ **选择功能的性能**：没有详细说明如何优化选择的性能
-❌ **数据更新的性能**：没有考虑数据更新的性能
+✅ **坐标轴和滚动条无位置冲突**：X 轴、Y 轴、横向滚动条、纵向滚动条各自占用独立区域，中间为网格绘制区域，所有区域通过统一计算确定位置，不重叠、无冲突
+✅ **滚动条和坐标轴无高耦合**：横向滚动时仅需更新 X 轴标签，横向滚动条滑块无需更新；纵向滚动时仅需更新 Y 轴标签，纵向滚动条滑块无需更新。两者触发逻辑分离
+
+### 1.3 存在的问题
+
+❌ **虚拟滚动和滚动条的同步**：原设计未提及同步细节，需补充滚动条与虚拟滚动位置同步的实现方案
+⚠️ **定位功能的边界处理**：原设计未详细说明，采用简单可靠方式——确保目标格子完整显示在可视区域内即可
+✅ **颜色映射无需内置缓存**：颜色映射规则由外部传入，组件内部仅接收并按值判断色值绘制
+✅ **表格-图形联动无需防抖**：联动仅点击触发（表格行→图形、图形格子→表格），非高频同步，性能无压力
+⚠️ **内存管理需补充按区域获取数据**：数据从本地文件读取，量级10万～100万，需采用按区域获取数据的方式优化内存
+⚠️ **事件处理需补充优化逻辑**：事件包含画布缩放、滚动、坐标轴更新等，优化逻辑需补充设计
+✅ **响应式布局已明确**：VS Code 插件环境，固定图形60%、表格40%布局，图形宽度继承父容器并自适应
+⏭️ **错误处理暂不实现**
+⏭️ **可访问性暂不实现**
+⏭️ **国际化暂不实现**
+⚠️ **主题切换需补充实例级主题参数**：摒弃全局统一配置，各图形实例创建时传入主题色参数，内部独立完成样式适配
+⏭️ **数据导入优化暂不实现**：当前仅支持本地JSON文件读取解析
+⏭️ **滚动条自定义取消**：采用系统默认滚动条样式
+⚠️ **坐标轴样式需补充主题适配**：固定布局（X轴顶部、Y轴左侧），颜色跟随主题自适应
+⚠️ **格子交互需补充设计**：支持点击/悬停，外部可获取位置信息，支持定位+高亮
+⚠️ **缩放边界需补充设计**：设置最大/最小/默认缩放值，自动限制范围
+⚠️ **选择性能需补充设计**：以坐标定位为核心，对定位渲染、滚动交互专项优化
+⏭️ **数据更新暂不实现**
 
 ## 二、改进建议
 
-### 2.1 坐标轴和滚动条的位置分配
+### 2.1 坐标轴和滚动条的空间布局（已确认正确）
 
-**问题**：X 轴在顶部，横向滚动条在底部，但它们在同一个 Layer 中，空间分配不明确
+**澄清**：不存在位置冲突。X 轴、Y 轴、横向滚动条、纵向滚动条各自占用独立区域，中间为网格绘制区域，所有区域通过统一计算确定位置，不重叠、无冲突。
 
-**解决方案**：
-```typescript
-// XAxisScrollbarLayer 的空间分配
-interface XAxisScrollbarLayerConfig {
-    xAxisHeight: number;        // X 轴高度（例如 30px）
-    scrollbarHeight: number;     // 滚动条高度（例如 12px）
-    spacing: number;            // X 轴和滚动条之间的间距（例如 5px）
-}
-
-// 计算各元素的位置
-const xAxisY = 0;
-const scrollbarY = xAxisHeight + spacing;
-const totalHeight = xAxisHeight + spacing + scrollbarHeight;
-
-// 创建 Group
-const xAxisGroup = new Konva.Group({ y: xAxisY });
-const horizontalScrollbarGroup = new Konva.Group({ y: scrollbarY });
+**布局示意**：
+```
+┌──────────────────────────────────────────────┐
+│  Y轴宽度  │         X 轴区域（xAxisHeight）   │
+│           │  刻度 + 标签                       │
+├───────────┼──────────────────────────────────┤
+│           │                                  │
+│  Y 轴区域 │      网格绘制区域（CellLayer）      │
+│ (yAxisW)  │                                  │
+│           │                                  │
+│           │                                  │
+├───────────┼──────────────────────────────────┤
+│  Y轴宽度  │   横向滚动条区域（scrollbarH）      │
+├───────────┼──────────────────────────────────┤
+│  纵向滚动条│            （右下角留空）           │
+│ (scrollW) │                                  │
+└───────────┴──────────────────────────────────┘
 ```
 
-### 2.2 滚动条和坐标轴的交互解耦
-
-**问题**：横向滚动时，X 轴标签和横向滚动条滑块都需要更新，耦合度高
-
-**解决方案**：
+**统一空间计算**：
 ```typescript
-// 使用事件总线来解耦
-class EventBus {
-    private listeners: Map<string, Set<Function>> = new Map();
-
-    on(event: string, callback: Function): void {
-        if (!this.listeners.has(event)) {
-            this.listeners.set(event, new Set());
-        }
-        this.listeners.get(event)!.add(callback);
-    }
-
-    emit(event: string, data: any): void {
-        this.listeners.get(event)?.forEach(callback => callback(data));
-    }
+interface LayoutConfig {
+  xAxisHeight: number;     // X 轴区域高度（含刻度+标签，如 30px）
+  yAxisWidth: number;      // Y 轴区域宽度（含刻度+标签，如 50px）
+  scrollbarHeight: number; // 横向滚动条高度（如 12px）
+  scrollbarWidth: number;  // 纵向滚动条宽度（如 12px）
+  spacing: number;         // 区域间距（如 2px）
 }
 
-// XAxisManager 监听滚动事件
-xAxisManager.on('horizontal-scroll', (scrollX: number) => {
-    this.updateLabels(scrollX);
+// 统一计算各区域位置，所有 Layer 共享此配置
+function calculateLayout(config: LayoutConfig, containerWidth: number, containerHeight: number) {
+  const cellAreaX = config.yAxisWidth + config.spacing;
+  const cellAreaY = config.xAxisHeight + config.spacing;
+  const cellAreaWidth = containerWidth - config.yAxisWidth - config.spacing - config.scrollbarWidth - config.spacing;
+  const cellAreaHeight = containerHeight - config.xAxisHeight - config.spacing - config.scrollbarHeight - config.spacing;
+
+  return {
+    xAxis: { x: cellAreaX, y: 0, width: cellAreaWidth, height: config.xAxisHeight },
+    yAxis: { x: 0, y: cellAreaY, width: config.yAxisWidth, height: cellAreaHeight },
+    cellArea: { x: cellAreaX, y: cellAreaY, width: cellAreaWidth, height: cellAreaHeight },
+    horizontalScrollbar: { x: cellAreaX, y: containerHeight - config.scrollbarHeight, width: cellAreaWidth, height: config.scrollbarHeight },
+    verticalScrollbar: { x: containerWidth - config.scrollbarWidth, y: cellAreaY, width: config.scrollbarWidth, height: cellAreaHeight },
+  };
+}
+```
+
+### 2.2 滚动条和坐标轴的触发逻辑（已确认正确）
+
+**澄清**：不存在高耦合问题。横向滚动时仅需更新 X 轴标签，横向滚动条滑块无需更新；纵向滚动时仅需更新 Y 轴标签，纵向滚动条滑块无需更新。两者触发逻辑分离。
+
+**触发逻辑说明**：
+- **横向滚动**（用户滚动鼠标滚轮或拖拽横向滚动条）：
+  - ✅ 更新 X 轴标签（根据 scrollX 偏移重新计算可见列的标签）
+  - ❌ 横向滚动条滑块位置不变（滑块大小和位置由数据总量/视口比例决定，与滚动偏移无关）
+- **纵向滚动**（用户滚动鼠标滚轮或拖拽纵向滚动条）：
+  - ✅ 更新 Y 轴标签（根据 scrollY 偏移重新计算可见行的标签）
+  - ❌ 纵向滚动条滑块位置不变（同理）
+
+**实现方式**：通过 EventBus 事件分发，各自订阅所需事件，无需互相感知：
+```typescript
+// 滚动事件触发时，仅通知坐标轴更新标签
+eventBus.on('scroll:horizontal', (scrollX: number) => {
+  xAxisManager.updateLabels(scrollX);  // 仅更新 X 轴标签
 });
 
-// HorizontalScrollbarManager 监听滚动事件
-horizontalScrollbarManager.on('horizontal-scroll', (scrollX: number) => {
-    this.updateThumbPosition(scrollX);
+eventBus.on('scroll:vertical', (scrollY: number) => {
+  yAxisManager.updateLabels(scrollY);  // 仅更新 Y 轴标签
 });
 
-// ScrollManager 触发滚动事件
-scrollManager.handleHorizontalScroll(scrollX: number) {
-    this.eventBus.emit('horizontal-scroll', scrollX);
-}
+// 滚动条拖拽触发滚动，但不更新滚动条自身滑块位置
+eventBus.on('scrollbar:horizontal-drag', (scrollX: number) => {
+  scrollManager.setScrollX(scrollX);       // 更新滚动位置
+  eventBus.emit('scroll:horizontal', scrollX);  // 通知 X 轴更新
+  cellLayer.renderVisibleCells();           // 重新渲染可见格子
+});
 ```
 
-### 2.3 虚拟滚动和滚动条的同步
+### 2.3 虚拟滚动和滚动条的同步（补充设计）
 
-**问题**：虚拟滚动只渲染可见区域，但滚动条需要反映整个数据集的滚动位置
+**说明**：原设计未提及虚拟滚动与滚动条的同步细节，此部分为补充设计。
 
-**解决方案**：
+**核心问题**：虚拟滚动只渲染可见区域的格子，但滚动条需要反映整个数据集的滚动位置和比例，两者需要双向同步。
+
+**同步机制设计**：
+
+1. **滚动条反映数据规模**：
+   - 滑块大小 = 视口大小 / 数据总大小 × 滚动条轨道长度
+   - 滑块位置 = 当前滚动偏移 / 最大滚动偏移 × (轨道长度 - 滑块大小)
+
+2. **滚动条拖拽 → 虚拟滚动**：
+   - 用户拖拽滚动条滑块 → 计算对应的 scrollX/scrollY → 通知 VirtualScrollManager 更新可见区域
+
+3. **鼠标滚轮/键盘 → 虚拟滚动 → 滚动条**：
+   - 用户滚动鼠标 → 更新 scrollX/scrollY → 通知滚动条更新滑块位置
+
 ```typescript
-class VirtualScrollManager {
-    private totalWidth: number;
-    private totalHeight: number;
-    private viewportWidth: number;
-    private viewportHeight: number;
+class VirtualScrollSync {
+  private totalCols: number;      // 数据总列数（如 128）
+  private totalRows: number;      // 数据总行数（如 1024）
+  private cellWidth: number;      // 单个格子宽度（如 10px）
+  private cellHeight: number;     // 单个格子高度（如 10px）
+  private viewportWidth: number;  // 可视区域宽度
+  private viewportHeight: number; // 可视区域高度
 
-    // 计算滚动条的比例
-    getScrollbarRatio(): { widthRatio: number; heightRatio: number } {
-        return {
-            widthRatio: this.viewportWidth / this.totalWidth,
-            heightRatio: this.viewportHeight / this.totalHeight,
-        };
-    }
+  // 数据总尺寸（像素）
+  get totalWidth() { return this.totalCols * this.cellWidth; }
+  get totalHeight() { return this.totalRows * this.cellHeight; }
 
-    // 计算滚动条滑块的位置
-    getScrollbarPosition(scrollX: number, scrollY: number): { x: number; y: number } {
-        const ratio = this.getScrollbarRatio();
-        const scrollbarWidth = this.viewportWidth * ratio.widthRatio;
-        const scrollbarHeight = this.viewportHeight * ratio.heightRatio;
-        const maxScrollbarX = this.viewportWidth - scrollbarWidth;
-        const maxScrollbarY = this.viewportHeight - scrollbarHeight;
+  // 最大滚动偏移
+  get maxScrollX() { return Math.max(0, this.totalWidth - this.viewportWidth); }
+  get maxScrollY() { return Math.max(0, this.totalHeight - this.viewportHeight); }
 
-        return {
-            x: (scrollX / this.totalWidth) * maxScrollbarX,
-            y: (scrollY / this.totalHeight) * maxScrollbarY,
-        };
-    }
+  // 计算可见格子范围
+  getVisibleRange(scrollX: number, scrollY: number) {
+    const startCol = Math.floor(scrollX / this.cellWidth);
+    const startRow = Math.floor(scrollY / this.cellHeight);
+    const endCol = Math.min(this.totalCols - 1, Math.ceil((scrollX + this.viewportWidth) / this.cellWidth));
+    const endRow = Math.min(this.totalRows - 1, Math.ceil((scrollY + this.viewportHeight) / this.cellHeight));
+    return { startCol, endCol, startRow, endRow };
+  }
+
+  // 计算滚动条滑块尺寸和位置
+  getScrollbarState(scrollX: number, scrollY: number, trackWidth: number, trackHeight: number) {
+    // 滑块大小：视口占总数据的比例
+    const thumbWidth = Math.max(20, (this.viewportWidth / this.totalWidth) * trackWidth);
+    const thumbHeight = Math.max(20, (this.viewportHeight / this.totalHeight) * trackHeight);
+
+    // 滑块位置：当前滚动偏移占最大偏移的比例
+    const maxThumbX = trackWidth - thumbWidth;
+    const maxThumbY = trackHeight - thumbHeight;
+    const thumbX = this.maxScrollX > 0 ? (scrollX / this.maxScrollX) * maxThumbX : 0;
+    const thumbY = this.maxScrollY > 0 ? (scrollY / this.maxScrollY) * maxThumbY : 0;
+
+    return { thumbX, thumbY, thumbWidth, thumbHeight };
+  }
+
+  // 滚动条拖拽：从滑块位置反算滚动偏移
+  getScrollFromThumb(thumbX: number, thumbY: number, trackWidth: number, trackHeight: number) {
+    const thumbWidth = Math.max(20, (this.viewportWidth / this.totalWidth) * trackWidth);
+    const thumbHeight = Math.max(20, (this.viewportHeight / this.totalHeight) * trackHeight);
+    const maxThumbX = trackWidth - thumbWidth;
+    const maxThumbY = trackHeight - thumbHeight;
+
+    const scrollX = maxThumbX > 0 ? (thumbX / maxThumbX) * this.maxScrollX : 0;
+    const scrollY = maxThumbY > 0 ? (thumbY / maxThumbY) * this.maxScrollY : 0;
+    return { scrollX, scrollY };
+  }
 }
 ```
 
-### 2.4 定位功能的边界处理
+**数据流**：
+```
+鼠标滚轮 / 键盘滚动
+    │
+    ▼
+ScrollManager.updateScroll(deltaX, deltaY)
+    │
+    ├──► clamp(scrollX, scrollY)  边界限制
+    │
+    ├──► VirtualScrollSync.getVisibleRange(scrollX, scrollY)
+    │       │
+    │       ▼
+    │    CellLayer.renderCells(startCol..endCol, startRow..endRow)
+    │
+    ├──► XAxisManager.updateLabels(scrollX)
+    │
+    ├──► YAxisManager.updateLabels(scrollY)
+    │
+    └──► ScrollbarManager.updateThumb(scrollX, scrollY)
+            │
+            ▼
+         更新滑块位置（getScrollbarState 计算后绘制）
 
-**问题**：定位功能需要确保目标格子完全可见，但如果目标格子位于边缘，可能无法完全居中
+─────────────────────────────────────────
+
+滚动条拖拽
+    │
+    ▼
+ScrollbarManager.onDrag(thumbX, thumbY)
+    │
+    ▼
+VirtualScrollSync.getScrollFromThumb(thumbX, thumbY)
+    │
+    ▼
+ScrollManager.setScroll(scrollX, scrollY)  → 同上流程
+```
+
+### 2.4 定位功能的边界处理（已澄清，简化方案）
+
+**澄清**：采用简单可靠方式实现，确保目标格子完整显示在可视区域内即可，无需复杂的居中计算。
+
+**问题**：原设计未详细说明如何处理边界情况
 
 **解决方案**：
+**解决方案**（简单可靠）：
 ```typescript
 class LocationManager {
-    /**
-     * 计算滚动偏移量（确保目标格子完全可见）
-     */
-    private calculateScrollOffset(targetPosition: { x: number; y: number }): { x: number; y: number } {
-        const viewportWidth = this.getViewportWidth();
-        const viewportHeight = this.getViewportHeight();
-        const cellWidth = this.getCellWidth();
-        const cellHeight = this.getCellHeight();
+  /**
+   * 定位到目标格子——确保目标格子完整显示在可视区域内
+   */
+  locateToCell(col: number, row: number): void {
+    const cellX = col * this.cellWidth;
+    const cellY = row * this.cellHeight;
+    let scrollX = this.scrollX;
+    let scrollY = this.scrollY;
 
-        // 计算目标格子的边界
-        const targetLeft = targetPosition.x;
-        const targetRight = targetPosition.x + cellWidth;
-        const targetTop = targetPosition.y;
-        const targetBottom = targetPosition.y + cellHeight;
-
-        // 计算滚动位置（使目标格子完全可见）
-        let scrollX = this.scrollX;
-        let scrollY = this.scrollY;
-
-        // 横向滚动
-        if (targetLeft < scrollX) {
-            // 目标格子在左侧，向左滚动
-            scrollX = targetLeft;
-        } else if (targetRight > scrollX + viewportWidth) {
-            // 目标格子在右侧，向右滚动
-            scrollX = targetRight - viewportWidth;
-        }
-
-        // 垂直滚动
-        if (targetTop < scrollY) {
-            // 目标格子在顶部，向上滚动
-            scrollY = targetTop;
-        } else if (targetBottom > scrollY + viewportHeight) {
-            // 目标格子在底部，向下滚动
-            scrollY = targetBottom - viewportHeight;
-        }
-
-        // 边界控制
-        const maxScrollX = this.getMaxScrollX();
-        const maxScrollY = this.getMaxScrollY();
-
-        return {
-            x: Math.max(0, Math.min(scrollX, maxScrollX)),
-            y: Math.max(0, Math.min(scrollY, maxScrollY)),
-        };
+    // 横向：目标格子不在可视区域时，最小幅度滚动使其可见
+    if (cellX < scrollX) {
+      scrollX = cellX;
+    } else if (cellX + this.cellWidth > scrollX + this.viewportWidth) {
+      scrollX = cellX + this.cellWidth - this.viewportWidth;
     }
+
+    // 纵向：同理
+    if (cellY < scrollY) {
+      scrollY = cellY;
+    } else if (cellY + this.cellHeight > scrollY + this.viewportHeight) {
+      scrollY = cellY + this.cellHeight - this.viewportHeight;
+    }
+
+    // 边界钳制
+    this.scrollX = clamp(scrollX, 0, this.maxScrollX);
+    this.scrollY = clamp(scrollY, 0, this.maxScrollY);
+  }
 }
 ```
 
-### 2.5 颜色映射的性能优化
+### 2.5 颜色映射（已确认正确，无需内置缓存）
 
-**问题**：颜色映射需要在渲染每个格子时调用，如果逻辑复杂，可能会影响性能
+**澄清**：颜色映射规则由外部传入，组件内部仅接收并按值判断色值绘制，无需内置复杂缓存。
 
-**解决方案**：
+**设计说明**：
+- 外部通过 props/config 传入颜色规则数组（如 `[{ range: [0, 5], color: '#FFA500' }, { range: [5, 10], color: '#0000FF' }]`）
+- 组件内部遍历规则，按值匹配第一个满足条件的颜色，直接用于格子绘制
+- 无需缓存：规则数量有限（通常 3~10 条），遍历成本极低；若外部规则本身需要缓存，由外部自行管理
+
 ```typescript
-class ColorMapper {
-    private colorCache: Map<string, string> = new Map();
-    private cacheSize: number = 10000; // 缓存大小
-
-    /**
-     * 根据值获取颜色（带缓存）
-     */
-    getColor(value: any): string {
-        const cacheKey = JSON.stringify(value);
-
-        // 检查缓存
-        if (this.colorCache.has(cacheKey)) {
-            return this.colorCache.get(cacheKey)!;
-        }
-
-        // 计算颜色
-        let color = this.defaultColor;
-        for (const rule of this.colorRules) {
-            if (rule.enabled && rule.condition(value)) {
-                color = rule.color;
-                break;
-            }
-        }
-
-        // 添加到缓存
-        this.colorCache.set(cacheKey, color);
-
-        // 如果缓存超过大小，删除最旧的条目
-        if (this.colorCache.size > this.cacheSize) {
-            const firstKey = this.colorCache.keys().next().value;
-            this.colorCache.delete(firstKey);
-        }
-
-        return color;
+// 组件内部颜色映射：简单、无状态、无缓存
+function mapColor(value: number, rules: ColorRule[]): string {
+  for (const rule of rules) {
+    if (value >= rule.min && value < rule.max) {
+      return rule.color;
     }
-
-    /**
-     * 清除缓存
-     */
-    clearCache(): void {
-        this.colorCache.clear();
-    }
+  }
+  return defaultColor;
 }
 ```
 
-### 2.6 表格-图形联动的性能优化
+### 2.6 表格-图形联动（已确认正确，无需防抖）
 
-**问题**：如果数据集很大，同步状态可能会影响性能
+**澄清**：联动仅点击触发（表格行→图形、图形格子→表格），非高频同步，性能无压力。
 
-**解决方案**：
+**设计说明**：
+- 点击表格行 → 调用 `locateToCell(col, row)` 定位到对应格子 → 高亮该格子
+- 点击图形格子 → 通知表格滚动到对应行 → 高亮该行
+- 点击事件频率低，单次操作仅涉及一次定位 + 一次高亮，无需防抖/节流
+
 ```typescript
-// 使用防抖来优化表格-图形联动
-const handleTableRowClick = debounce((cell: CellData) => {
-    // 定位到对应格子
-    bitmapGridRef.current?.locateTo(cell, true);
-    // 高亮显示
-    bitmapGridRef.current?.highlightCell(cell, 2000);
-    // 更新选择状态
-    setSelectedCell(cell);
-}, 100); // 100ms 防抖
+// 表格行点击 → 图形定位
+function handleTableRowClick(cell: CellData) {
+  bitmapGrid.locateToCell(cell.col, cell.row);
+  bitmapGrid.highlightCell(cell.col, cell.row);
+}
+
+// 图形格子点击 → 表格定位
+function handleCellClick(cell: CellData) {
+  dataTable.scrollToRow(cell.row);
+  dataTable.highlightRow(cell.row);
+}
 ```
 
-### 2.7 内存管理优化
+### 2.7 内存管理（补充设计：按区域获取数据）
 
-**问题**：虚拟滚动虽然只渲染可见区域，但仍然需要存储所有数据
+**澄清**：数据从本地文件读取，量级10万～100万；采用按区域获取数据的方式优化内存，而非传统分页。
 
-**解决方案**：
+**设计说明**：
+- 数据以二维矩阵结构存储，支持按行列范围查询
+- 虚拟滚动仅请求当前可视区域对应的数据，而非一次性加载全量
+- 区域查询结果可缓存，滚动回已访问区域时直接命中
+
 ```typescript
+interface DataArea {
+  startCol: number;
+  endCol: number;
+  startRow: number;
+  endRow: number;
+}
+
 class DataManager {
-    private data: CellData[] = [];
-    private pageSize: number = 10000; // 每页大小
-    private currentPage: number = 0;
+  private rawData: Map<string, CellData> = new Map(); // 按坐标索引存储
+  private totalCols: number;
+  private totalRows: number;
 
-    /**
-     * 加载数据（分页加载）
-     */
-    async loadData(page: number): Promise<CellData[]> {
-        const start = page * this.pageSize;
-        const end = start + this.pageSize;
-        return this.data.slice(start, end);
+  // 按区域获取数据（供虚拟滚动调用）
+  getDataByArea(area: DataArea): CellData[][] {
+    const result: CellData[][] = [];
+    for (let row = area.startRow; row <= area.endRow; row++) {
+      const rowData: CellData[] = [];
+      for (let col = area.startCol; col <= area.endCol; col++) {
+        const key = `${row},${col}`;
+        const cell = this.rawData.get(key);
+        if (cell) rowData.push(cell);
+      }
+      result.push(rowData);
     }
+    return result;
+  }
 
-    /**
-     * 获取指定范围的数据
-     */
-    getDataRange(start: number, end: number): CellData[] {
-        return this.data.slice(start, end);
-    }
+  // 获取单个格子数据
+  getCell(row: number, col: number): CellData | undefined {
+    return this.rawData.get(`${row},${col}`);
+  }
 }
 ```
 
-### 2.8 事件处理的性能优化
+### 2.8 事件处理性能优化（补充设计）
 
-**问题**：事件委托虽然可以减少事件监听器，但仍然需要处理大量事件
+**澄清**：事件包含画布缩放、滚动、坐标轴更新等，优化逻辑由 AI 自主设计。
 
-**解决方案**：
+**设计方案**：
+
+事件分为三类，采用不同优化策略：
+
+| 事件类型 | 示例 | 频率 | 优化策略 |
+|---------|------|------|---------|
+| 连续触发 | wheel 滚动、mousemove 悬停 | 高频（60fps+） | RAF 调度 + 节流 |
+| 离散触发 | click 选择、resize 容器变化 | 低频 | 防抖（避免重复执行） |
+| 响应更新 | 坐标轴标签更新、滚动条滑块位置 | 依赖滚动 | 合并到同一 RAF 帧 |
+
 ```typescript
-// 使用节流来优化事件处理
-const handleWheel = throttle((e: WheelEvent) => {
-    scrollManager.handleWheel(e);
-}, 16); // 16ms 节流（约 60fps）
+class EventOptimizer {
+  private rafId: number | null = null;
+  private pendingScroll: { deltaX: number; deltaY: number } | null = null;
 
-const handleMouseMove = debounce((e: MouseEvent) => {
-    selectionManager.handleMouseMove(e);
-}, 16); // 16ms 防抖
-```
+  // 滚轮事件：累积增量，合并到单次 RAF 渲染
+  handleWheel(e: WheelEvent): void {
+    e.preventDefault();
+    if (!this.pendingScroll) {
+      this.pendingScroll = { deltaX: 0, deltaY: 0 };
+    }
+    this.pendingScroll.deltaX += e.deltaX;
+    this.pendingScroll.deltaY += e.deltaY;
 
-### 2.9 响应式布局
-
-**问题**：设计中提到了响应式布局，但没有详细说明如何实现
-
-**解决方案**：
-```typescript
-class ResponsiveManager {
-    private breakpoints: {
-        mobile: number;
-        tablet: number;
-        desktop: number;
-    } = {
-        mobile: 768,
-        tablet: 1024,
-        desktop: 1280,
-    };
-
-    /**
-     * 获取当前设备类型
-     */
-    getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
-        const width = window.innerWidth;
-        if (width < this.breakpoints.mobile) {
-            return 'mobile';
-        } else if (width < this.breakpoints.tablet) {
-            return 'tablet';
-        } else {
-            return 'desktop';
+    if (this.rafId === null) {
+      this.rafId = requestAnimationFrame(() => {
+        if (this.pendingScroll) {
+          this.scrollManager.applyScroll(this.pendingScroll.deltaX, this.pendingScroll.deltaY);
+          this.pendingScroll = null;
         }
+        this.rafId = null;
+      });
     }
+  }
 
-    /**
-     * 根据设备类型调整布局
-     */
-    adjustLayout(): void {
-        const deviceType = this.getDeviceType();
-        switch (deviceType) {
-            case 'mobile':
-                // 移动端布局
-                this.adjustMobileLayout();
-                break;
-            case 'tablet':
-                // 平板布局
-                this.adjustTabletLayout();
-                break;
-            case 'desktop':
-                // 桌面端布局
-                this.adjustDesktopLayout();
-                break;
-        }
-    }
+  // resize 事件：防抖 150ms
+  private resizeTimer: ReturnType<typeof setTimeout> | null = null;
+  handleResize(): void {
+    if (this.resizeTimer) clearTimeout(this.resizeTimer);
+    this.resizeTimer = setTimeout(() => {
+      this.recalculateLayout();
+      this.renderVisibleCells();
+    }, 150);
+  }
 }
 ```
 
-### 2.10 错误处理
+### 2.9 响应式布局（已澄清，VS Code 环境）
 
-**问题**：设计中没有详细说明如何处理错误情况
+**澄清**：VS Code 插件环境，Editor 区域可拖拽；固定图形60%、表格40%布局，图形宽度继承父容器并自适应，拖拽后动态重算可视宽高。
 
-**解决方案**：
+**设计说明**：
+- 无需移动端/平板/桌面断点，运行环境固定为 VS Code 桌面端
+- 布局为左右分栏：左侧 60%（BitmapGrid 图形区域），右侧 40%（DataTable 表格区域）
+- 图形区域的宽高继承父容器尺寸，VS Code 面板拖拽时自动触发 resize → 重新计算可视宽高 → 重新渲染
+
 ```typescript
-class ErrorHandler {
-    /**
-     * 处理数据加载错误
-     */
-    handleDataLoadError(error: Error): void {
-        console.error('Data load error:', error);
-        // 显示错误提示
-        this.showErrorToast('数据加载失败，请重试');
-        // 重试
-        this.retryDataLoad();
-    }
+class BitmapTableLayout {
+  private readonly GRAPH_RATIO = 0.6;  // 图形区域占比
+  private readonly TABLE_RATIO = 0.4;  // 表格区域占比
 
-    /**
-     * 处理渲染错误
-     */
-    handleRenderError(error: Error): void {
-        console.error('Render error:', error);
-        // 显示错误提示
-        this.showErrorToast('渲染失败，请重试');
-        // 回退到安全状态
-        this.rollbackToSafeState();
-    }
+  // 监听父容器尺寸变化（VS Code 面板拖拽触发）
+  setupResizeObserver(container: HTMLElement): void {
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        this.onContainerResize(width, height);
+      }
+    });
+    observer.observe(container);
+  }
+
+  // 容器尺寸变化 → 重新计算布局
+  private onContainerResize(containerWidth: number, containerHeight: number): void {
+    const graphWidth = containerWidth * this.GRAPH_RATIO;
+    const tableWidth = containerWidth * this.TABLE_RATIO;
+
+    // 通知 BitmapGrid 重新计算可视宽高
+    bitmapGrid.updateViewport(graphWidth, containerHeight);
+    // 通知 DataTable 重新计算列宽
+    dataTable.updateWidth(tableWidth);
+  }
 }
 ```
 
-### 2.11 可访问性
+### 2.10 错误处理（暂不实现）
 
-**问题**：设计中没有考虑可访问性
+**澄清**：错误处理暂不考虑、暂不实现。
 
-**解决方案**：
+**备注**：后续版本可根据实际需求补充，典型场景包括数据加载失败、渲染异常、文件格式不合法等。
+
+### 2.11 可访问性（暂不实现）
+
+**澄清**：暂不考虑、暂不实现。
+
+**备注**：后续版本可根据实际需求补充键盘导航、ARIA 属性、屏幕阅读器等支持。
+
+### 2.12 国际化（暂不实现）
+
+**澄清**：暂不考虑、暂不实现。
+
+**备注**：后续版本可根据实际需求补充多语言支持。
+
+### 2.13 主题切换（已澄清，实例级主题适配）
+
+**澄清**：摒弃全局统一配置方式，不同图形实例创建时传入对应主题色参数，由各图形内部独立完成样式、配色适配，实现模块化主题适配。
+
+**设计说明**：
+- 主题不是全局单例，而是每个 BitmapGrid 实例的创建参数
+- 实例创建时接收主题色参数（背景色、坐标轴色、网格线色等），内部自行适配
+- 不同实例可使用不同主题，互不影响
+- 主题切换时重新传入参数即可，无需全局广播
+
 ```typescript
-// 支持键盘导航
-class KeyboardNavigationManager {
-    /**
-     * 处理键盘事件
-     */
-    handleKeyboardEvent(e: KeyboardEvent): void {
-        switch (e.key) {
-            case 'ArrowUp':
-                // 向上移动
-                this.moveUp();
-                break;
-            case 'ArrowDown':
-                // 向下移动
-                this.moveDown();
-                break;
-            case 'ArrowLeft':
-                // 向左移动
-                this.moveLeft();
-                break;
-            case 'ArrowRight':
-                // 向右移动
-                this.moveRight();
-                break;
-            case 'Enter':
-                // 选中当前格子
-                this.selectCurrentCell();
-                break;
-        }
-    }
+// 实例级主题参数
+interface BitmapTheme {
+  backgroundColor: string;   // 画布背景色
+  axisColor: string;         // 坐标轴线条+标签颜色
+  gridLineColor: string;     // 网格线颜色
+  scrollbarTrackColor: string; // 滚动条轨道色
+  scrollbarThumbColor: string; // 滚动条滑块色
+  highlightColor: string;    // 高亮框颜色
 }
 
-// 支持屏幕阅读器
-class ScreenReaderManager {
-    /**
-     * 为格子添加 ARIA 属性
-     */
-    addAriaAttributes(cell: CellData): void {
-        const element = this.getCellElement(cell);
-        element.setAttribute('aria-label', `格子 ${cell.wl} ${cell.bl}`);
-        element.setAttribute('role', 'gridcell');
-    }
-}
-```
-
-### 2.12 国际化
-
-**问题**：设计中没有考虑国际化
-
-**解决方案**：
-```typescript
-class I18nManager {
-    private locale: string = 'zh-CN';
-    private messages: Record<string, Record<string, string>> = {
-        'zh-CN': {
-            'scrollbar': '滚动条',
-            'zoom': '缩放',
-            'select': '选择',
-        },
-        'en-US': {
-            'scrollbar': 'Scrollbar',
-            'zoom': 'Zoom',
-            'select': 'Select',
-        },
-    };
-
-    /**
-     * 获取翻译
-     */
-    t(key: string): string {
-        return this.messages[this.locale][key] || key;
-    }
-
-    /**
-     * 设置语言
-     */
-    setLocale(locale: string): void {
-        this.locale = locale;
-    }
-}
-```
-
-### 2.13 主题切换
-
-**问题**：设计中提到了主题，但没有详细说明如何实现主题切换
-
-**解决方案**：
-```typescript
-class ThemeManager {
-    private currentTheme: 'light' | 'dark' = 'light';
-    private themes: Record<string, Theme> = {
-        light: {
-            backgroundColor: '#ffffff',
-            textColor: '#000000',
-            gridColor: '#e0e0e0',
-            scrollbarColor: '#c0c0c0',
-        },
-        dark: {
-            backgroundColor: '#1e1e1e',
-            textColor: '#ffffff',
-            gridColor: '#333333',
-            scrollbarColor: '#555555',
-        },
-    };
-
-    /**
-     * 获取当前主题
-     */
-    getTheme(): Theme {
-        return this.themes[this.currentTheme];
-    }
-
-    /**
-     * 切换主题
-     */
-    toggleTheme(): void {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        this.applyTheme();
-    }
-
-    /**
-     * 应用主题
-     */
-    private applyTheme(): void {
-        const theme = this.getTheme();
-        // 更新 Konva Stage 的背景色
-        this.stage.container().style.backgroundColor = theme.backgroundColor;
-        // 更新格子的颜色
-        this.updateCellColors(theme);
-        // 更新滚动条的颜色
-        this.updateScrollbarColors(theme);
-    }
-}
-```
-
-### 2.14 数据导入的性能优化
-
-**问题**：设计中提到了支持多种数据导入格式，但没有详细说明如何优化导入性能
-
-**解决方案**：
-```typescript
-// 使用 Web Worker 来优化数据导入
-class DataImportWorker {
-    private worker: Worker;
-
-    constructor() {
-        this.worker = new Worker('./data-import.worker.js');
-    }
-
-    /**
-     * 导入数据
-     */
-    async importData(file: File): Promise<CellData[]> {
-        return new Promise((resolve, reject) => {
-            this.worker.onmessage = (e) => {
-                resolve(e.data);
-            };
-            this.worker.onerror = (e) => {
-                reject(e.error);
-            };
-            this.worker.postMessage(file);
-        });
-    }
-}
-
-// data-import.worker.js
-self.onmessage = async (e) => {
-    const file = e.data;
-    const data = await parseFile(file);
-    self.postMessage(data);
+// 预设主题
+const LIGHT_THEME: BitmapTheme = {
+  backgroundColor: '#ffffff',
+  axisColor: '#333333',
+  gridLineColor: '#e0e0e0',
+  scrollbarTrackColor: '#f0f0f0',
+  scrollbarThumbColor: '#c0c0c0',
+  highlightColor: '#1890ff',
 };
+
+const DARK_THEME: BitmapTheme = {
+  backgroundColor: '#1e1e1e',
+  axisColor: '#cccccc',
+  gridLineColor: '#333333',
+  scrollbarTrackColor: '#2d2d2d',
+  scrollbarThumbColor: '#555555',
+  highlightColor: '#177ddc',
+};
+
+// 创建实例时传入主题
+const bitmap = new BitmapGrid({
+  container: document.getElementById('grid'),
+  theme: isDarkMode ? DARK_THEME : LIGHT_THEME,
+  // ... 其他配置
+});
+
+// 主题切换：重新传入参数
+bitmap.setTheme(newTheme);
 ```
 
-### 2.15 滚动条的自定义
+### 2.14 数据导入（暂不实现，仅支持本地JSON）
 
-**问题**：设计中提到了自定义滚动条，但没有详细说明如何实现滚动条的样式和交互
+**澄清**：数据导入相关优化暂不考虑，当前仅支持本地JSON文件读取解析，暂不开发外部数据导入及大文件解析优化功能。
 
-**解决方案**：
+**备注**：后续版本可根据需求扩展 STDF、TXT 等格式支持及 Web Worker 解析优化。
+
+### 2.15 滚动条样式（已澄清，取消自定义）
+
+**澄清**：取消滚动条自定义样式开发，全程采用系统默认滚动条样式展示，不进行额外样式定制与美化。
+
+**备注**：滚动条功能（拖拽、比例计算、位置同步）仍需实现，仅样式层面不做定制。
+
+### 2.16 坐标轴样式（已澄清，固定布局+主题色自适应）
+
+**澄清**：坐标轴固定布局，X轴置于顶部、Y轴置于左侧；颜色跟随主题自适应，浅色主题显示黑色、深色主题显示白色，线条宽度由算法自主适配设定。
+
+**设计说明**：
+- 布局固定：X 轴在顶部（显示列号/WL），Y 轴在左侧（显示行号/BL），不支持自定义位置
+- 颜色自适应：从实例主题参数 `theme.axisColor` 获取，浅色主题下为深色、深色主题下为浅色
+- 线条宽度：根据格子尺寸和缩放比例自动计算，确保视觉清晰
+
 ```typescript
-class ScrollbarStyle {
-    private config: ScrollbarConfig = {
-        trackColor: '#e0e0e0',
-        thumbColor: '#c0c0c0',
-        thumbHoverColor: '#a0a0a0',
-        thumbActiveColor: '#808080',
-        borderRadius: 6,
-        thumbBorderRadius: 3,
-    };
+// 坐标轴颜色由主题参数决定
+const axisColor = theme.axisColor; // 浅色: '#333333', 深色: '#cccccc'
 
-    /**
-     * 设置滚动条样式
-     */
-    setStyle(config: Partial<ScrollbarConfig>): void {
-        this.config = { ...this.config, ...config };
-        this.applyStyle();
-    }
+// 线条宽度自适应：基础宽度 + 缩放补偿
+const axisLineWidth = Math.max(1, Math.round(baseCellSize * 0.05));
+const tickLength = Math.max(3, Math.round(baseCellSize * 0.15));
+const labelFontSize = Math.max(10, Math.round(baseCellSize * 0.6));
+```
 
-    /**
-     * 应用样式
-     */
-    private applyStyle(): void {
-        // 更新滚动条的样式
-        this.updateTrackStyle();
-        this.updateThumbStyle();
-    }
+### 2.17 格子交互（补充设计）
+
+**澄清**：支持格子点击、悬停交互；点击后外部可获取格子位置信息；支持指定格子定位，目标格子不在可视区时自动滚动至可视区域并高亮展示。
+
+**设计说明**：
+- **点击**：外部通过 `onCellClick` 回调获取格子坐标和数据，用于表格联动等业务
+- **悬停**：外部通过 `onCellHover` 回调获取格子信息，用于信息弹窗展示
+- **定位高亮**：调用 `locateAndHighlight(col, row)` 定位到目标格子并高亮，不可见时自动滚动
+
+```typescript
+interface BitmapGridCallbacks {
+  onCellClick?: (cell: { col: number; row: number; data: CellData }) => void;
+  onCellHover?: (cell: { col: number; row: number; data: CellData }) => void;
+}
+
+class BitmapGrid {
+  // 定位并高亮指定格子
+  locateAndHighlight(col: number, row: number, highlightDuration = 2000): void {
+    // 1. 确保目标格子可见（不可见则滚动）
+    this.locationManager.locateToCell(col, row);
+    // 2. 高亮目标格子
+    this.highlightManager.highlight(col, row, highlightDuration);
+  }
+
+  // 内部事件处理 → 触发外部回调
+  private handleCellClick(col: number, row: number): void {
+    const data = this.dataManager.getCell(row, col);
+    this.config.onCellClick?.({ col, row, data });
+  }
+
+  private handleCellHover(col: number, row: number): void {
+    const data = this.dataManager.getCell(row, col);
+    this.config.onCellHover?.({ col, row, data });
+  }
 }
 ```
 
-### 2.16 坐标轴的自定义
+### 2.18 缩放功能的边界（补充设计）
 
-**问题**：设计中提到了自定义坐标轴，但没有详细说明如何实现坐标轴的样式和交互
+**澄清**：设置格子缩放的最大值、最小值及默认值，依据缩放比例进行边界校验，自动限制缩放范围，边界阈值与判定逻辑由设计自主设定。
 
-**解决方案**：
-```typescript
-class AxisStyle {
-    private config: AxisConfig = {
-        lineColor: '#000000',
-        tickColor: '#000000',
-        labelColor: '#000000',
-        lineWidth: 1,
-        tickWidth: 1,
-        tickLength: 5,
-        labelFontSize: 12,
-        labelFontFamily: 'Arial',
-    };
+**设计方案**：
+- 格子最小尺寸（minCellSize）：低于此值无法辨识格子内容，设为 2px
+- 格子最大尺寸（maxCellSize）：高于此值浪费屏幕空间且滚动范围过大，设为 50px
+- 默认尺寸（defaultCellSize）：64×64 数据在默认视口内完整显示的尺寸，约 10px
+- 缩放操作：以鼠标位置为中心缩放，边界校验自动钳制到合法范围
 
-    /**
-     * 设置坐标轴样式
-     */
-    setStyle(config: Partial<AxisConfig>): void {
-        this.config = { ...this.config, ...config };
-        this.applyStyle();
-    }
-
-    /**
-     * 应用样式
-     */
-    private applyStyle(): void {
-        // 更新坐标轴的样式
-        this.updateLineStyle();
-        this.updateTickStyle();
-        this.updateLabelStyle();
-    }
-}
-```
-
-### 2.17 格子的交互
-
-**问题**：设计中提到了格子的点击和悬停事件，但没有详细说明如何实现这些交互
-
-**解决方案**：
-```typescript
-class CellInteractionManager {
-    /**
-     * 处理格子点击事件
-     */
-    handleCellClick(cell: CellData): void {
-        // 选中格子
-        this.selectCell(cell);
-        // 触发回调
-        this.onCellClick?.(cell);
-    }
-
-    /**
-     * 处理格子悬停事件
-     */
-    handleCellHover(cell: CellData): void {
-        // 显示格子信息
-        this.showCellInfo(cell);
-        // 触发回调
-        this.onCellHover?.(cell);
-    }
-
-    /**
-     * 处理格子拖拽事件
-     */
-    handleCellDrag(cell: CellData, dx: number, dy: number): void {
-        // 移动格子
-        this.moveCell(cell, dx, dy);
-        // 触发回调
-        this.onCellDrag?.(cell, dx, dy);
-    }
-}
-```
-
-### 2.18 缩放功能的边界
-
-**问题**：设计中提到了缩放功能，但没有详细说明如何处理缩放的边界
-
-**解决方案**：
 ```typescript
 class ZoomManager {
-    private minZoomLevel: number = 0.5;
-    private maxZoomLevel: number = 4.0;
-    private zoomStep: number = 0.1;
+  readonly MIN_CELL_SIZE = 2;    // 格子最小 2px
+  readonly MAX_CELL_SIZE = 50;   // 格子最大 50px
+  readonly DEFAULT_CELL_SIZE = 10; // 默认 10px
 
-    /**
-     * 缩放
-     */
-    zoom(delta: number): void {
-        const newZoomLevel = this.zoomLevel + delta * this.zoomStep;
-        // 边界控制
-        this.zoomLevel = Math.max(this.minZoomLevel, Math.min(newZoomLevel, this.maxZoomLevel));
-        // 应用缩放
-        this.applyZoom();
-    }
+  private cellSize: number = this.DEFAULT_CELL_SIZE;
 
-    /**
-     * 重置缩放
-     */
-    resetZoom(): void {
-        this.zoomLevel = 1.0;
-        this.applyZoom();
-    }
+  // 缩放：以当前鼠标位置为中心
+  zoomAt(delta: number, anchorX: number, anchorY: number): void {
+    const oldSize = this.cellSize;
+    const newSize = clamp(oldSize + delta, this.MIN_CELL_SIZE, this.MAX_CELL_SIZE);
+    if (newSize === oldSize) return;
+
+    // 保持鼠标位置下的数据坐标不变，调整 scrollOffset
+    const ratio = newSize / oldSize;
+    this.scrollX = anchorX * ratio - (anchorX - this.scrollX) * 1; // 简化：锚点补偿
+    this.scrollY = anchorY * ratio - (anchorY - this.scrollY) * 1;
+
+    this.cellSize = newSize;
+    this.applyZoom();
+  }
+
+  // 重置到默认
+  resetZoom(): void {
+    this.cellSize = this.DEFAULT_CELL_SIZE;
+    this.scrollX = 0;
+    this.scrollY = 0;
+    this.applyZoom();
+  }
+
+  get zoomLevel(): number {
+    return this.cellSize / this.DEFAULT_CELL_SIZE;
+  }
 }
 ```
 
-### 2.19 选择功能的性能优化
+### 2.19 选择功能的性能优化（补充设计）
 
-**问题**：设计中提到了选择功能，但没有详细说明如何优化选择的性能
+**澄清**：选择功能以坐标定位为核心，依据数据位置自动跳转定位、滚动展示选中格子；针对定位渲染、滚动交互进行专项性能优化，优化策略自主决策。
 
-**解决方案**：
+**设计方案**：
+- 选择操作本质是"坐标定位 + 滚动 + 高亮"，而非传统批量选择
+- 性能瓶颈在定位滚动（需计算目标位置、平滑滚动、重新渲染），不在选择状态管理
+- 优化要点：定位计算 O(1)、滚动动画合并到单次 RAF、高亮渲染增量更新
+
 ```typescript
 class SelectionManager {
-    private selectedCells: Set<string> = new Set();
-    private selectionBatch: Set<string> = new Set();
-    private selectionBatchTimeout: NodeJS.Timeout | null = null;
+  private selectedCell: { col: number; row: number } | null = null;
 
-    /**
-     * 选择格子（批量处理）
-     */
-    selectCell(cell: CellData): void {
-        this.selectionBatch.add(cell.id);
+  // 选择格子：定位 + 高亮，核心路径
+  selectCell(col: number, row: number): void {
+    const prev = this.selectedCell;
+    this.selectedCell = { col, row };
 
-        // 防抖处理批量选择
-        if (this.selectionBatchTimeout) {
-            clearTimeout(this.selectionBatchTimeout);
-        }
-
-        this.selectionBatchTimeout = setTimeout(() => {
-            // 批量更新选择状态
-            this.selectionBatch.forEach(id => {
-                this.selectedCells.add(id);
-            });
-            this.selectionBatch.clear();
-            // 触发回调
-            this.onSelectionChange?.(Array.from(this.selectedCells));
-        }, 16); // 16ms 防抖
+    // 1. 清除旧高亮（增量更新，仅重绘旧格子区域）
+    if (prev) {
+      this.cellDrawer.redrawSingle(prev.col, prev.row);
     }
+
+    // 2. 定位到目标格子（不可见时自动滚动）
+    this.locationManager.locateToCell(col, row);
+
+    // 3. 绘制新高亮（增量更新，仅重绘新格子区域）
+    this.highlightDrawer.draw(col, row);
+
+    // 4. 触发外部回调
+    this.onSelect?.({ col, row, data: this.dataManager.getCell(row, col) });
+  }
+
+  // 取消选择
+  clearSelection(): void {
+    if (this.selectedCell) {
+      this.cellDrawer.redrawSingle(this.selectedCell.col, this.selectedCell.row);
+      this.selectedCell = null;
+    }
+  }
 }
 ```
 
-### 2.20 数据更新的性能
+### 2.20 数据更新（暂不实现）
 
-**问题**：设计中没有考虑数据更新的性能
+**澄清**：暂不考虑、暂不实现。
 
-**解决方案**：
-```typescript
-class DataUpdateManager {
-    private updateQueue: CellData[] = [];
-    private updateTimeout: NodeJS.Timeout | null = null;
-
-    /**
-     * 更新数据（批量处理）
-     */
-    updateData(cell: CellData): void {
-        this.updateQueue.push(cell);
-
-        // 防抖处理批量更新
-        if (this.updateTimeout) {
-            clearTimeout(this.updateTimeout);
-        }
-
-        this.updateTimeout = setTimeout(() => {
-            // 批量更新数据
-            this.updateQueue.forEach(cell => {
-                this.updateCell(cell);
-            });
-            this.updateQueue = [];
-            // 重新渲染
-            this.render();
-        }, 16); // 16ms 防抖
-    }
-}
-```
+**备注**：后续版本可根据需求补充数据批量更新、增量渲染等功能。
 
 ## 三、总结
 
 ### 3.1 改进后的设计优势
 
-✅ **解决了坐标轴和滚动条的位置冲突**：明确了空间分配
-✅ **解耦了滚动条和坐标轴的交互**：使用事件总线
-✅ **确保了虚拟滚动和滚动条的同步**：提供了同步机制
-✅ **处理了定位功能的边界**：提供了边界处理逻辑
-✅ **优化了颜色映射的性能**：使用缓存
-✅ **优化了表格-图形联动的性能**：使用防抖
-✅ **优化了内存管理**：使用分页加载
-✅ **优化了事件处理的性能**：使用节流和防抖
-✅ **支持了响应式布局**：提供了响应式管理器
-✅ **支持了错误处理**：提供了错误处理器
-✅ **支持了可访问性**：提供了键盘导航和屏幕阅读器支持
-✅ **支持了国际化**：提供了国际化管理器
-✅ **支持了主题切换**：提供了主题管理器
-✅ **优化了数据导入的性能**：使用 Web Worker
-✅ **支持了滚动条的自定义**：提供了滚动条样式管理器
-✅ **支持了坐标轴的自定义**：提供了坐标轴样式管理器
-✅ **支持了格子的交互**：提供了格子交互管理器
-✅ **处理了缩放功能的边界**：提供了边界控制
-✅ **优化了选择功能的性能**：使用批量处理
-✅ **优化了数据更新的性能**：使用批量更新
+✅ **坐标轴和滚动条空间布局正确**：各区域独立，统一计算位置，无冲突无重叠
+✅ **滚动条和坐标轴触发逻辑分离**：横向滚动仅更新 X 轴标签，纵向滚动仅更新 Y 轴标签，滚动条滑块无需同步更新
+✅ **补充了虚拟滚动和滚动条的同步机制**：提供双向同步（滚轮→滚动条、拖拽滚动条→虚拟滚动），含完整数据流
+✅ **定位功能边界处理**：简单可靠，确保目标格子完整显示在可视区域内即可
+✅ **颜色映射无需内置缓存**：规则由外部传入，组件内部仅按值判断色值绘制
+✅ **表格-图形联动无需防抖**：仅点击触发，非高频同步
+✅ **内存管理采用按区域获取数据**：适配本地文件读取，量级10万～100万
+✅ **事件处理优化**：RAF 调度合并高频滚动事件 + 防抖低频 resize 事件
+✅ **响应式布局明确**：VS Code 环境，固定60%/40%分栏，拖拽时 ResizeObserver 动态重算
+⏭️ **错误处理暂不实现**：后续版本按需补充
+⏭️ **可访问性暂不实现**：后续版本按需补充
+⏭️ **国际化暂不实现**：后续版本按需补充
+✅ **主题切换采用实例级主题适配**：摒弃全局配置，各图形实例创建时传入主题色参数
+⏭️ **数据导入优化暂不实现**：当前仅支持本地JSON文件读取解析
+✅ **滚动条样式采用系统默认**：取消自定义样式开发，功能层面仍需实现
+✅ **坐标轴样式固定布局+主题自适应**：X轴顶部/Y轴左侧，颜色跟随主题，线宽算法自适应
+✅ **格子交互支持点击/悬停/定位高亮**：外部回调获取位置信息，自动滚动定位并高亮
+✅ **缩放边界设置最大/最小/默认值**：格子尺寸 2~50px，自动钳制，锚点缩放
+✅ **选择性能以坐标定位为核心**：增量重绘高亮，定位滚动合并到单次 RAF
+⏭️ **数据更新暂不实现**：后续版本按需补充
 
 ### 3.2 下一步
 
