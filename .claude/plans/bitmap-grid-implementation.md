@@ -23,6 +23,7 @@ bitmap/
 │   ├── DataManager.ts          # 按区域获取数据（2.7 补充设计）
 │   └── BitmapGridEngine.ts     # 主引擎，编排所有模块
 ├── layers/
+│   ├── ToolbarLayer.ts         # 工具栏 Konva 图层（缩放、定位按钮等）
 │   ├── XAxisScrollbarLayer.ts  # X 轴 + 横向滚动条 Konva 图层
 │   ├── YAxisScrollbarLayer.ts  # Y 轴 + 纵向滚动条 Konva 图层
 │   └── CellLayer.ts            # 格子网格渲染 Konva 图层
@@ -33,6 +34,7 @@ bitmap/
 │   ├── LocationManager.ts      # 定位到格子，确保可见（2.4 简化方案）
 │   └── EventOptimizer.ts       # RAF 调度 + 防抖（2.8 补充设计）
 ├── draws/
+│   ├── ToolbarDraw.ts          # 工具栏按钮渲染
 │   ├── AxisDraw.ts             # 坐标轴刻度 + 标签渲染
 │   ├── ScrollbarDraw.ts        # 滚动条轨道 + 滑块渲染
 │   ├── CellDraw.ts             # 格子渲染，含对象池
@@ -57,8 +59,9 @@ mitt 封装：on/off/emit/clear，支持 BitmapEvents 类型
 
 ### core/LayoutCalculator.ts
 - `calculate(containerWidth, containerHeight): LayoutResult`
-- 统一计算各区域位置：xAxis、yAxis、cellArea、horizontalScrollbar、verticalScrollbar
+- 统一计算各区域位置：toolbar、xAxis、yAxis、cellArea、horizontalScrollbar、verticalScrollbar
 - 各区域独立，不重叠，通过 spacing 间隔
+- 工具栏位于顶部，X 轴在工具栏下方、Y 轴右侧
 
 ### core/DataManager.ts
 - `setData(data)` — 构建内部 cellMap（Map，key 为 "row,col"）
@@ -87,6 +90,10 @@ mitt 封装：on/off/emit/clear，支持 BitmapEvents 类型
 **依赖：** 阶段 1
 
 ## 阶段 3：图层
+
+### layers/ToolbarLayer.ts
+- 创建 Konva.Layer，包含 ToolbarDraw（缩放、定位按钮等）
+- 处理工具栏按钮点击事件 → 触发缩放、定位等操作
 
 ### layers/XAxisScrollbarLayer.ts
 - 创建 Konva.Layer，包含 AxisDraw（X 轴）+ ScrollbarDraw（横向滚动条）
@@ -132,6 +139,10 @@ mitt 封装：on/off/emit/clear，支持 BitmapEvents 类型
 **依赖：** 阶段 1、阶段 2
 
 ## 阶段 5：绘制组件
+
+### draws/ToolbarDraw.ts
+- renderToolbar：渲染缩放按钮（↖ ↗）、定位按钮（■ □）、缩放比例显示（x1）、缩放控制（+ -）
+- 处理按钮点击事件 → 触发 ZoomManager、LocationManager 操作
 
 ### draws/AxisDraw.ts
 - renderXAxis、renderYAxis：自适应刻度步长，theme.axisColor，线宽算法自适应
@@ -181,9 +192,9 @@ mitt 封装：on/off/emit/clear，支持 BitmapEvents 类型
 ### index.ts
 导出：BitmapGridEngine、BitmapGrid、BitmapTableLayout、LIGHT_THEME、DARK_THEME、所有类型
 
-## 构建顺序（23 个文件）
+## 构建顺序（25 个文件）
 
-1. types.ts → 2. EventBus.ts → 3. LayoutCalculator.ts → 4. DataManager.ts → 5. VirtualScrollSync.ts → 6. ScrollManager.ts → 7. ZoomManager.ts → 8. SelectionManager.ts → 9. LocationManager.ts → 10. EventOptimizer.ts → 11. AxisDraw.ts → 12. ScrollbarDraw.ts → 13. CellDraw.ts → 14. HighlightDraw.ts → 15. presets.ts → 16. XAxisScrollbarLayer.ts → 17. YAxisScrollbarLayer.ts → 18. CellLayer.ts → 19. BitmapGridEngine.ts → 20. useBitmapGrid.ts → 21. BitmapGrid.tsx → 22. BitmapTableLayout.tsx → 23. index.ts
+1. types.ts → 2. EventBus.ts → 3. LayoutCalculator.ts → 4. DataManager.ts → 5. VirtualScrollSync.ts → 6. ScrollManager.ts → 7. ZoomManager.ts → 8. SelectionManager.ts → 9. LocationManager.ts → 10. EventOptimizer.ts → 11. ToolbarDraw.ts → 12. AxisDraw.ts → 13. ScrollbarDraw.ts → 14. CellDraw.ts → 15. HighlightDraw.ts → 16. presets.ts → 17. ToolbarLayer.ts → 18. XAxisScrollbarLayer.ts → 19. YAxisScrollbarLayer.ts → 20. CellLayer.ts → 21. BitmapGridEngine.ts → 22. useBitmapGrid.ts → 23. BitmapGrid.tsx → 24. BitmapTableLayout.tsx → 25. index.ts
 
 ## 验证方式
 
