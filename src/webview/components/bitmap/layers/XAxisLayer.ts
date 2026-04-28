@@ -1,26 +1,26 @@
 /**
- * X 轴 + 横向滚动条 Konva 图层
+ * X 轴 Konva 图层
  */
 
 import Konva from 'konva';
 import type { BitmapGridEngine } from '../core/BitmapGridEngine';
-import { ScrollbarDraw } from '../draws/ScrollbarDraw';
+import { AxisDraw } from '../draws/AxisDraw';
 
 const { Layer } = Konva;
 type LayerType = InstanceType<typeof Layer>;
 
 /**
- * X 轴滚动条图层类
+ * X 轴图层类
  */
-export class XAxisScrollbarLayer {
+export class XAxisLayer {
   private layer: LayerType;
   private engine: BitmapGridEngine;
-  private scrollbarDraw: ScrollbarDraw;
+  private axisDraw: AxisDraw;
 
   constructor(engine: BitmapGridEngine) {
     this.engine = engine;
-    this.layer = new Layer({ name: 'xAxisScrollbar' });
-    this.scrollbarDraw = new ScrollbarDraw(engine);
+    this.layer = new Layer({ name: 'xAxis' });
+    this.axisDraw = new AxisDraw(engine);
   }
 
   /**
@@ -37,29 +37,29 @@ export class XAxisScrollbarLayer {
     const eventBus = this.engine.getEventBus();
 
     eventBus.on('scroll:change', () => {
-      this.updateScrollbar();
+      this.updateAxis();
     });
 
     eventBus.on('zoom:change', () => {
-      this.updateScrollbar();
+      this.updateAxis();
     });
 
     // 初始渲染
-    this.updateScrollbar();
+    this.updateAxis();
   }
 
   /**
-   * 更新滚动条
+   * 更新坐标轴
    */
-  private updateScrollbar(): void {
-    this.scrollbarDraw.renderHorizontal();
+  private updateAxis(): void {
+    this.axisDraw.renderXAxis();
   }
 
   /**
    * 销毁图层
    */
   destroy(): void {
-    this.scrollbarDraw.destroy();
+    this.axisDraw.destroy();
     this.layer.destroy();
   }
 }

@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import type { BitmapGridEngine } from '../core/BitmapGridEngine';
+import { BitmapGridEngine } from '../core/BitmapGridEngine';
 import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData } from '../types';
 
 /**

@@ -2,25 +2,31 @@
  * 工具栏 Konva 图层
  */
 
-import { Layer } from 'konva/lib/Layer';
+import Konva from 'konva';
 import type { BitmapGridEngine } from '../core/BitmapGridEngine';
+import { ToolbarDraw } from '../draws/ToolbarDraw';
+
+const { Layer } = Konva;
+type LayerType = InstanceType<typeof Layer>;
 
 /**
  * 工具栏图层类
  */
 export class ToolbarLayer {
-  private layer: Layer;
+  private layer: LayerType;
   private engine: BitmapGridEngine;
+  private toolbarDraw: ToolbarDraw;
 
   constructor(engine: BitmapGridEngine) {
     this.engine = engine;
     this.layer = new Layer({ name: 'toolbar' });
+    this.toolbarDraw = new ToolbarDraw(engine);
   }
 
   /**
    * 获取图层
    */
-  getLayer(): Layer {
+  getLayer(): LayerType {
     return this.layer;
   }
 
@@ -31,21 +37,25 @@ export class ToolbarLayer {
     const eventBus = this.engine.getEventBus();
 
     eventBus.on('zoom:change', () => {
-      this.updateZoomDisplay();
+      this.updateToolbar();
     });
+
+    // 初始渲染
+    this.updateToolbar();
   }
 
   /**
-   * 更新缩放显示
+   * 更新工具栏
    */
-  private updateZoomDisplay(): void {
-    // TODO: 实现缩放显示更新
+  private updateToolbar(): void {
+    this.toolbarDraw.renderToolbar();
   }
 
   /**
    * 销毁图层
    */
   destroy(): void {
+    this.toolbarDraw.destroy();
     this.layer.destroy();
   }
 }

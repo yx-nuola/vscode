@@ -2,28 +2,34 @@
  * 格子渲染，含对象池
  */
 
-import { Group, Rect } from 'konva/lib/Konva';
+import Konva from 'konva';
 import type { BitmapGridEngine } from '../core/BitmapGridEngine';
 import type { CellData, ColorRule } from '../types';
+
+const { Group, Rect } = Konva;
+type GroupType = InstanceType<typeof Group>;
+type RectType = InstanceType<typeof Rect>;
 
 /**
  * 格子绘制类
  */
 export class CellDraw {
   private engine: BitmapGridEngine;
-  private group: Group;
-  private cellPool: Map<string, Rect>;
+  private group: GroupType;
+  private cellPool: Map<string, RectType>;
+  private hoveredCell: CellData | null;
 
   constructor(engine: BitmapGridEngine) {
     this.engine = engine;
     this.group = new Group({ name: 'cells' });
     this.cellPool = new Map();
+    this.hoveredCell = null;
   }
 
   /**
    * 获取组
    */
-  getGroup(): Group {
+  getGroup(): GroupType {
     return this.group;
   }
 
@@ -59,6 +65,10 @@ export class CellDraw {
           stroke: theme.borderColor,
           strokeWidth: 1,
         });
+
+        // 添加鼠标事件
+        this.attachCellEvents(rect, cell);
+
         this.group.add(rect);
         this.cellPool.set(key, rect);
       }
@@ -70,6 +80,29 @@ export class CellDraw {
       rect.height(cellSize);
       rect.fill(this.mapColor(cell.value, colorRules) || theme.defaultCellColor);
     }
+  }
+
+  /**
+   * 附加格子事件
+   */
+  private attachCellEvents(rect: Rect, cell: CellData): void {
+    const eventBus = this.engine.getEventBus();
+
+    // 鼠标悬停
+    rect.on('mouseenter', () => {
+      this.hoveredCell = cell;
+      eventBus.emit('cell:hover', cell);
+    });
+
+    rect.on('mouseleave', () => {
+      this.hoveredCell = null;
+      eventBus.emit('cell:hover', null);
+    });
+
+    // 鼠标点击
+    rect.on('click', () => {
+      eventBus.emit('cell:click', cell);
+    });
   }
 
   /**

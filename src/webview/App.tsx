@@ -1,12 +1,8 @@
 import React from 'react';
-import { DataTable } from './components/DataTable';
+import { BitmapTestPage } from './components/bitmap';
 
 const App: React.FC = () => {
-  return (
-    <div className="app">
-      <DataTable />
-    </div>
-  );
+  return <BitmapTestPage />;
 };
 
 export default App;

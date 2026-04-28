@@ -10,6 +10,11 @@ export default defineConfig({
   plugins: [react()],
   base: './',
   root: __dirname,
+  server: {
+    port: 5173,
+    host: true,
+    open: true,
+  },
   build: {
     outDir: path.resolve(projectRoot, 'dist-webview'),
     emptyOutDir: true,
