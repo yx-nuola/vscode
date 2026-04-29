@@ -88,26 +88,29 @@ export class BitmapGridEngine {
     this.setupLayers();
 
     this.setupEventListeners();
+
+    // 添加鼠标滚轮支持
+    this.setupWheelEvents();
   }
 
   /**
    * 设置图层
    */
   private setupLayers(): void {
-    // 添加所有图层到 stage
+    // 添加所有图层到 stage（注意顺序：后面的图层会覆盖前面的）
     this.addLayer('toolbar', this.toolbarLayer.getLayer());
+    this.addLayer('cell', this.cellLayer.getLayer());
     this.addLayer('xAxis', this.xAxisLayer.getLayer());
     this.addLayer('yAxis', this.yAxisLayer.getLayer());
-    this.addLayer('cell', this.cellLayer.getLayer());
     this.addLayer('xAxisScrollbar', this.xAxisScrollbarLayer.getLayer());
     this.addLayer('yAxisScrollbar', this.yAxisScrollbarLayer.getLayer());
     this.addLayer('highlight', this.highlightLayer.getLayer());
 
     // 初始化图层
     this.toolbarLayer.initialize();
+    this.cellLayer.initialize();
     this.xAxisLayer.initialize();
     this.yAxisLayer.initialize();
-    this.cellLayer.initialize();
     this.xAxisScrollbarLayer.initialize();
     this.yAxisScrollbarLayer.initialize();
     this.highlightLayer.initialize();
@@ -142,6 +145,27 @@ export class BitmapGridEngine {
   }
 
   /**
+   * 设置鼠标滚轮事件
+   */
+  private setupWheelEvents(): void {
+    if (!this.container) return;
+
+    this.container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+
+      const deltaX = e.deltaX;
+      const deltaY = e.deltaY;
+
+      // 根据滚轮方向滚动
+      const scrollSpeed = 1; // 滚动速度倍数
+      const newScrollX = this.scrollState.scrollX + deltaX * scrollSpeed;
+      const newScrollY = this.scrollState.scrollY + deltaY * scrollSpeed;
+
+      this.scrollTo(newScrollX, newScrollY);
+    }, { passive: false });
+  }
+
+  /**
    * 销毁引擎
    */
   destroy(): void {
@@ -173,8 +197,6 @@ export class BitmapGridEngine {
     this.stage.width(width);
     this.stage.height(height);
 
-    this.virtualScrollSync.updateViewport(width, height);
-
     const layout = this.layoutCalculator.calculate(width, height);
     this.virtualScrollSync.updateViewport(layout.cellArea.width, layout.cellArea.height);
   }
@@ -192,6 +214,36 @@ export class BitmapGridEngine {
   setData(data: MatrixData): void {
     this.dataManager.setData(data);
     this.virtualScrollSync.updateDataSize(data.rows, data.cols);
+    // 触发数据更新事件，通知图层重新渲染
+    this.eventBus.emit('data:change', data);
+
+    // 如果是64x64数据，自动计算合适的cellSize以全屏展示
+    if (data.rows === 64 && data.cols === 64 && this.stage) {
+      this.autoFitCellSize();
+    }
+  }
+
+  /**
+   * 自动计算合适的cellSize以全屏展示
+   */
+  private autoFitCellSize(): void {
+    if (!this.stage) return;
+
+    const layout = this.layoutCalculator.calculate(this.stage.width(), this.stage.height());
+    const cellAreaWidth = layout.cellArea.width;
+    const cellAreaHeight = layout.cellArea.height;
+
+    // 计算合适的cellSize（取宽高的较小值）
+    const cellSizeX = Math.floor(cellAreaWidth / 64);
+    const cellSizeY = Math.floor(cellAreaHeight / 64);
+    const newCellSize = Math.min(cellSizeX, cellSizeY);
+
+    // 确保cellSize在合理范围内
+    const minSize = this.config.minCellSize || 2;
+    const maxSize = this.config.maxCellSize || 50;
+    const finalCellSize = Math.max(minSize, Math.min(newCellSize, maxSize));
+
+    this.setCellSize(finalCellSize);
   }
 
   /**

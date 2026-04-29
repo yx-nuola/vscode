@@ -21,6 +21,9 @@ export class CellLayer {
     this.engine = engine;
     this.layer = new Layer({ name: 'cell' });
     this.cellDraw = new CellDraw(engine);
+
+    // 将 CellDraw 的 group 添加到 layer 中
+    this.layer.add(this.cellDraw.getGroup());
   }
 
   /**
@@ -35,6 +38,15 @@ export class CellLayer {
    */
   initialize(): void {
     const eventBus = this.engine.getEventBus();
+    const layoutCalculator = this.engine.getLayoutCalculator();
+
+    // 设置格子位置
+    const layout = layoutCalculator.calculate(
+      this.engine.getStage()?.width() || 0,
+      this.engine.getStage()?.height() || 0
+    );
+    this.cellDraw.setPosition(layout.cellArea.x, layout.cellArea.y);
+    this.cellDraw.setClip(layout.cellArea.width, layout.cellArea.height);
 
     eventBus.on('scroll:change', () => {
       this.renderVisibleCells();
@@ -47,6 +59,13 @@ export class CellLayer {
     eventBus.on('locate', () => {
       this.renderVisibleCells();
     });
+
+    eventBus.on('data:change', () => {
+      this.renderVisibleCells();
+    });
+
+    // 初始渲染
+    this.renderVisibleCells();
   }
 
   /**
@@ -68,8 +87,8 @@ export class CellLayer {
       visibleRange.endCol
     );
 
-    // 渲染格子
-    this.cellDraw.renderCells(visibleCells);
+    // 渲染格子（传递滚动偏移）
+    this.cellDraw.renderCells(visibleCells, scrollState.scrollX, scrollState.scrollY);
   }
 
   /**

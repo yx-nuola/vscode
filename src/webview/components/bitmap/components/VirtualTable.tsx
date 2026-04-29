@@ -93,7 +93,11 @@ export function VirtualTable({
 
   // 处理滚动
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setScrollTop(e.currentTarget.scrollTop);
+    requestAnimationFrame(() => {
+      const scrollTop = e.currentTarget.scrollTop;
+      console.log('scrollTop', scrollTop);
+      setScrollTop(scrollTop);
+    });
   }, []);
 
   // 处理行点击
@@ -188,7 +192,7 @@ export function VirtualTable({
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {col.render ? col.render(value, cell) : String(value)}
+                      {col.render ? col.render(value, cell) : String(value ?? '')}
                     </div>
                   );
                 })}

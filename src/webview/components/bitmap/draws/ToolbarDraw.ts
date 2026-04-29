@@ -38,6 +38,14 @@ export class ToolbarDraw {
   }
 
   /**
+   * 设置工具栏位置
+   */
+  setPosition(x: number, y: number): void {
+    this.group.x(x);
+    this.group.y(y);
+  }
+
+  /**
    * 渲染工具栏
    */
   renderToolbar(): void {
@@ -45,8 +53,11 @@ export class ToolbarDraw {
     const theme = config.theme;
     const layoutCalculator = this.engine.getLayoutCalculator();
 
-    // 清除现有内容
-    this.group.destroyChildren();
+    // 如果已经渲染过，只更新缩放文本
+    if (this.zoomInButton && this.zoomOutButton && this.resetButton) {
+      this.updateZoomText();
+      return;
+    }
 
     // 获取布局
     const layout = layoutCalculator.calculate(
@@ -58,8 +69,8 @@ export class ToolbarDraw {
 
     // 渲染背景
     const background = new Rect({
-      x: toolbar.x,
-      y: toolbar.y,
+      x: 0,
+      y: 0,
       width: toolbar.width,
       height: toolbar.height,
       fill: theme.backgroundColor,
@@ -70,8 +81,8 @@ export class ToolbarDraw {
     const buttonWidth = 60;
     const buttonHeight = 24;
     const buttonSpacing = 10;
-    const startX = toolbar.x + 10;
-    const startY = toolbar.y + (toolbar.height - buttonHeight) / 2;
+    const startX = 10;
+    const startY = (toolbar.height - buttonHeight) / 2;
 
     // 放大按钮
     this.zoomInButton = new Rect({

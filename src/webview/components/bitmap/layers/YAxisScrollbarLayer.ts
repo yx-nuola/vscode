@@ -21,6 +21,9 @@ export class YAxisScrollbarLayer {
     this.engine = engine;
     this.layer = new Layer({ name: 'yAxisScrollbar' });
     this.scrollbarDraw = new ScrollbarDraw(engine);
+
+    // 将 ScrollbarDraw 的 group 添加到 layer 中
+    this.layer.add(this.scrollbarDraw.getVerticalGroup());
   }
 
   /**
@@ -35,6 +38,14 @@ export class YAxisScrollbarLayer {
    */
   initialize(): void {
     const eventBus = this.engine.getEventBus();
+    const layoutCalculator = this.engine.getLayoutCalculator();
+
+    // 设置纵向滚动条位置
+    const layout = layoutCalculator.calculate(
+      this.engine.getStage()?.width() || 0,
+      this.engine.getStage()?.height() || 0
+    );
+    this.scrollbarDraw.setVerticalPosition(layout.verticalScrollbar.x, layout.verticalScrollbar.y);
 
     eventBus.on('scroll:change', () => {
       this.updateScrollbar();

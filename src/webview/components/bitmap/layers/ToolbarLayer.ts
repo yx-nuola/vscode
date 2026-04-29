@@ -21,6 +21,9 @@ export class ToolbarLayer {
     this.engine = engine;
     this.layer = new Layer({ name: 'toolbar' });
     this.toolbarDraw = new ToolbarDraw(engine);
+
+    // 将 ToolbarDraw 的 group 添加到 layer 中
+    this.layer.add(this.toolbarDraw.getGroup());
   }
 
   /**
@@ -35,6 +38,14 @@ export class ToolbarLayer {
    */
   initialize(): void {
     const eventBus = this.engine.getEventBus();
+    const layoutCalculator = this.engine.getLayoutCalculator();
+
+    // 设置工具栏位置
+    const layout = layoutCalculator.calculate(
+      this.engine.getStage()?.width() || 0,
+      this.engine.getStage()?.height() || 0
+    );
+    this.toolbarDraw.setPosition(layout.toolbar.x, layout.toolbar.y);
 
     eventBus.on('zoom:change', () => {
       this.updateToolbar();

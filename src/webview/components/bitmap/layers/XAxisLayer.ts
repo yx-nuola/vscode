@@ -21,6 +21,9 @@ export class XAxisLayer {
     this.engine = engine;
     this.layer = new Layer({ name: 'xAxis' });
     this.axisDraw = new AxisDraw(engine);
+
+    // 将 AxisDraw 的 group 添加到 layer 中
+    this.layer.add(this.axisDraw.getXAxisGroup());
   }
 
   /**
@@ -35,6 +38,14 @@ export class XAxisLayer {
    */
   initialize(): void {
     const eventBus = this.engine.getEventBus();
+    const layoutCalculator = this.engine.getLayoutCalculator();
+
+    // 设置 X 轴位置
+    const layout = layoutCalculator.calculate(
+      this.engine.getStage()?.width() || 0,
+      this.engine.getStage()?.height() || 0
+    );
+    this.axisDraw.setXAxisPosition(layout.xAxis.x, layout.xAxis.y);
 
     eventBus.on('scroll:change', () => {
       this.updateAxis();

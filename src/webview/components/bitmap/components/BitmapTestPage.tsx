@@ -2,7 +2,7 @@
  * RRAM 测试结果可视化测试页面
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   BitmapTableLayout,
   FileUpload,
@@ -19,14 +19,15 @@ import {
  */
 export function BitmapTestPage() {
   const [data, setData] = useState<MatrixData | null>(null);
+  const [parsedData, setParsedData] = useState<MatrixData | null>(null);
   const [colorRules, setColorRules] = useState<ColorRule[]>([
     { min: 0, max: 5, color: '#ff9800' },   // 橙色
     { min: 5, max: 10, color: '#2196f3' },  // 蓝色
     { min: 10, max: 100, color: '#4caf50' }, // 绿色
   ]);
 
-  // 默认配置
-  const config: BitmapGridConfig = {
+  // 使用 useMemo 确保 config 对象在 colorRules 变化时重新创建
+  const config: BitmapGridConfig = useMemo(() => ({
     layout: {
       toolbarHeight: 40,
       axisSize: 40,
@@ -38,7 +39,7 @@ export function BitmapTestPage() {
     initialCellSize: 10,
     minCellSize: 2,
     maxCellSize: 50,
-  };
+  }), [colorRules]);
 
   // 处理数据加载
   const handleDataLoad = useCallback(
@@ -53,6 +54,13 @@ export function BitmapTestPage() {
     },
     [data]
   );
+
+  // 处理解析
+  const handleParse = useCallback(() => {
+    if (data) {
+      setParsedData(data);
+    }
+  }, [data]);
 
   // 处理格子点击
   const handleCellClick = useCallback((col: number, row: number) => {
@@ -82,6 +90,24 @@ export function BitmapTestPage() {
         {/* 文件上传 */}
         <FileUpload onDataLoad={handleDataLoad} />
 
+        {/* 解析按钮 */}
+        {data && !parsedData && (
+          <button
+            onClick={handleParse}
+            style={{
+              padding: '6px 12px',
+              backgroundColor: '#1890ff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '12px',
+            }}
+          >
+            解析数据
+          </button>
+        )}
+
         {/* 数据统计 */}
         {data && (
           <div style={{ fontSize: '12px', color: '#666' }}>
@@ -94,10 +120,10 @@ export function BitmapTestPage() {
 
       {/* 主内容区域 */}
       <div style={{ flex: 1, overflow: 'hidden' }}>
-        {data ? (
+        {parsedData ? (
           <BitmapTableLayout
             config={config}
-            data={data}
+            data={parsedData}
             onCellClick={handleCellClick}
             onTableRowClick={handleTableRowClick}
           />
@@ -112,7 +138,7 @@ export function BitmapTestPage() {
               fontSize: '14px',
             }}
           >
-            请上传 JSON 格式的测试数据文件
+            {data ? '请点击"解析数据"按钮开始可视化' : '请上传 JSON 格式的测试数据文件'}
           </div>
         )}
       </div>

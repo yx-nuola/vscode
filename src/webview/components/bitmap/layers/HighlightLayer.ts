@@ -21,6 +21,9 @@ export class HighlightLayer {
     this.engine = engine;
     this.layer = new Layer({ name: 'highlight' });
     this.highlightDraw = new HighlightDraw(engine);
+
+    // 将 HighlightDraw 的 group 添加到 layer 中
+    this.layer.add(this.highlightDraw.getGroup());
   }
 
   /**
@@ -35,6 +38,14 @@ export class HighlightLayer {
    */
   initialize(): void {
     const eventBus = this.engine.getEventBus();
+    const layoutCalculator = this.engine.getLayoutCalculator();
+
+    // 设置高亮位置
+    const layout = layoutCalculator.calculate(
+      this.engine.getStage()?.width() || 0,
+      this.engine.getStage()?.height() || 0
+    );
+    this.highlightDraw.setPosition(layout.cellArea.x, layout.cellArea.y);
 
     eventBus.on('highlight', (data) => {
       if (data) {

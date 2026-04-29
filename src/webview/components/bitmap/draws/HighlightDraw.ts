@@ -31,6 +31,14 @@ export class HighlightDraw {
   }
 
   /**
+   * 设置高亮位置
+   */
+  setPosition(x: number, y: number): void {
+    this.group.x(x);
+    this.group.y(y);
+  }
+
+  /**
    * 绘制高亮
    */
   draw(col: number, row: number): void {

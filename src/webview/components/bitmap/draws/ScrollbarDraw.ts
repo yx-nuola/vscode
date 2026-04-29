@@ -4,7 +4,6 @@
 
 import Konva from 'konva';
 import type { BitmapGridEngine } from '../core/BitmapGridEngine';
-import type { ScrollbarState } from '../types';
 
 const { Group, Rect } = Konva;
 type GroupType = InstanceType<typeof Group>;
@@ -23,8 +22,6 @@ export class ScrollbarDraw {
   private verticalThumb: RectType | null;
   private isDraggingHorizontal: boolean;
   private isDraggingVertical: boolean;
-  private lastMouseX: number;
-  private lastMouseY: number;
 
   constructor(engine: BitmapGridEngine) {
     this.engine = engine;
@@ -36,8 +33,6 @@ export class ScrollbarDraw {
     this.verticalThumb = null;
     this.isDraggingHorizontal = false;
     this.isDraggingVertical = false;
-    this.lastMouseX = 0;
-    this.lastMouseY = 0;
   }
 
   /**
@@ -55,36 +50,46 @@ export class ScrollbarDraw {
   }
 
   /**
-   * 渲染横向滚动条
+   * 设置横向滚动条位置
    */
-  renderHorizontal(): void {
-    const config = this.engine.getConfig();
-    const theme = config.theme;
+  setHorizontalPosition(x: number, y: number): void {
+    this.horizontalGroup.x(x);
+    this.horizontalGroup.y(y);
+  }
+
+  /**
+   * 设置纵向滚动条位置
+   */
+  setVerticalPosition(x: number, y: number): void {
+    this.verticalGroup.x(x);
+    this.verticalGroup.y(y);
+  }
+
+  /**
+   * 获取布局和滚动条状态
+   */
+  private getLayoutAndScrollbarState() {
     const layoutCalculator = this.engine.getLayoutCalculator();
     const virtualScrollSync = this.engine.getVirtualScrollSync();
     const scrollState = this.engine.getScrollState();
 
-    this.horizontalGroup.destroyChildren();
-
-    // 获取布局
     const layout = layoutCalculator.calculate(
       this.engine.getStage()?.width() || 0,
       this.engine.getStage()?.height() || 0
     );
 
+    return { layout, virtualScrollSync, scrollState };
+  }
+
+  /**
+   * 渲染横向滚动条
+   */
+  renderHorizontal(): void {
+    const config = this.engine.getConfig();
+    const theme = config.theme;
+    const { layout, virtualScrollSync, scrollState } = this.getLayoutAndScrollbarState();
     const { horizontalScrollbar } = layout;
 
-    // 轨道
-    this.horizontalTrack = new Rect({
-      x: horizontalScrollbar.x,
-      y: horizontalScrollbar.y,
-      width: horizontalScrollbar.width,
-      height: horizontalScrollbar.height,
-      fill: theme.scrollbarTrackColor,
-    });
-    this.horizontalGroup.add(this.horizontalTrack);
-
-    // 滑块
     const scrollbarState = virtualScrollSync.getScrollbarState(
       scrollState.scrollX,
       scrollState.scrollY,
@@ -92,18 +97,44 @@ export class ScrollbarDraw {
       horizontalScrollbar.height
     );
 
+    const maxThumbX = horizontalScrollbar.width - scrollbarState.thumbWidth;
+
+    // 如果正在拖动横向滑块，只更新位置，不重建
+    if (this.isDraggingHorizontal && this.horizontalThumb && this.horizontalTrack) {
+      this.horizontalThumb.x(scrollbarState.thumbX);
+      this.horizontalThumb.width(scrollbarState.thumbWidth);
+      return;
+    }
+
+    this.horizontalGroup.destroyChildren();
+
+    // 轨道
+    this.horizontalTrack = new Rect({
+      x: 0,
+      y: 0,
+      width: horizontalScrollbar.width,
+      height: horizontalScrollbar.height,
+      fill: theme.scrollbarTrackColor,
+    });
+    this.horizontalGroup.add(this.horizontalTrack);
+
+    // 滑块
     this.horizontalThumb = new Rect({
-      x: horizontalScrollbar.x + scrollbarState.thumbX,
-      y: horizontalScrollbar.y,
+      x: scrollbarState.thumbX,
+      y: 0,
       width: scrollbarState.thumbWidth,
       height: horizontalScrollbar.height,
       fill: theme.scrollbarThumbColor,
       draggable: true,
+      dragBoundFunc: (pos) => {
+        return {
+          x: Math.max(0, Math.min(pos.x, maxThumbX)),
+          y: 0,
+        };
+      },
     });
 
-    // 添加拖动事件
     this.attachHorizontalEvents();
-
     this.horizontalGroup.add(this.horizontalThumb);
   }
 
@@ -113,31 +144,9 @@ export class ScrollbarDraw {
   renderVertical(): void {
     const config = this.engine.getConfig();
     const theme = config.theme;
-    const layoutCalculator = this.engine.getLayoutCalculator();
-    const virtualScrollSync = this.engine.getVirtualScrollSync();
-    const scrollState = this.engine.getScrollState();
-
-    this.verticalGroup.destroyChildren();
-
-    // 获取布局
-    const layout = layoutCalculator.calculate(
-      this.engine.getStage()?.width() || 0,
-      this.engine.getStage()?.height() || 0
-    );
-
+    const { layout, virtualScrollSync, scrollState } = this.getLayoutAndScrollbarState();
     const { verticalScrollbar } = layout;
 
-    // 轨道
-    this.verticalTrack = new Rect({
-      x: verticalScrollbar.x,
-      y: verticalScrollbar.y,
-      width: verticalScrollbar.width,
-      height: verticalScrollbar.height,
-      fill: theme.scrollbarTrackColor,
-    });
-    this.verticalGroup.add(this.verticalTrack);
-
-    // 滑块
     const scrollbarState = virtualScrollSync.getScrollbarState(
       scrollState.scrollX,
       scrollState.scrollY,
@@ -145,18 +154,44 @@ export class ScrollbarDraw {
       verticalScrollbar.height
     );
 
+    const maxThumbY = verticalScrollbar.height - scrollbarState.thumbHeight;
+
+    // 如果正在拖动纵向滑块，只更新位置，不重建
+    if (this.isDraggingVertical && this.verticalThumb && this.verticalTrack) {
+      this.verticalThumb.y(scrollbarState.thumbY);
+      this.verticalThumb.height(scrollbarState.thumbHeight);
+      return;
+    }
+
+    this.verticalGroup.destroyChildren();
+
+    // 轨道
+    this.verticalTrack = new Rect({
+      x: 0,
+      y: 0,
+      width: verticalScrollbar.width,
+      height: verticalScrollbar.height,
+      fill: theme.scrollbarTrackColor,
+    });
+    this.verticalGroup.add(this.verticalTrack);
+
+    // 滑块
     this.verticalThumb = new Rect({
-      x: verticalScrollbar.x,
-      y: verticalScrollbar.y + scrollbarState.thumbY,
+      x: 0,
+      y: scrollbarState.thumbY,
       width: verticalScrollbar.width,
       height: scrollbarState.thumbHeight,
       fill: theme.scrollbarThumbColor,
       draggable: true,
+      dragBoundFunc: (pos) => {
+        return {
+          x: 0,
+          y: Math.max(0, Math.min(pos.y, maxThumbY)),
+        };
+      },
     });
 
-    // 添加拖动事件
     this.attachVerticalEvents();
-
     this.verticalGroup.add(this.verticalThumb);
   }
 
@@ -167,7 +202,6 @@ export class ScrollbarDraw {
     if (!this.horizontalThumb) return;
 
     const eventBus = this.engine.getEventBus();
-    const layoutCalculator = this.engine.getLayoutCalculator();
     const virtualScrollSync = this.engine.getVirtualScrollSync();
 
     this.horizontalThumb.on('dragstart', () => {
@@ -177,12 +211,9 @@ export class ScrollbarDraw {
     this.horizontalThumb.on('dragmove', () => {
       if (!this.isDraggingHorizontal || !this.horizontalThumb) return;
 
-      const layout = layoutCalculator.calculate(
-        this.engine.getStage()?.width() || 0,
-        this.engine.getStage()?.height() || 0
-      );
+      const { layout } = this.getLayoutAndScrollbarState();
 
-      const thumbX = this.horizontalThumb.x() - layout.horizontalScrollbar.x;
+      const thumbX = this.horizontalThumb.x();
       const scrollState = virtualScrollSync.getScrollFromThumb(
         thumbX,
         0,
@@ -196,6 +227,35 @@ export class ScrollbarDraw {
     this.horizontalThumb.on('dragend', () => {
       this.isDraggingHorizontal = false;
     });
+
+    // 添加轨道点击事件
+    this.horizontalGroup.on('click', (e) => {
+      if (e.target === this.horizontalThumb) return;
+
+      const { layout, virtualScrollSync } = this.getLayoutAndScrollbarState();
+
+      const clickX = e.evt.offsetX;
+      const scrollbarState = virtualScrollSync.getScrollbarState(
+        this.engine.getScrollState().scrollX,
+        this.engine.getScrollState().scrollY,
+        layout.horizontalScrollbar.width,
+        layout.horizontalScrollbar.height
+      );
+
+      const thumbCenterX = Math.max(
+        scrollbarState.thumbWidth / 2,
+        Math.min(clickX, layout.horizontalScrollbar.width - scrollbarState.thumbWidth / 2)
+      );
+
+      const scrollState = virtualScrollSync.getScrollFromThumb(
+        thumbCenterX - scrollbarState.thumbWidth / 2,
+        0,
+        layout.horizontalScrollbar.width,
+        layout.horizontalScrollbar.height
+      );
+
+      eventBus.emit('scroll:change', scrollState);
+    });
   }
 
   /**
@@ -205,7 +265,6 @@ export class ScrollbarDraw {
     if (!this.verticalThumb) return;
 
     const eventBus = this.engine.getEventBus();
-    const layoutCalculator = this.engine.getLayoutCalculator();
     const virtualScrollSync = this.engine.getVirtualScrollSync();
 
     this.verticalThumb.on('dragstart', () => {
@@ -215,12 +274,9 @@ export class ScrollbarDraw {
     this.verticalThumb.on('dragmove', () => {
       if (!this.isDraggingVertical || !this.verticalThumb) return;
 
-      const layout = layoutCalculator.calculate(
-        this.engine.getStage()?.width() || 0,
-        this.engine.getStage()?.height() || 0
-      );
+      const { layout } = this.getLayoutAndScrollbarState();
 
-      const thumbY = this.verticalThumb.y() - layout.verticalScrollbar.y;
+      const thumbY = this.verticalThumb.y();
       const scrollState = virtualScrollSync.getScrollFromThumb(
         0,
         thumbY,
@@ -233,6 +289,35 @@ export class ScrollbarDraw {
 
     this.verticalThumb.on('dragend', () => {
       this.isDraggingVertical = false;
+    });
+
+    // 添加轨道点击事件
+    this.verticalGroup.on('click', (e) => {
+      if (e.target === this.verticalThumb) return;
+
+      const { layout, virtualScrollSync } = this.getLayoutAndScrollbarState();
+
+      const clickY = e.evt.offsetY;
+      const scrollbarState = virtualScrollSync.getScrollbarState(
+        this.engine.getScrollState().scrollX,
+        this.engine.getScrollState().scrollY,
+        layout.verticalScrollbar.width,
+        layout.verticalScrollbar.height
+      );
+
+      const thumbCenterY = Math.max(
+        scrollbarState.thumbHeight / 2,
+        Math.min(clickY, layout.verticalScrollbar.height - scrollbarState.thumbHeight / 2)
+      );
+
+      const scrollState = virtualScrollSync.getScrollFromThumb(
+        0,
+        thumbCenterY - scrollbarState.thumbHeight / 2,
+        layout.verticalScrollbar.width,
+        layout.verticalScrollbar.height
+      );
+
+      eventBus.emit('scroll:change', scrollState);
     });
   }
 

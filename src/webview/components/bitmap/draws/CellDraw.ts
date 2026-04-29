@@ -34,9 +34,27 @@ export class CellDraw {
   }
 
   /**
+   * 设置组位置
+   */
+  setPosition(x: number, y: number): void {
+    this.group.x(x);
+    this.group.y(y);
+  }
+
+  /**
+   * 设置裁剪区域
+   */
+  setClip(width: number, height: number): void {
+    this.group.clipX(0);
+    this.group.clipY(0);
+    this.group.clipWidth(width);
+    this.group.clipHeight(height);
+  }
+
+  /**
    * 渲染格子
    */
-  renderCells(cells: CellData[]): void {
+  renderCells(cells: CellData[], scrollX: number, scrollY: number): void {
     const config = this.engine.getConfig();
     const theme = config.theme;
     const colorRules = config.colorRules;
@@ -56,10 +74,14 @@ export class CellDraw {
       const key = `${cell.row},${cell.col}`;
       let rect = this.cellPool.get(key);
 
+      // 计算格子位置（考虑滚动偏移）
+      const x = cell.col * cellSize - scrollX;
+      const y = cell.row * cellSize - scrollY;
+
       if (!rect) {
         rect = new Rect({
-          x: cell.col * cellSize,
-          y: cell.row * cellSize,
+          x,
+          y,
           width: cellSize,
           height: cellSize,
           stroke: theme.borderColor,
@@ -74,8 +96,8 @@ export class CellDraw {
       }
 
       rect.visible(true);
-      rect.x(cell.col * cellSize);
-      rect.y(cell.row * cellSize);
+      rect.x(x);
+      rect.y(y);
       rect.width(cellSize);
       rect.height(cellSize);
       rect.fill(this.mapColor(cell.value, colorRules) || theme.defaultCellColor);
@@ -85,7 +107,7 @@ export class CellDraw {
   /**
    * 附加格子事件
    */
-  private attachCellEvents(rect: Rect, cell: CellData): void {
+  private attachCellEvents(rect: RectType, cell: CellData): void {
     const eventBus = this.engine.getEventBus();
 
     // 鼠标悬停

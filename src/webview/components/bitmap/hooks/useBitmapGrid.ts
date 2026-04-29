@@ -70,11 +70,26 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
 
     engine.initialize(containerRef.current);
 
+    // 初始化时设置数据
+    if (data) {
+      engine.setData(data);
+    }
+
+    // 初始化时设置主题
+    if (theme) {
+      engine.setTheme(theme);
+    }
+
+    // 初始化时设置颜色规则
+    if (colorRules) {
+      engine.setColorRules(colorRules);
+    }
+
     return () => {
       engine.destroy();
       engineRef.current = null;
     };
-  }, [config]);
+  }, [containerId]); // 只在 containerId 变化时重新初始化
 
   // 更新数据
   useEffect(() => {
