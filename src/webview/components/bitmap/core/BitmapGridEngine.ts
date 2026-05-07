@@ -2,20 +2,30 @@
  * 主引擎，编排所有模块
  */
 
-import { Stage } from 'konva/lib/Stage';
-import { Layer } from 'konva/lib/Layer';
+import Konva from 'konva';
 import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData } from '../types';
 import { EventBus } from './EventBus';
 import { LayoutCalculator } from './LayoutCalculator';
 import { DataManager } from './DataManager';
 import { VirtualScrollSync } from './VirtualScrollSync';
+import { ToolbarLayer } from '../layers/ToolbarLayer';
+import { XAxisLayer } from '../layers/XAxisLayer';
+import { YAxisLayer } from '../layers/YAxisLayer';
+import { CellLayer } from '../layers/CellLayer';
+import { XAxisScrollbarLayer } from '../layers/XAxisScrollbarLayer';
+import { YAxisScrollbarLayer } from '../layers/YAxisScrollbarLayer';
+import { HighlightLayer } from '../layers/HighlightLayer';
+
+const { Stage, Layer } = Konva;
+type StageType = InstanceType<typeof Stage>;
+type LayerType = InstanceType<typeof Layer>;
 
 /**
  * Bitmap Grid 引擎类
  */
 export class BitmapGridEngine {
-  private stage: Stage | null;
-  private layers: Map<string, Layer>;
+  private stage: StageType | null;
+  private layers: Map<string, LayerType>;
   private eventBus: EventBus;
   private layoutCalculator: LayoutCalculator;
   private dataManager: DataManager;
@@ -25,6 +35,15 @@ export class BitmapGridEngine {
   private scrollState: ScrollState;
   private cellSize: number;
   private selectedCell: CellData | null;
+
+  // 图层实例
+  private toolbarLayer: ToolbarLayer;
+  private xAxisLayer: XAxisLayer;
+  private yAxisLayer: YAxisLayer;
+  private cellLayer: CellLayer;
+  private xAxisScrollbarLayer: XAxisScrollbarLayer;
+  private yAxisScrollbarLayer: YAxisScrollbarLayer;
+  private highlightLayer: HighlightLayer;
 
   constructor(config: BitmapGridConfig) {
     this.stage = null;
@@ -38,6 +57,15 @@ export class BitmapGridEngine {
     this.scrollState = { scrollX: 0, scrollY: 0 };
     this.cellSize = config.initialCellSize || 10;
     this.selectedCell = null;
+
+    // 初始化图层
+    this.toolbarLayer = new ToolbarLayer(this);
+    this.xAxisLayer = new XAxisLayer(this);
+    this.yAxisLayer = new YAxisLayer(this);
+    this.cellLayer = new CellLayer(this);
+    this.xAxisScrollbarLayer = new XAxisScrollbarLayer(this);
+    this.yAxisScrollbarLayer = new YAxisScrollbarLayer(this);
+    this.highlightLayer = new HighlightLayer(this);
   }
 
   /**
@@ -56,7 +84,36 @@ export class BitmapGridEngine {
 
     this.virtualScrollSync.updateViewport(width, height);
 
+    // 初始化并添加图层
+    this.setupLayers();
+
     this.setupEventListeners();
+
+    // 添加鼠标滚轮支持
+    this.setupWheelEvents();
+  }
+
+  /**
+   * 设置图层
+   */
+  private setupLayers(): void {
+    // 添加所有图层到 stage（注意顺序：后面的图层会覆盖前面的）
+    this.addLayer('toolbar', this.toolbarLayer.getLayer());
+    this.addLayer('cell', this.cellLayer.getLayer());
+    this.addLayer('xAxis', this.xAxisLayer.getLayer());
+    this.addLayer('yAxis', this.yAxisLayer.getLayer());
+    this.addLayer('xAxisScrollbar', this.xAxisScrollbarLayer.getLayer());
+    this.addLayer('yAxisScrollbar', this.yAxisScrollbarLayer.getLayer());
+    this.addLayer('highlight', this.highlightLayer.getLayer());
+
+    // 初始化图层
+    this.toolbarLayer.initialize();
+    this.cellLayer.initialize();
+    this.xAxisLayer.initialize();
+    this.yAxisLayer.initialize();
+    this.xAxisScrollbarLayer.initialize();
+    this.yAxisScrollbarLayer.initialize();
+    this.highlightLayer.initialize();
   }
 
   /**
@@ -88,11 +145,42 @@ export class BitmapGridEngine {
   }
 
   /**
+   * 设置鼠标滚轮事件
+   */
+  private setupWheelEvents(): void {
+    if (!this.container) return;
+
+    this.container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+
+      const deltaX = e.deltaX;
+      const deltaY = e.deltaY;
+
+      // 根据滚轮方向滚动
+      const scrollSpeed = 1; // 滚动速度倍数
+      const newScrollX = this.scrollState.scrollX + deltaX * scrollSpeed;
+      const newScrollY = this.scrollState.scrollY + deltaY * scrollSpeed;
+
+      this.scrollTo(newScrollX, newScrollY);
+    }, { passive: false });
+  }
+
+  /**
    * 销毁引擎
    */
   destroy(): void {
     this.eventBus.clear();
     this.dataManager.clear();
+
+    // 销毁所有图层
+    this.toolbarLayer.destroy();
+    this.xAxisLayer.destroy();
+    this.yAxisLayer.destroy();
+    this.cellLayer.destroy();
+    this.xAxisScrollbarLayer.destroy();
+    this.yAxisScrollbarLayer.destroy();
+    this.highlightLayer.destroy();
+
     this.layers.forEach((layer) => layer.destroy());
     this.layers.clear();
     this.stage?.destroy();
@@ -108,8 +196,6 @@ export class BitmapGridEngine {
 
     this.stage.width(width);
     this.stage.height(height);
-
-    this.virtualScrollSync.updateViewport(width, height);
 
     const layout = this.layoutCalculator.calculate(width, height);
     this.virtualScrollSync.updateViewport(layout.cellArea.width, layout.cellArea.height);
@@ -128,6 +214,33 @@ export class BitmapGridEngine {
   setData(data: MatrixData): void {
     this.dataManager.setData(data);
     this.virtualScrollSync.updateDataSize(data.rows, data.cols);
+    // 触发数据更新事件，通知图层重新渲染
+    this.eventBus.emit('data:change', data);
+
+    // 如果是64x64数据，自动计算合适的cellSize以全屏展示
+    if (data.rows === 64 && data.cols === 64 && this.stage) {
+      this.autoFitCellSize();
+    }
+  }
+
+  /**
+   * 自动计算合适的cellSize以全屏展示
+   */
+  private autoFitCellSize(): void {
+    if (!this.stage) return;
+
+    const layout = this.layoutCalculator.calculate(this.stage.width(), this.stage.height());
+    const cellAreaWidth = layout.cellArea.width;
+
+    // 优先根据 X 轴宽度计算格子大小，确保 64 列完全占满 X 轴
+    const cellSizeX = cellAreaWidth / 64;
+
+    // 确保cellSize在合理范围内
+    const minSize = this.config.minCellSize || 2;
+    const maxSize = this.config.maxCellSize || 50;
+    const finalCellSize = Math.max(minSize, Math.min(cellSizeX, maxSize));
+
+    this.setCellSize(finalCellSize);
   }
 
   /**
@@ -272,14 +385,14 @@ export class BitmapGridEngine {
   /**
    * 获取 Stage
    */
-  getStage(): Stage | null {
+  getStage(): StageType | null {
     return this.stage;
   }
 
   /**
    * 添加图层
    */
-  addLayer(name: string, layer: Layer): void {
+  addLayer(name: string, layer: LayerType): void {
     this.layers.set(name, layer);
     this.stage?.add(layer);
   }
@@ -287,7 +400,7 @@ export class BitmapGridEngine {
   /**
    * 获取图层
    */
-  getLayer(name: string): Layer | undefined {
+  getLayer(name: string): LayerType | undefined {
     return this.layers.get(name);
   }
 }

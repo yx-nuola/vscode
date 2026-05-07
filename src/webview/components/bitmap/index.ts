@@ -12,6 +12,14 @@ export type { BitmapGridProps, BitmapGridRef } from './components/BitmapGrid';
 export { BitmapTableLayout } from './components/BitmapTableLayout';
 export type { BitmapTableLayoutProps } from './components/BitmapTableLayout';
 
+export { VirtualTable } from './components/VirtualTable';
+export type { VirtualTableProps, TableColumn } from './components/VirtualTable';
+
+export { FileUpload } from './components/FileUpload';
+export type { FileUploadProps } from './components/FileUpload';
+
+export { BitmapTestPage } from './components/BitmapTestPage';
+
 // Hooks
 export { useBitmapGrid } from './hooks/useBitmapGrid';
 export type { UseBitmapGridParams, UseBitmapGridReturn } from './hooks/useBitmapGrid';
@@ -35,3 +43,7 @@ export type {
   ScrollbarState,
   BitmapEvents,
 } from './types';
+
+// 数据解析
+export { DataParser } from './core/DataParser';
+export type { RRAMTestData, ImportMode } from './core/DataParser';

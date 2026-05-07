@@ -1,29 +1,29 @@
 /**
- * 工具栏 Konva 图层
+ * X 轴 Konva 图层
  */
 
 import Konva from 'konva';
 import type { BitmapGridEngine } from '../core/BitmapGridEngine';
-import { ToolbarDraw } from '../draws/ToolbarDraw';
+import { AxisDraw } from '../draws/AxisDraw';
 
 const { Layer } = Konva;
 type LayerType = InstanceType<typeof Layer>;
 
 /**
- * 工具栏图层类
+ * X 轴图层类
  */
-export class ToolbarLayer {
+export class XAxisLayer {
   private layer: LayerType;
   private engine: BitmapGridEngine;
-  private toolbarDraw: ToolbarDraw;
+  private axisDraw: AxisDraw;
 
   constructor(engine: BitmapGridEngine) {
     this.engine = engine;
-    this.layer = new Layer({ name: 'toolbar' });
-    this.toolbarDraw = new ToolbarDraw(engine);
+    this.layer = new Layer({ name: 'xAxis' });
+    this.axisDraw = new AxisDraw(engine);
 
-    // 将 ToolbarDraw 的 group 添加到 layer 中
-    this.layer.add(this.toolbarDraw.getGroup());
+    // 将 AxisDraw 的 group 添加到 layer 中
+    this.layer.add(this.axisDraw.getXAxisGroup());
   }
 
   /**
@@ -34,39 +34,43 @@ export class ToolbarLayer {
   }
 
   /**
-   * 初始化工具栏
+   * 初始化图层
    */
   initialize(): void {
     const eventBus = this.engine.getEventBus();
     const layoutCalculator = this.engine.getLayoutCalculator();
 
-    // 设置工具栏位置
+    // 设置 X 轴位置
     const layout = layoutCalculator.calculate(
       this.engine.getStage()?.width() || 0,
       this.engine.getStage()?.height() || 0
     );
-    this.toolbarDraw.setPosition(layout.toolbar.x, layout.toolbar.y);
+    this.axisDraw.setXAxisPosition(layout.xAxis.x, layout.xAxis.y);
+
+    eventBus.on('scroll:change', () => {
+      this.updateAxis();
+    });
 
     eventBus.on('zoom:change', () => {
-      this.updateToolbar();
+      this.updateAxis();
     });
 
     // 初始渲染
-    this.updateToolbar();
+    this.updateAxis();
   }
 
   /**
-   * 更新工具栏
+   * 更新坐标轴
    */
-  private updateToolbar(): void {
-    this.toolbarDraw.renderToolbar();
+  private updateAxis(): void {
+    this.axisDraw.renderXAxis();
   }
 
   /**
    * 销毁图层
    */
   destroy(): void {
-    this.toolbarDraw.destroy();
+    this.axisDraw.destroy();
     this.layer.destroy();
   }
 }

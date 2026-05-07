@@ -2,16 +2,20 @@
  * 选择/高亮覆盖层
  */
 
-import { Group, Rect } from 'konva/lib/Konva';
+import Konva from 'konva';
 import type { BitmapGridEngine } from '../core/BitmapGridEngine';
+
+const { Group, Rect } = Konva;
+type GroupType = InstanceType<typeof Group>;
+type RectType = InstanceType<typeof Rect>;
 
 /**
  * 高亮绘制类
  */
 export class HighlightDraw {
   private engine: BitmapGridEngine;
-  private group: Group;
-  private highlightRect: Rect | null;
+  private group: GroupType;
+  private highlightRect: RectType | null;
 
   constructor(engine: BitmapGridEngine) {
     this.engine = engine;
@@ -22,8 +26,16 @@ export class HighlightDraw {
   /**
    * 获取组
    */
-  getGroup(): Group {
+  getGroup(): GroupType {
     return this.group;
+  }
+
+  /**
+   * 设置高亮位置
+   */
+  setPosition(x: number, y: number): void {
+    this.group.x(x);
+    this.group.y(y);
   }
 
   /**

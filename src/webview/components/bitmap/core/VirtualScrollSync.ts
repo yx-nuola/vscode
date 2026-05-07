@@ -75,20 +75,24 @@ export class VirtualScrollSync {
     const totalWidth = this.totalCols * this.cellSize;
     const totalHeight = this.totalRows * this.cellSize;
 
-    const thumbWidth = Math.max(
-      (this.viewportWidth / totalWidth) * trackWidth,
-      20
-    );
-    const thumbHeight = Math.max(
-      (this.viewportHeight / totalHeight) * trackHeight,
-      20
-    );
+    // 如果数据小于视口，滑块占满整个轨道
+    const thumbWidth = totalWidth <= this.viewportWidth
+      ? trackWidth
+      : Math.max((this.viewportWidth / totalWidth) * trackWidth, 20);
+    const thumbHeight = totalHeight <= this.viewportHeight
+      ? trackHeight
+      : Math.max((this.viewportHeight / totalHeight) * trackHeight, 20);
 
     const maxThumbX = trackWidth - thumbWidth;
     const maxThumbY = trackHeight - thumbHeight;
 
-    const thumbX = (scrollX / (totalWidth - this.viewportWidth)) * maxThumbX;
-    const thumbY = (scrollY / (totalHeight - this.viewportHeight)) * maxThumbY;
+    // 如果数据小于视口，滑块位置为0
+    const thumbX = totalWidth <= this.viewportWidth
+      ? 0
+      : (scrollX / (totalWidth - this.viewportWidth)) * maxThumbX;
+    const thumbY = totalHeight <= this.viewportHeight
+      ? 0
+      : (scrollY / (totalHeight - this.viewportHeight)) * maxThumbY;
 
     return {
       thumbX: Math.max(0, Math.min(thumbX, maxThumbX)),
@@ -105,6 +109,7 @@ export class VirtualScrollSync {
     const totalWidth = this.totalCols * this.cellSize;
     const totalHeight = this.totalRows * this.cellSize;
 
+    // 计算滑块尺寸
     const thumbWidth = Math.max(
       (this.viewportWidth / totalWidth) * trackWidth,
       20
@@ -114,11 +119,23 @@ export class VirtualScrollSync {
       20
     );
 
+    // 计算滑块最大可移动范围
     const maxThumbX = trackWidth - thumbWidth;
     const maxThumbY = trackHeight - thumbHeight;
 
-    const scrollX = (thumbX / maxThumbX) * (totalWidth - this.viewportWidth);
-    const scrollY = (thumbY / maxThumbY) * (totalHeight - this.viewportHeight);
+    // 计算滚动偏移
+    let scrollX = 0;
+    let scrollY = 0;
+
+    // X轴滚动
+    if (totalWidth > this.viewportWidth && maxThumbX > 0) {
+      scrollX = (thumbX / maxThumbX) * (totalWidth - this.viewportWidth);
+    }
+
+    // Y轴滚动
+    if (totalHeight > this.viewportHeight && maxThumbY > 0) {
+      scrollY = (thumbY / maxThumbY) * (totalHeight - this.viewportHeight);
+    }
 
     return {
       scrollX: Math.max(0, Math.min(scrollX, this.maxScrollX)),

@@ -2,17 +2,19 @@
  * 60/40 左右布局
  */
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState } from 'react';
 import { BitmapGrid, BitmapGridRef, BitmapGridProps } from './BitmapGrid';
+import { VirtualTable, TableColumn } from './VirtualTable';
+import type { CellData } from '../types';
 
 /**
  * BitmapTableLayout 组件 Props
  */
 export interface BitmapTableLayoutProps extends Omit<BitmapGridProps, 'style'> {
-  /** 表格组件 */
-  tableComponent: React.ReactNode;
+  /** 表格列配置 */
+  tableColumns?: TableColumn[];
   /** 表格行点击回调 */
-  onTableRowClick?: (row: number) => void;
+  onTableRowClick?: (row: number, cell: CellData) => void;
   /** 格子点击回调 */
   onCellClick?: (col: number, row: number) => void;
 }
@@ -21,15 +23,39 @@ export interface BitmapTableLayoutProps extends Omit<BitmapGridProps, 'style'> {
  * BitmapTableLayout 组件
  */
 export function BitmapTableLayout(props: BitmapTableLayoutProps) {
-  const { tableComponent, onTableRowClick, onCellClick, ...bitmapProps } = props;
+  const { tableColumns, onTableRowClick, onCellClick, ...bitmapProps } = props;
 
   const bitmapRef = useRef<BitmapGridRef>(null);
+  const [highlightedRow, setHighlightedRow] = useState<number | undefined>();
+  const [scrollToRow, setScrollToRow] = useState<number | undefined>();
+
+  // 默认表格列配置
+  const defaultColumns: TableColumn[] = [
+    { key: 'row', title: 'BL', width: 60 },
+    { key: 'col', title: 'WL', width: 60 },
+    { key: 'vset', title: 'Vset', width: 80 },
+    { key: 'vreset', title: 'Vreset', width: 80 },
+    { key: 'imeas', title: 'Imeas', width: 80 },
+    {
+      key: 'status',
+      title: 'Status',
+      width: 80,
+      render: (value) => {
+        const status = String(value);
+        const color = status === 'pass' ? 'green' : status === 'fail' ? 'red' : 'gray';
+        return <span style={{ color }}>{status}</span>;
+      },
+    },
+  ];
+
+  const columns = tableColumns || defaultColumns;
 
   // 处理表格行点击
   const handleTableRowClick = useCallback(
-    (row: number) => {
-      bitmapRef.current?.locateAndHighlight(0, row);
-      onTableRowClick?.(row);
+    (row: number, cell: CellData) => {
+      // 图形定位并高亮
+      bitmapRef.current?.locateAndHighlight(cell.col, cell.row);
+      onTableRowClick?.(row, cell);
     },
     [onTableRowClick]
   );
@@ -38,9 +64,19 @@ export function BitmapTableLayout(props: BitmapTableLayoutProps) {
   const handleCellClick = useCallback(
     (col: number, row: number) => {
       onCellClick?.(col, row);
-      // TODO: 表格滚动定位
+
+      // 查找对应的表格行索引
+      if (bitmapProps.data) {
+        const rowIndex = bitmapProps.data.cells.findIndex(
+          (c) => c.row === row && c.col === col
+        );
+        if (rowIndex >= 0) {
+          setHighlightedRow(rowIndex);
+          setScrollToRow(rowIndex);
+        }
+      }
     },
-    [onCellClick]
+    [onCellClick, bitmapProps.data]
   );
 
   return (
@@ -74,10 +110,20 @@ export function BitmapTableLayout(props: BitmapTableLayoutProps) {
         style={{
           flex: '0 0 40%',
           height: '100%',
-          overflow: 'auto',
+          padding: '8px',
+          boxSizing: 'border-box',
         }}
       >
-        {tableComponent}
+        {bitmapProps.data && (
+          <VirtualTable
+            data={bitmapProps.data.cells}
+            columns={columns}
+            height="100%"
+            onRowClick={handleTableRowClick}
+            highlightedRow={highlightedRow}
+            scrollToRow={scrollToRow}
+          />
+        )}
       </div>
     </div>
   );

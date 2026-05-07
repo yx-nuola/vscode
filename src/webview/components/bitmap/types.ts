@@ -220,4 +220,6 @@ export interface BitmapEvents {
   'clear-highlight': void;
   /** 重置事件 */
   'reset': void;
+  /** 数据变化事件 */
+  'data:change': MatrixData;
 }
