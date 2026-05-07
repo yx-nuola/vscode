@@ -63,6 +63,12 @@ export class XAxisScrollbarLayer {
    * 更新滚动条
    */
   private updateScrollbar(): void {
+    const layoutCalculator = this.engine.getLayoutCalculator();
+    const layout = layoutCalculator.calculate(
+      this.engine.getStage()?.width() || 0,
+      this.engine.getStage()?.height() || 0
+    );
+    this.scrollbarDraw.setHorizontalPosition(layout.horizontalScrollbar.x, layout.horizontalScrollbar.y);
     this.scrollbarDraw.renderHorizontal();
   }
 

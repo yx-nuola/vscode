@@ -63,6 +63,12 @@ export class YAxisScrollbarLayer {
    * 更新滚动条
    */
   private updateScrollbar(): void {
+    const layoutCalculator = this.engine.getLayoutCalculator();
+    const layout = layoutCalculator.calculate(
+      this.engine.getStage()?.width() || 0,
+      this.engine.getStage()?.height() || 0
+    );
+    this.scrollbarDraw.setVerticalPosition(layout.verticalScrollbar.x, layout.verticalScrollbar.y);
     this.scrollbarDraw.renderVertical();
   }
 

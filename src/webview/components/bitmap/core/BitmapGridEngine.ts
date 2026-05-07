@@ -231,17 +231,14 @@ export class BitmapGridEngine {
 
     const layout = this.layoutCalculator.calculate(this.stage.width(), this.stage.height());
     const cellAreaWidth = layout.cellArea.width;
-    const cellAreaHeight = layout.cellArea.height;
 
-    // 计算合适的cellSize（取宽高的较小值）
-    const cellSizeX = Math.floor(cellAreaWidth / 64);
-    const cellSizeY = Math.floor(cellAreaHeight / 64);
-    const newCellSize = Math.min(cellSizeX, cellSizeY);
+    // 优先根据 X 轴宽度计算格子大小，确保 64 列完全占满 X 轴
+    const cellSizeX = cellAreaWidth / 64;
 
     // 确保cellSize在合理范围内
     const minSize = this.config.minCellSize || 2;
     const maxSize = this.config.maxCellSize || 50;
-    const finalCellSize = Math.max(minSize, Math.min(newCellSize, maxSize));
+    const finalCellSize = Math.max(minSize, Math.min(cellSizeX, maxSize));
 
     this.setCellSize(finalCellSize);
   }

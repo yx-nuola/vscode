@@ -99,10 +99,18 @@ export class ScrollbarDraw {
 
     const maxThumbX = horizontalScrollbar.width - scrollbarState.thumbWidth;
 
-    // 如果正在拖动横向滑块，只更新位置，不重建
-    if (this.isDraggingHorizontal && this.horizontalThumb && this.horizontalTrack) {
+    // 如果滚动条已经存在，只更新位置，不重建（避免鼠标滚轮滚动时闪烁和位置错乱）
+    if (this.horizontalThumb && this.horizontalTrack) {
       this.horizontalThumb.x(scrollbarState.thumbX);
       this.horizontalThumb.width(scrollbarState.thumbWidth);
+      // 更新拖动边界
+      this.horizontalThumb.dragBoundFunc((pos) => {
+        const currentMaxThumbX = horizontalScrollbar.width - scrollbarState.thumbWidth;
+        return {
+          x: Math.max(0, Math.min(pos.x, currentMaxThumbX)),
+          y: 0,
+        };
+      });
       return;
     }
 
@@ -156,10 +164,18 @@ export class ScrollbarDraw {
 
     const maxThumbY = verticalScrollbar.height - scrollbarState.thumbHeight;
 
-    // 如果正在拖动纵向滑块，只更新位置，不重建
-    if (this.isDraggingVertical && this.verticalThumb && this.verticalTrack) {
+    // 如果滚动条已经存在，只更新位置，不重建（避免鼠标滚轮滚动时闪烁和位置错乱）
+    if (this.verticalThumb && this.verticalTrack) {
       this.verticalThumb.y(scrollbarState.thumbY);
       this.verticalThumb.height(scrollbarState.thumbHeight);
+      // 更新拖动边界
+      this.verticalThumb.dragBoundFunc((pos) => {
+        const currentMaxThumbY = verticalScrollbar.height - scrollbarState.thumbHeight;
+        return {
+          x: 0,
+          y: Math.max(0, Math.min(pos.y, currentMaxThumbY)),
+        };
+      });
       return;
     }
 
