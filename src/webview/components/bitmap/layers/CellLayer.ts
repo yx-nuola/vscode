@@ -4,6 +4,7 @@
 
 import Konva from 'konva';
 import type { BitmapGridEngine } from '../core/BitmapGridEngine';
+import type { CellData } from '../types';
 import { CellDraw } from '../draws/CellDraw';
 
 const { Layer } = Konva;
@@ -79,13 +80,24 @@ export class CellLayer {
     // 获取当前可视范围
     const visibleRange = virtualScrollSync.getVisibleRange(scrollState.scrollX, scrollState.scrollY);
 
-    // 获取可视区域的数据
-    const visibleCells = dataManager.getDataByArea(
-      visibleRange.startRow,
-      visibleRange.endRow,
-      visibleRange.startCol,
-      visibleRange.endCol
-    );
+    // 渲染整个网格，无数据的格子显示灰色
+    const visibleCells: CellData[] = [];
+
+    for (let row = visibleRange.startRow; row <= visibleRange.endRow; row++) {
+      for (let col = visibleRange.startCol; col <= visibleRange.endCol; col++) {
+        const cell = dataManager.getCell(row, col);
+        if (cell) {
+          visibleCells.push(cell);
+        } else {
+          // 无数据的格子，创建一个灰色格子
+          visibleCells.push({
+            row,
+            col,
+            value: -1, // 特殊值表示无数据
+          });
+        }
+      }
+    }
 
     // 渲染格子（传递滚动偏移）
     this.cellDraw.renderCells(visibleCells, scrollState.scrollX, scrollState.scrollY);

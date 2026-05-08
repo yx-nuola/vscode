@@ -100,7 +100,13 @@ export class CellDraw {
       rect.y(y);
       rect.width(cellSize);
       rect.height(cellSize);
-      rect.fill(this.mapColor(cell.value, colorRules) || theme.defaultCellColor);
+
+      // 无数据的格子显示灰色
+      if (cell.value === -1) {
+        rect.fill(theme.defaultCellColor);
+      } else {
+        rect.fill(this.mapColor(cell.value, colorRules) || theme.defaultCellColor);
+      }
     }
   }
 

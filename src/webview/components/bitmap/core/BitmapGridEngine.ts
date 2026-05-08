@@ -8,7 +8,6 @@ import { EventBus } from './EventBus';
 import { LayoutCalculator } from './LayoutCalculator';
 import { DataManager } from './DataManager';
 import { VirtualScrollSync } from './VirtualScrollSync';
-import { ToolbarLayer } from '../layers/ToolbarLayer';
 import { XAxisLayer } from '../layers/XAxisLayer';
 import { YAxisLayer } from '../layers/YAxisLayer';
 import { CellLayer } from '../layers/CellLayer';
@@ -19,6 +18,13 @@ import { HighlightLayer } from '../layers/HighlightLayer';
 const { Stage, Layer } = Konva;
 type StageType = InstanceType<typeof Stage>;
 type LayerType = InstanceType<typeof Layer>;
+
+// 固定常量
+const BITMAP_WIDTH = 896;
+const DEFAULT_CELL_SIZE = 14;
+const MAX_CELL_SIZE = 56;
+const DEFAULT_COLS = 64;
+const DEFAULT_ROWS = 64;
 
 /**
  * Bitmap Grid 引擎类
@@ -37,7 +43,6 @@ export class BitmapGridEngine {
   private selectedCell: CellData | null;
 
   // 图层实例
-  private toolbarLayer: ToolbarLayer;
   private xAxisLayer: XAxisLayer;
   private yAxisLayer: YAxisLayer;
   private cellLayer: CellLayer;
@@ -51,15 +56,14 @@ export class BitmapGridEngine {
     this.eventBus = new EventBus();
     this.layoutCalculator = new LayoutCalculator(config.layout);
     this.dataManager = new DataManager();
-    this.virtualScrollSync = new VirtualScrollSync(0, 0, config.initialCellSize || 10);
+    this.virtualScrollSync = new VirtualScrollSync(DEFAULT_ROWS, DEFAULT_COLS, DEFAULT_CELL_SIZE);
     this.config = config;
     this.container = null;
     this.scrollState = { scrollX: 0, scrollY: 0 };
-    this.cellSize = config.initialCellSize || 10;
+    this.cellSize = DEFAULT_CELL_SIZE;
     this.selectedCell = null;
 
     // 初始化图层
-    this.toolbarLayer = new ToolbarLayer(this);
     this.xAxisLayer = new XAxisLayer(this);
     this.yAxisLayer = new YAxisLayer(this);
     this.cellLayer = new CellLayer(this);
@@ -82,7 +86,10 @@ export class BitmapGridEngine {
       height,
     });
 
-    this.virtualScrollSync.updateViewport(width, height);
+    // 计算布局，获取格子区域尺寸
+    const layout = this.layoutCalculator.calculate(width, height);
+    // 只更新视口高度，宽度固定为 BITMAP_WIDTH
+    this.virtualScrollSync.updateViewport(BITMAP_WIDTH, layout.cellArea.height);
 
     // 初始化并添加图层
     this.setupLayers();
@@ -98,7 +105,6 @@ export class BitmapGridEngine {
    */
   private setupLayers(): void {
     // 添加所有图层到 stage（注意顺序：后面的图层会覆盖前面的）
-    this.addLayer('toolbar', this.toolbarLayer.getLayer());
     this.addLayer('cell', this.cellLayer.getLayer());
     this.addLayer('xAxis', this.xAxisLayer.getLayer());
     this.addLayer('yAxis', this.yAxisLayer.getLayer());
@@ -107,7 +113,6 @@ export class BitmapGridEngine {
     this.addLayer('highlight', this.highlightLayer.getLayer());
 
     // 初始化图层
-    this.toolbarLayer.initialize();
     this.cellLayer.initialize();
     this.xAxisLayer.initialize();
     this.yAxisLayer.initialize();
@@ -136,6 +141,7 @@ export class BitmapGridEngine {
     });
 
     this.eventBus.on('cell:click', (cell) => {
+      this.selectCell(cell.col, cell.row);
       this.config.callbacks?.onCellClick?.(cell);
     });
 
@@ -173,7 +179,6 @@ export class BitmapGridEngine {
     this.dataManager.clear();
 
     // 销毁所有图层
-    this.toolbarLayer.destroy();
     this.xAxisLayer.destroy();
     this.yAxisLayer.destroy();
     this.cellLayer.destroy();
@@ -198,7 +203,8 @@ export class BitmapGridEngine {
     this.stage.height(height);
 
     const layout = this.layoutCalculator.calculate(width, height);
-    this.virtualScrollSync.updateViewport(layout.cellArea.width, layout.cellArea.height);
+    // 只更新视口高度，宽度固定为 BITMAP_WIDTH
+    this.virtualScrollSync.updateViewport(BITMAP_WIDTH, layout.cellArea.height);
   }
 
   /**
@@ -213,35 +219,35 @@ export class BitmapGridEngine {
    */
   setData(data: MatrixData): void {
     this.dataManager.setData(data);
-    this.virtualScrollSync.updateDataSize(data.rows, data.cols);
+
+    // 使用实际数据的行列数，但最小为 64x64
+    const rows = Math.max(DEFAULT_ROWS, data.rows);
+    const cols = Math.max(DEFAULT_COLS, data.cols);
+    this.virtualScrollSync.updateDataSize(rows, cols);
+
     // 触发数据更新事件，通知图层重新渲染
     this.eventBus.emit('data:change', data);
-
-    // 如果是64x64数据，自动计算合适的cellSize以全屏展示
-    if (data.rows === 64 && data.cols === 64 && this.stage) {
-      this.autoFitCellSize();
-    }
   }
 
   /**
    * 自动计算合适的cellSize以全屏展示
    */
-  private autoFitCellSize(): void {
-    if (!this.stage) return;
+  // private autoFitCellSize(): void {
+  //   if (!this.stage) return;
 
-    const layout = this.layoutCalculator.calculate(this.stage.width(), this.stage.height());
-    const cellAreaWidth = layout.cellArea.width;
+  //   const layout = this.layoutCalculator.calculate(this.stage.width(), this.stage.height());
+  //   const cellAreaWidth = layout.cellArea.width;
 
-    // 优先根据 X 轴宽度计算格子大小，确保 64 列完全占满 X 轴
-    const cellSizeX = cellAreaWidth / 64;
+  //   // 优先根据 X 轴宽度计算格子大小，确保 64 列完全占满 X 轴
+  //   const cellSizeX = cellAreaWidth / 64;
 
-    // 确保cellSize在合理范围内
-    const minSize = this.config.minCellSize || 2;
-    const maxSize = this.config.maxCellSize || 50;
-    const finalCellSize = Math.max(minSize, Math.min(cellSizeX, maxSize));
+  //   // 确保cellSize在合理范围内
+  //   const minSize = this.config.minCellSize || 2;
+  //   const maxSize = this.config.maxCellSize || 50;
+  //   const finalCellSize = Math.max(minSize, Math.min(cellSizeX, maxSize));
 
-    this.setCellSize(finalCellSize);
-  }
+  //   this.setCellSize(finalCellSize);
+  // }
 
   /**
    * 设置颜色规则
@@ -254,8 +260,7 @@ export class BitmapGridEngine {
    * 放大
    */
   zoomIn(): void {
-    const maxCellSize = this.config.maxCellSize || 50;
-    const newSize = Math.min(this.cellSize + 2, maxCellSize);
+    const newSize = Math.min(this.cellSize + 2, MAX_CELL_SIZE);
     this.setCellSize(newSize);
   }
 
@@ -263,8 +268,7 @@ export class BitmapGridEngine {
    * 缩小
    */
   zoomOut(): void {
-    const minCellSize = this.config.minCellSize || 2;
-    const newSize = Math.max(this.cellSize - 2, minCellSize);
+    const newSize = Math.max(this.cellSize - 2, DEFAULT_CELL_SIZE);
     this.setCellSize(newSize);
   }
 
@@ -272,7 +276,7 @@ export class BitmapGridEngine {
    * 重置缩放
    */
   resetZoom(): void {
-    this.setCellSize(this.config.initialCellSize || 10);
+    this.setCellSize(DEFAULT_CELL_SIZE);
   }
 
   /**
@@ -304,10 +308,14 @@ export class BitmapGridEngine {
    */
   selectCell(col: number, row: number): void {
     const cell = this.dataManager.getCell(row, col);
-    if (cell) {
-      this.selectedCell = cell;
-      this.eventBus.emit('selection:change', cell);
-    }
+    // 即使没有数据，也创建一个临时的格子对象用于选中
+    const selectedCell = cell || {
+      row,
+      col,
+      value: -1, // 特殊值表示无数据
+    };
+    this.selectedCell = selectedCell;
+    this.eventBus.emit('selection:change', selectedCell);
   }
 
   /**

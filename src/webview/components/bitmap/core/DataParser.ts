@@ -19,9 +19,9 @@ export interface RRAMTestData {
   cells: Array<{
     bl: number;      // 位线（行）
     wl: number;      // 字线（列）
-    vset: string;    // 设置电压
-    vreset: string;  // 复位电压
-    imeas: string;   // 测量电流
+    vset: string | number;    // 设置电压
+    vreset: string | number;  // 复位电压
+    imeas: string | number;   // 测量电流
     status: string;  // 状态（pass/fail）
   }>;
 }
@@ -42,11 +42,11 @@ export class DataParser {
     const cells: CellData[] = data.cells.map((cell) => ({
       row: cell.bl,      // bl → row
       col: cell.wl,      // wl → col
-      value: parseFloat(cell.imeas),  // 使用 imeas 作为颜色映射值
+      value: parseFloat(String(cell.imeas)),  // 使用 imeas 作为颜色映射值
       metadata: {
-        vset: cell.vset,
-        vreset: cell.vreset,
-        imeas: cell.imeas,
+        vset: String(cell.vset),
+        vreset: String(cell.vreset),
+        imeas: String(cell.imeas),
         status: cell.status,
       },
     }));
@@ -124,9 +124,9 @@ export class DataParser {
         (cell) =>
           typeof cell.bl === 'number' &&
           typeof cell.wl === 'number' &&
-          typeof cell.vset === 'string' &&
-          typeof cell.vreset === 'string' &&
-          typeof cell.imeas === 'string' &&
+          (typeof cell.vset === 'string' || typeof cell.vset === 'number') &&
+          (typeof cell.vreset === 'string' || typeof cell.vreset === 'number') &&
+          (typeof cell.imeas === 'string' || typeof cell.imeas === 'number') &&
           typeof cell.status === 'string'
       )
     );

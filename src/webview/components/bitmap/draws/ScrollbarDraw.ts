@@ -50,9 +50,25 @@ export class ScrollbarDraw {
   }
 
   /**
+   * 检查是否正在拖动横向滚动条
+   */
+  isDraggingHorizontalScrollbar(): boolean {
+    return this.isDraggingHorizontal;
+  }
+
+  /**
+   * 检查是否正在拖动纵向滚动条
+   */
+  isDraggingVerticalScrollbar(): boolean {
+    return this.isDraggingVertical;
+  }
+
+  /**
    * 设置横向滚动条位置
    */
   setHorizontalPosition(x: number, y: number): void {
+    // Group 的位置是相对于 Layer 的，Layer 的位置是 (0, 0)
+    // 所以 Group 的位置就是相对于 Stage 的绝对坐标
     this.horizontalGroup.x(x);
     this.horizontalGroup.y(y);
   }
@@ -61,6 +77,8 @@ export class ScrollbarDraw {
    * 设置纵向滚动条位置
    */
   setVerticalPosition(x: number, y: number): void {
+    // Group 的位置是相对于 Layer 的，Layer 的位置是 (0, 0)
+    // 所以 Group 的位置就是相对于 Stage 的绝对坐标
     this.verticalGroup.x(x);
     this.verticalGroup.y(y);
   }
@@ -237,11 +255,28 @@ export class ScrollbarDraw {
         layout.horizontalScrollbar.height
       );
 
-      eventBus.emit('scroll:change', scrollState);
+      // 拖动时不触发 scroll:change，避免重新设置 Group 位置导致滑块偏移
+      // 只在 dragend 时触发
     });
 
     this.horizontalThumb.on('dragend', () => {
+      if (!this.isDraggingHorizontal || !this.horizontalThumb) {
+        this.isDraggingHorizontal = false;
+        return;
+      }
+
+      const { layout } = this.getLayoutAndScrollbarState();
+
+      const thumbX = this.horizontalThumb.x();
+      const scrollState = virtualScrollSync.getScrollFromThumb(
+        thumbX,
+        0,
+        layout.horizontalScrollbar.width,
+        layout.horizontalScrollbar.height
+      );
+
       this.isDraggingHorizontal = false;
+      eventBus.emit('scroll:change', scrollState);
     });
 
     // 添加轨道点击事件
@@ -250,6 +285,7 @@ export class ScrollbarDraw {
 
       const { layout, virtualScrollSync } = this.getLayoutAndScrollbarState();
 
+      // 获取点击位置相对于 Group 的坐标
       const clickX = e.evt.offsetX;
       const scrollbarState = virtualScrollSync.getScrollbarState(
         this.engine.getScrollState().scrollX,
@@ -300,11 +336,28 @@ export class ScrollbarDraw {
         layout.verticalScrollbar.height
       );
 
-      eventBus.emit('scroll:change', scrollState);
+      // 拖动时不触发 scroll:change，避免重新设置 Group 位置导致滑块偏移
+      // 只在 dragend 时触发
     });
 
     this.verticalThumb.on('dragend', () => {
+      if (!this.isDraggingVertical || !this.verticalThumb) {
+        this.isDraggingVertical = false;
+        return;
+      }
+
+      const { layout } = this.getLayoutAndScrollbarState();
+
+      const thumbY = this.verticalThumb.y();
+      const scrollState = virtualScrollSync.getScrollFromThumb(
+        0,
+        thumbY,
+        layout.verticalScrollbar.width,
+        layout.verticalScrollbar.height
+      );
+
       this.isDraggingVertical = false;
+      eventBus.emit('scroll:change', scrollState);
     });
 
     // 添加轨道点击事件

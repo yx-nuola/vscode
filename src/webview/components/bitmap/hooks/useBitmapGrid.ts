@@ -29,7 +29,7 @@ export interface UseBitmapGridReturn {
   /** 引擎实例 */
   engine: BitmapGridEngine | null;
   /** 容器引用 */
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
   /** 放大 */
   zoomIn: () => void;
   /** 缩小 */
@@ -84,6 +84,14 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
     if (colorRules) {
       engine.setColorRules(colorRules);
     }
+
+    // 强制触发一次重绘，确保坐标轴刻度线正确渲染
+    requestAnimationFrame(() => {
+      const { width, height } = containerRef.current?.getBoundingClientRect() || { width: 0, height: 0 };
+      if (width > 0 && height > 0) {
+        engine.resize(width, height);
+      }
+    });
 
     return () => {
       engine.destroy();

@@ -29,7 +29,6 @@ export function BitmapTestPage() {
   // 使用 useMemo 确保 config 对象在 colorRules 变化时重新创建
   const config: BitmapGridConfig = useMemo(() => ({
     layout: {
-      toolbarHeight: 40,
       axisSize: 40,
       scrollbarSize: 12,
       spacing: 4,
@@ -77,7 +76,7 @@ export function BitmapTestPage() {
       {/* 顶部工具栏 */}
       <div
         style={{
-          padding: '12px',
+          padding: '4px',
           borderBottom: '1px solid #e0e0e0',
           backgroundColor: '#f5f5f5',
           display: 'flex',

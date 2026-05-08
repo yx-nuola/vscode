@@ -68,7 +68,10 @@ export class XAxisScrollbarLayer {
       this.engine.getStage()?.width() || 0,
       this.engine.getStage()?.height() || 0
     );
-    this.scrollbarDraw.setHorizontalPosition(layout.horizontalScrollbar.x, layout.horizontalScrollbar.y);
+    // 如果正在拖动，不更新 Group 位置，避免滑块偏移
+    if (!this.scrollbarDraw.isDraggingHorizontalScrollbar()) {
+      this.scrollbarDraw.setHorizontalPosition(layout.horizontalScrollbar.x, layout.horizontalScrollbar.y);
+    }
     this.scrollbarDraw.renderHorizontal();
   }
 

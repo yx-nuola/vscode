@@ -4,6 +4,9 @@
 
 import type { VisibleRange, ScrollbarState, ScrollState } from '../types';
 
+// 固定常量
+const BITMAP_WIDTH = 896;
+
 /**
  * 虚拟滚动同步类
  */
@@ -15,7 +18,7 @@ export class VirtualScrollSync {
   private totalCols: number;
 
   constructor(totalRows: number, totalCols: number, cellSize: number = 10) {
-    this.viewportWidth = 0;
+    this.viewportWidth = BITMAP_WIDTH;
     this.viewportHeight = 0;
     this.cellSize = cellSize;
     this.totalRows = totalRows;
@@ -25,8 +28,8 @@ export class VirtualScrollSync {
   /**
    * 更新视口尺寸
    */
-  updateViewport(width: number, height: number): void {
-    this.viewportWidth = width;
+  updateViewport(_width: number, height: number): void {
+    this.viewportWidth = BITMAP_WIDTH;
     this.viewportHeight = height;
   }
 
@@ -62,9 +65,9 @@ export class VirtualScrollSync {
 
     return {
       startCol: Math.max(0, startCol),
-      endCol: Math.max(0, endCol),
+      endCol: Math.max(startCol, Math.min(endCol, this.totalCols - 1)),
       startRow: Math.max(0, startRow),
-      endRow: Math.max(0, endRow),
+      endRow: Math.max(startRow, Math.min(endRow, this.totalRows - 1)),
     };
   }
 
@@ -164,5 +167,19 @@ export class VirtualScrollSync {
    */
   get currentCellSize(): number {
     return this.cellSize;
+  }
+
+  /**
+   * 获取总列数
+   */
+  getTotalCols(): number {
+    return this.totalCols;
+  }
+
+  /**
+   * 获取总行数
+   */
+  getTotalRows(): number {
+    return this.totalRows;
   }
 }

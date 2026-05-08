@@ -68,7 +68,10 @@ export class YAxisScrollbarLayer {
       this.engine.getStage()?.width() || 0,
       this.engine.getStage()?.height() || 0
     );
-    this.scrollbarDraw.setVerticalPosition(layout.verticalScrollbar.x, layout.verticalScrollbar.y);
+    // 如果正在拖动，不更新 Group 位置，避免滑块偏移
+    if (!this.scrollbarDraw.isDraggingVerticalScrollbar()) {
+      this.scrollbarDraw.setVerticalPosition(layout.verticalScrollbar.x, layout.verticalScrollbar.y);
+    }
     this.scrollbarDraw.renderVertical();
   }
 

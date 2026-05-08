@@ -74,8 +74,7 @@ export class AxisDraw {
 
     const { xAxis } = layout;
     const cellSize = virtualScrollSync.currentCellSize;
-    const dataManager = this.engine.getDataManager();
-    const totalCols = dataManager.cols;
+    const totalCols = virtualScrollSync.getTotalCols();
 
     // 计算可见范围
     const visibleRange = virtualScrollSync.getVisibleRange(scrollState.scrollX, scrollState.scrollY);
@@ -92,7 +91,7 @@ export class AxisDraw {
     this.xAxisGroup.add(axisLine);
 
     // 绘制刻度和标签：遍历所有列号，只绘制落在可见范围内的
-    for (let col = 0; col < totalCols; col += step) {
+    for (let col = 0; col <= totalCols; col += step) {
       // 列号在可视范围内才绘制
       if (col < visibleRange.startCol || col > visibleRange.endCol) continue;
 
@@ -144,8 +143,7 @@ export class AxisDraw {
 
     const { yAxis } = layout;
     const cellSize = virtualScrollSync.currentCellSize;
-    const dataManager = this.engine.getDataManager();
-    const totalRows = dataManager.rows;
+    const totalRows = virtualScrollSync.getTotalRows();
 
     // 计算可见范围
     const visibleRange = virtualScrollSync.getVisibleRange(scrollState.scrollX, scrollState.scrollY);
@@ -204,7 +202,8 @@ export class AxisDraw {
     if (totalCount <= 100) return 10;
     if (totalCount <= 200) return 20;
     if (totalCount <= 500) return 50;
-    return 100;
+    if (totalCount <= 1000) return 100;
+    return 200;
   }
 
   /**

@@ -3,6 +3,7 @@
  */
 
 import { useRef, useCallback, useState } from 'react';
+import { Button, Space, Divider } from '@arco-design/web-react';
 import { BitmapGrid, BitmapGridRef, BitmapGridProps } from './BitmapGrid';
 import { VirtualTable, TableColumn } from './VirtualTable';
 import type { CellData } from '../types';
@@ -87,31 +88,62 @@ export function BitmapTableLayout(props: BitmapTableLayoutProps) {
         height: '100%',
       }}
     >
-      {/* 左侧 60% BitmapGrid */}
+      {/* 左侧固定宽度 956px (896px 格子区域 + 40px Y轴 + 12px 滚动条 + 8px 间距) */}
       <div
         style={{
-          flex: '0 0 60%',
+          width: '956px',
           height: '100%',
           borderRight: '1px solid #e0e0e0',
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        <BitmapGrid
-          ref={bitmapRef}
-          {...bitmapProps}
-          callbacks={{
-            ...bitmapProps.callbacks,
-            onCellClick: (cell) => handleCellClick(cell.col, cell.row),
+        {/* 工具栏 */}
+        <div
+          style={{
+            padding: '0 8px',
+            // borderBottom: '1px solid #e0e0e0',
+            // backgroundColor: '#f5f5f5',
           }}
-        />
+        >
+          <Space style={{ display: 'flex' }}>
+            <Button size="small" onClick={() => bitmapRef.current?.zoomIn()}>
+              放大
+            </Button>
+            <Button size="small" onClick={() => bitmapRef.current?.zoomOut()}>
+              缩小
+            </Button>
+            <Button size="small" onClick={() => bitmapRef.current?.resetZoom()}>
+              还原
+            </Button>
+          </Space>
+        </div>
+
+        {/* BitmapGrid */}
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <BitmapGrid
+            ref={bitmapRef}
+            {...bitmapProps}
+            config={{
+              ...bitmapProps.config,
+              callbacks: {
+                ...bitmapProps.config.callbacks,
+                onCellClick: (cell) => handleCellClick(cell.col, cell.row),
+              },
+            }}
+          />
+        </div>
       </div>
 
-      {/* 右侧 40% DataTable */}
+      {/* 右侧剩余空间 DataTable */}
       <div
         style={{
-          flex: '0 0 40%',
+          flex: 1,
           height: '100%',
           padding: '8px',
           boxSizing: 'border-box',
+          overflow: 'auto',
         }}
       >
         {bitmapProps.data && (
