@@ -109,6 +109,7 @@ export class ToolbarDraw {
       verticalAlign: 'middle',
       offsetX: 20,
       offsetY: 8,
+      listening: false,  // 不拦截事件，让点击穿透到按钮
     });
     this.group.add(zoomInLabel);
 
@@ -137,6 +138,7 @@ export class ToolbarDraw {
       verticalAlign: 'middle',
       offsetX: 20,
       offsetY: 8,
+      listening: false,  // 不拦截事件，让点击穿透到按钮
     });
     this.group.add(zoomOutLabel);
 
@@ -165,6 +167,7 @@ export class ToolbarDraw {
       verticalAlign: 'middle',
       offsetX: 20,
       offsetY: 8,
+      listening: false,  // 不拦截事件，让点击穿透到按钮
     });
     this.group.add(resetLabel);
 

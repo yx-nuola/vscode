@@ -98,13 +98,14 @@ export class BitmapGridEngine {
    */
   private setupLayers(): void {
     // 添加所有图层到 stage（注意顺序：后面的图层会覆盖前面的）
-    this.addLayer('toolbar', this.toolbarLayer.getLayer());
+    // 将 toolbar 移到最后，确保它始终在最上面，避免被其他图层拦截鼠标事件
     this.addLayer('cell', this.cellLayer.getLayer());
     this.addLayer('xAxis', this.xAxisLayer.getLayer());
     this.addLayer('yAxis', this.yAxisLayer.getLayer());
     this.addLayer('xAxisScrollbar', this.xAxisScrollbarLayer.getLayer());
     this.addLayer('yAxisScrollbar', this.yAxisScrollbarLayer.getLayer());
     this.addLayer('highlight', this.highlightLayer.getLayer());
+    this.addLayer('toolbar', this.toolbarLayer.getLayer());
 
     // 初始化图层
     this.toolbarLayer.initialize();
