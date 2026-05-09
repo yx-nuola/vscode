@@ -8,11 +8,8 @@ import { EventBus } from './EventBus';
 import { LayoutCalculator } from './LayoutCalculator';
 import { DataManager } from './DataManager';
 import { VirtualScrollSync } from './VirtualScrollSync';
-import { XAxisLayer } from '../layers/XAxisLayer';
-import { YAxisLayer } from '../layers/YAxisLayer';
+import { AxisLayer } from '../layers/AxisLayer';
 import { CellLayer } from '../layers/CellLayer';
-import { XAxisScrollbarLayer } from '../layers/XAxisScrollbarLayer';
-import { YAxisScrollbarLayer } from '../layers/YAxisScrollbarLayer';
 import { HighlightLayer } from '../layers/HighlightLayer';
 
 const { Stage, Layer } = Konva;
@@ -43,11 +40,8 @@ export class BitmapGridEngine {
   private selectedCell: CellData | null;
 
   // 图层实例
-  private xAxisLayer: XAxisLayer;
-  private yAxisLayer: YAxisLayer;
+  private axisLayer: AxisLayer;
   private cellLayer: CellLayer;
-  private xAxisScrollbarLayer: XAxisScrollbarLayer;
-  private yAxisScrollbarLayer: YAxisScrollbarLayer;
   private highlightLayer: HighlightLayer;
 
   constructor(config: BitmapGridConfig) {
@@ -64,11 +58,8 @@ export class BitmapGridEngine {
     this.selectedCell = null;
 
     // 初始化图层
-    this.xAxisLayer = new XAxisLayer(this);
-    this.yAxisLayer = new YAxisLayer(this);
+    this.axisLayer = new AxisLayer(this);
     this.cellLayer = new CellLayer(this);
-    this.xAxisScrollbarLayer = new XAxisScrollbarLayer(this);
-    this.yAxisScrollbarLayer = new YAxisScrollbarLayer(this);
     this.highlightLayer = new HighlightLayer(this);
   }
 
@@ -106,18 +97,12 @@ export class BitmapGridEngine {
   private setupLayers(): void {
     // 添加所有图层到 stage（注意顺序：后面的图层会覆盖前面的）
     this.addLayer('cell', this.cellLayer.getLayer());
-    this.addLayer('xAxis', this.xAxisLayer.getLayer());
-    this.addLayer('yAxis', this.yAxisLayer.getLayer());
-    this.addLayer('xAxisScrollbar', this.xAxisScrollbarLayer.getLayer());
-    this.addLayer('yAxisScrollbar', this.yAxisScrollbarLayer.getLayer());
+    this.addLayer('axis', this.axisLayer.getLayer());
     this.addLayer('highlight', this.highlightLayer.getLayer());
 
     // 初始化图层
     this.cellLayer.initialize();
-    this.xAxisLayer.initialize();
-    this.yAxisLayer.initialize();
-    this.xAxisScrollbarLayer.initialize();
-    this.yAxisScrollbarLayer.initialize();
+    this.axisLayer.initialize();
     this.highlightLayer.initialize();
   }
 
@@ -179,11 +164,8 @@ export class BitmapGridEngine {
     this.dataManager.clear();
 
     // 销毁所有图层
-    this.xAxisLayer.destroy();
-    this.yAxisLayer.destroy();
+    this.axisLayer.destroy();
     this.cellLayer.destroy();
-    this.xAxisScrollbarLayer.destroy();
-    this.yAxisScrollbarLayer.destroy();
     this.highlightLayer.destroy();
 
     this.layers.forEach((layer) => layer.destroy());

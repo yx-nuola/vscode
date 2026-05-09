@@ -255,8 +255,8 @@ export class ScrollbarDraw {
         layout.horizontalScrollbar.height
       );
 
-      // 拖动时不触发 scroll:change，避免重新设置 Group 位置导致滑块偏移
-      // 只在 dragend 时触发
+      // 实时触发 scroll:change 事件
+      eventBus.emit('scroll:change', scrollState);
     });
 
     this.horizontalThumb.on('dragend', () => {
@@ -336,8 +336,8 @@ export class ScrollbarDraw {
         layout.verticalScrollbar.height
       );
 
-      // 拖动时不触发 scroll:change，避免重新设置 Group 位置导致滑块偏移
-      // 只在 dragend 时触发
+      // 实时触发 scroll:change 事件
+      eventBus.emit('scroll:change', scrollState);
     });
 
     this.verticalThumb.on('dragend', () => {
