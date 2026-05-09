@@ -20,8 +20,6 @@ export class ScrollbarDraw {
   private horizontalThumb: RectType | null;
   private verticalTrack: RectType | null;
   private verticalThumb: RectType | null;
-  private isDraggingHorizontal: boolean;
-  private isDraggingVertical: boolean;
 
   constructor(engine: BitmapGridEngine) {
     this.engine = engine;
@@ -31,8 +29,6 @@ export class ScrollbarDraw {
     this.horizontalThumb = null;
     this.verticalTrack = null;
     this.verticalThumb = null;
-    this.isDraggingHorizontal = false;
-    this.isDraggingVertical = false;
   }
 
   /**
@@ -53,14 +49,14 @@ export class ScrollbarDraw {
    * 检查是否正在拖动横向滚动条
    */
   isDraggingHorizontalScrollbar(): boolean {
-    return this.isDraggingHorizontal;
+    return this.horizontalThumb?.isDragging() ?? false;
   }
 
   /**
    * 检查是否正在拖动纵向滚动条
    */
   isDraggingVerticalScrollbar(): boolean {
-    return this.isDraggingVertical;
+    return this.verticalThumb?.isDragging() ?? false;
   }
 
   /**
@@ -100,6 +96,50 @@ export class ScrollbarDraw {
   }
 
   /**
+   * Konva 的 dragBoundFunc 接收和返回的都是绝对坐标，这里转换成滚动条组内坐标后再限制范围。
+   */
+  private getHorizontalDragBound(pos: { x: number; y: number }, maxThumbX: number): { x: number; y: number } {
+    const groupPos = this.horizontalGroup.getAbsolutePosition();
+    const localX = pos.x - groupPos.x;
+    const clampedX = Math.max(0, Math.min(localX, maxThumbX));
+
+    return {
+      x: groupPos.x + clampedX,
+      y: groupPos.y,
+    };
+  }
+
+  /**
+   * Konva 的 dragBoundFunc 接收和返回的都是绝对坐标，这里转换成滚动条组内坐标后再限制范围。
+   */
+  private getVerticalDragBound(pos: { x: number; y: number }, maxThumbY: number): { x: number; y: number } {
+    const groupPos = this.verticalGroup.getAbsolutePosition();
+    const localY = pos.y - groupPos.y;
+    const clampedY = Math.max(0, Math.min(localY, maxThumbY));
+
+    return {
+      x: groupPos.x,
+      y: groupPos.y + clampedY,
+    };
+  }
+
+  /**
+   * 获取鼠标相对滚动条组的点击位置。
+   */
+  private getPointerPositionInGroup(group: GroupType): { x: number; y: number } | null {
+    const pointer = this.engine.getStage()?.getPointerPosition();
+    if (!pointer) {
+      return null;
+    }
+
+    const groupPos = group.getAbsolutePosition();
+    return {
+      x: pointer.x - groupPos.x,
+      y: pointer.y - groupPos.y,
+    };
+  }
+
+  /**
    * 渲染横向滚动条
    */
   renderHorizontal(): void {
@@ -117,18 +157,20 @@ export class ScrollbarDraw {
 
     const maxThumbX = horizontalScrollbar.width - scrollbarState.thumbWidth;
 
-    // 如果滚动条已经存在，只更新位置，不重建（避免鼠标滚轮滚动时闪烁和位置错乱）
+    // 如果滚动条已经存在，只更新边界（拖动中不更新位置，由 Konva drag 管理）
     if (this.horizontalThumb && this.horizontalTrack) {
-      this.horizontalThumb.x(scrollbarState.thumbX);
-      this.horizontalThumb.width(scrollbarState.thumbWidth);
       // 更新拖动边界
       this.horizontalThumb.dragBoundFunc((pos) => {
         const currentMaxThumbX = horizontalScrollbar.width - scrollbarState.thumbWidth;
-        return {
-          x: Math.max(0, Math.min(pos.x, currentMaxThumbX)),
-          y: 0,
-        };
+        return this.getHorizontalDragBound(pos, currentMaxThumbX);
       });
+
+      // 只有不在拖动状态时才更新位置和尺寸
+      if (!this.horizontalThumb.isDragging()) {
+        this.horizontalThumb.x(scrollbarState.thumbX);
+        this.horizontalThumb.width(scrollbarState.thumbWidth);
+      }
+
       return;
     }
 
@@ -153,10 +195,7 @@ export class ScrollbarDraw {
       fill: theme.scrollbarThumbColor,
       draggable: true,
       dragBoundFunc: (pos) => {
-        return {
-          x: Math.max(0, Math.min(pos.x, maxThumbX)),
-          y: 0,
-        };
+        return this.getHorizontalDragBound(pos, maxThumbX);
       },
     });
 
@@ -182,18 +221,20 @@ export class ScrollbarDraw {
 
     const maxThumbY = verticalScrollbar.height - scrollbarState.thumbHeight;
 
-    // 如果滚动条已经存在，只更新位置，不重建（避免鼠标滚轮滚动时闪烁和位置错乱）
+    // 如果滚动条已经存在，只更新边界（拖动中不更新位置，由 Konva drag 管理）
     if (this.verticalThumb && this.verticalTrack) {
-      this.verticalThumb.y(scrollbarState.thumbY);
-      this.verticalThumb.height(scrollbarState.thumbHeight);
       // 更新拖动边界
       this.verticalThumb.dragBoundFunc((pos) => {
         const currentMaxThumbY = verticalScrollbar.height - scrollbarState.thumbHeight;
-        return {
-          x: 0,
-          y: Math.max(0, Math.min(pos.y, currentMaxThumbY)),
-        };
+        return this.getVerticalDragBound(pos, currentMaxThumbY);
       });
+
+      // 只有不在拖动状态时才更新位置和尺寸
+      if (!this.verticalThumb.isDragging()) {
+        this.verticalThumb.y(scrollbarState.thumbY);
+        this.verticalThumb.height(scrollbarState.thumbHeight);
+      }
+
       return;
     }
 
@@ -218,10 +259,7 @@ export class ScrollbarDraw {
       fill: theme.scrollbarThumbColor,
       draggable: true,
       dragBoundFunc: (pos) => {
-        return {
-          x: 0,
-          y: Math.max(0, Math.min(pos.y, maxThumbY)),
-        };
+        return this.getVerticalDragBound(pos, maxThumbY);
       },
     });
 
@@ -238,12 +276,8 @@ export class ScrollbarDraw {
     const eventBus = this.engine.getEventBus();
     const virtualScrollSync = this.engine.getVirtualScrollSync();
 
-    this.horizontalThumb.on('dragstart', () => {
-      this.isDraggingHorizontal = true;
-    });
-
     this.horizontalThumb.on('dragmove', () => {
-      if (!this.isDraggingHorizontal || !this.horizontalThumb) return;
+      if (!this.horizontalThumb) return;
 
       const { layout } = this.getLayoutAndScrollbarState();
 
@@ -260,10 +294,7 @@ export class ScrollbarDraw {
     });
 
     this.horizontalThumb.on('dragend', () => {
-      if (!this.isDraggingHorizontal || !this.horizontalThumb) {
-        this.isDraggingHorizontal = false;
-        return;
-      }
+      if (!this.horizontalThumb) return;
 
       const { layout } = this.getLayoutAndScrollbarState();
 
@@ -275,7 +306,7 @@ export class ScrollbarDraw {
         layout.horizontalScrollbar.height
       );
 
-      this.isDraggingHorizontal = false;
+      // 触发 scroll:change 事件，render 会根据 isDragging() 状态正确更新
       eventBus.emit('scroll:change', scrollState);
     });
 
@@ -286,7 +317,10 @@ export class ScrollbarDraw {
       const { layout, virtualScrollSync } = this.getLayoutAndScrollbarState();
 
       // 获取点击位置相对于 Group 的坐标
-      const clickX = e.evt.offsetX;
+      const pointer = this.getPointerPositionInGroup(this.horizontalGroup);
+      if (!pointer) return;
+
+      const clickX = pointer.x;
       const scrollbarState = virtualScrollSync.getScrollbarState(
         this.engine.getScrollState().scrollX,
         this.engine.getScrollState().scrollY,
@@ -319,12 +353,8 @@ export class ScrollbarDraw {
     const eventBus = this.engine.getEventBus();
     const virtualScrollSync = this.engine.getVirtualScrollSync();
 
-    this.verticalThumb.on('dragstart', () => {
-      this.isDraggingVertical = true;
-    });
-
     this.verticalThumb.on('dragmove', () => {
-      if (!this.isDraggingVertical || !this.verticalThumb) return;
+      if (!this.verticalThumb) return;
 
       const { layout } = this.getLayoutAndScrollbarState();
 
@@ -341,10 +371,7 @@ export class ScrollbarDraw {
     });
 
     this.verticalThumb.on('dragend', () => {
-      if (!this.isDraggingVertical || !this.verticalThumb) {
-        this.isDraggingVertical = false;
-        return;
-      }
+      if (!this.verticalThumb) return;
 
       const { layout } = this.getLayoutAndScrollbarState();
 
@@ -356,7 +383,7 @@ export class ScrollbarDraw {
         layout.verticalScrollbar.height
       );
 
-      this.isDraggingVertical = false;
+      // 触发 scroll:change 事件，render 会根据 isDragging() 状态正确更新
       eventBus.emit('scroll:change', scrollState);
     });
 
@@ -366,7 +393,10 @@ export class ScrollbarDraw {
 
       const { layout, virtualScrollSync } = this.getLayoutAndScrollbarState();
 
-      const clickY = e.evt.offsetY;
+      const pointer = this.getPointerPositionInGroup(this.verticalGroup);
+      if (!pointer) return;
+
+      const clickY = pointer.y;
       const scrollbarState = virtualScrollSync.getScrollbarState(
         this.engine.getScrollState().scrollX,
         this.engine.getScrollState().scrollY,

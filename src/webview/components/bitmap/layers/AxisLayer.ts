@@ -84,20 +84,12 @@ export class AxisLayer {
     this.axisDraw.renderXAxis();
     this.axisDraw.renderYAxis();
 
-    // 更新滚动条（如果正在拖动，不更新 Group 位置）
-    if (this.scrollbarDraw.isDraggingHorizontalScrollbar()) {
-      this.scrollbarDraw.renderHorizontal();
-    } else {
-      this.scrollbarDraw.setHorizontalPosition(layout.horizontalScrollbar.x, layout.horizontalScrollbar.y);
-      this.scrollbarDraw.renderHorizontal();
-    }
-
-    if (this.scrollbarDraw.isDraggingVerticalScrollbar()) {
-      this.scrollbarDraw.renderVertical();
-    } else {
-      this.scrollbarDraw.setVerticalPosition(layout.verticalScrollbar.x, layout.verticalScrollbar.y);
-      this.scrollbarDraw.renderVertical();
-    }
+    // 更新滚动条位置和渲染
+    // 注意：render 方法内部会检查是否正在拖动，如果拖动中只更新边界而不改变位置
+    this.scrollbarDraw.setHorizontalPosition(layout.horizontalScrollbar.x, layout.horizontalScrollbar.y);
+    this.scrollbarDraw.renderHorizontal();
+    this.scrollbarDraw.setVerticalPosition(layout.verticalScrollbar.x, layout.verticalScrollbar.y);
+    this.scrollbarDraw.renderVertical();
   }
 
   /**
