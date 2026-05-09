@@ -32,8 +32,8 @@ export function BitmapTableLayout(props: BitmapTableLayoutProps) {
 
   // 默认表格列配置
   const defaultColumns: TableColumn[] = [
-    { key: 'row', title: 'BL', width: 60 },
-    { key: 'col', title: 'WL', width: 60 },
+    { key: 'bl', title: 'BL', width: 60 },
+    { key: 'wl', title: 'WL', width: 60 },
     { key: 'vset', title: 'Vset', width: 80 },
     { key: 'vreset', title: 'Vreset', width: 80 },
     { key: 'imeas', title: 'Imeas', width: 80 },

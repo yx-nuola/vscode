@@ -40,10 +40,12 @@ export class DataParser {
    */
   static parseRRAMData(data: RRAMTestData): MatrixData {
     const cells: CellData[] = data.cells.map((cell) => ({
-      row: cell.bl,      // bl → row
-      col: cell.wl,      // wl → col
+      row: cell.wl,      // wl → row（Y 轴）
+      col: cell.bl,      // bl → col（X 轴）
       value: parseFloat(String(cell.imeas)),  // 使用 imeas 作为颜色映射值
       metadata: {
+        bl: cell.bl,
+        wl: cell.wl,
         vset: String(cell.vset),
         vreset: String(cell.vreset),
         imeas: String(cell.imeas),
