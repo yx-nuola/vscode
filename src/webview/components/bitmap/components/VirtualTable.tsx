@@ -1,9 +1,15 @@
 /**
- * 虚拟滚动表格组件
+ * 基于 VisActor VTable 的虚拟滚动表格组件
  * 用于展示 RRAM 测试数据
  */
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
+import { ListTable, TABLE_EVENT_TYPE } from '@visactor/vtable';
+import type {
+  ColumnDefine as VTableColumnDefine,
+  ListTableConstructorOptions,
+  MousePointerCellEvent,
+} from '@visactor/vtable';
 import type { CellData } from '../types';
 
 /**
@@ -40,6 +46,27 @@ export interface VirtualTableProps {
   scrollToRow?: number;
 }
 
+interface TableRecord extends Record<string, unknown> {
+  __index: number;
+  __cell: CellData;
+}
+
+function getColumnValue(cell: CellData, key: string): unknown {
+  return (cell.metadata?.[key] as unknown) ?? (cell as unknown as Record<string, unknown>)[key];
+}
+
+function stringifyCellValue(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  return JSON.stringify(value);
+}
+
 /**
  * 虚拟滚动表格组件
  */
@@ -53,26 +80,162 @@ export function VirtualTable({
   scrollToRow,
 }: VirtualTableProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollTop, setScrollTop] = useState(0);
-  const [containerWidth, setContainerWidth] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(typeof height === 'number' ? height : 400);
+  const tableRef = useRef<ListTable | null>(null);
+  const onRowClickRef = useRef(onRowClick);
+  const highlightedRowRef = useRef(highlightedRow);
+  const recordsRef = useRef<TableRecord[]>([]);
 
-  // 计算可见范围
-  const visibleCount = Math.ceil(containerHeight / rowHeight);
-  const startIndex = Math.floor(scrollTop / rowHeight);
-  const endIndex = Math.min(startIndex + visibleCount, data.length);
+  const records = useMemo<TableRecord[]>(
+    () =>
+      data.map((cell, index) => {
+        const record: TableRecord = {
+          __index: index,
+          __cell: cell,
+        };
 
-  // 监听容器尺寸变化
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setContainerWidth(entry.contentRect.width);
-        if (typeof height === 'string') {
-          setContainerHeight(entry.contentRect.height);
+        for (const column of columns) {
+          record[column.key] = stringifyCellValue(getColumnValue(cell, column.key));
         }
+
+        return record;
+      }),
+    [columns, data]
+  );
+
+  const vtableColumns = useMemo<VTableColumnDefine[]>(
+    () =>
+      columns.map((column) => ({
+        field: column.key,
+        title: column.title,
+        width: column.width ?? 100,
+        cellType: 'text',
+        style: ({ row, table, value }) => {
+          const recordIndex = table.getRecordShowIndexByCell(0, row);
+          const record = recordsRef.current[recordIndex];
+          const isHighlighted = record?.__index === highlightedRowRef.current;
+          const status = String(value ?? '');
+
+          return {
+            bgColor: isHighlighted ? '#e3f2fd' : '#ffffff',
+            color: column.key === 'status'
+              ? status === 'pass'
+                ? '#2e7d32'
+                : status === 'fail'
+                  ? '#c62828'
+                  : '#666666'
+              : '#1f2329',
+            fontSize: 12,
+            padding: [0, 8, 0, 8],
+            textOverflow: 'ellipsis',
+          };
+        },
+        headerStyle: {
+          bgColor: '#f5f5f5',
+          color: '#1f2329',
+          fontSize: 12,
+          fontWeight: 'bold',
+          padding: [0, 8, 0, 8],
+        },
+      })),
+    [columns]
+  );
+
+  useEffect(() => {
+    onRowClickRef.current = onRowClick;
+  }, [onRowClick]);
+
+  useEffect(() => {
+    highlightedRowRef.current = highlightedRow;
+    tableRef.current?.renderWithRecreateCells();
+  }, [highlightedRow]);
+
+  useEffect(() => {
+    recordsRef.current = records;
+  }, [records]);
+
+  // 初始化/更新 VTable。VTable 自带行列虚拟滚动，这里只维护外部 React 生命周期。
+  useEffect(() => {
+    if (!containerRef.current) {
+      return;
+    }
+
+    tableRef.current?.release();
+
+    const options: ListTableConstructorOptions = {
+      container: containerRef.current,
+      records,
+      columns: vtableColumns,
+      defaultRowHeight: rowHeight,
+      defaultHeaderRowHeight: rowHeight,
+      widthMode: 'standard',
+      heightMode: 'standard',
+      autoFillWidth: true,
+      autoFillHeight: true,
+      columnResizeMode: 'none',
+      rowResizeMode: 'none',
+      overscrollBehavior: 'none',
+      select: {
+        highlightMode: 'row',
+        makeSelectCellVisible: true,
+      },
+      hover: {
+        highlightMode: 'row',
+      },
+      theme: {
+        frameStyle: {
+          borderColor: '#e0e0e0',
+          borderLineWidth: 1,
+        },
+        bodyStyle: {
+          borderColor: '#f0f0f0',
+          borderLineWidth: 1,
+        },
+        headerStyle: {
+          borderColor: '#e0e0e0',
+          borderLineWidth: 1,
+        },
+      },
+    };
+
+    const table = new ListTable(options);
+    tableRef.current = table;
+
+    table.on(TABLE_EVENT_TYPE.CLICK_CELL, (event: MousePointerCellEvent) => {
+      const recordIndex = table.getRecordShowIndexByCell(event.col, event.row);
+      const record = recordsRef.current[recordIndex];
+
+      if (!record) {
+        return;
       }
+
+      onRowClickRef.current?.(record.__index, record.__cell);
+    });
+
+    return () => {
+      table.release();
+      if (tableRef.current === table) {
+        tableRef.current = null;
+      }
+    };
+  }, [records, rowHeight, vtableColumns]);
+
+  useEffect(() => {
+    if (scrollToRow === undefined || !tableRef.current) {
+      return;
+    }
+
+    const tableRow = tableRef.current.getTableIndexByRecordIndex(scrollToRow);
+    tableRef.current.scrollToRow(typeof tableRow === 'number' ? tableRow : scrollToRow + 1);
+    tableRef.current.selectCell(0, typeof tableRow === 'number' ? tableRow : scrollToRow + 1, false, false, false);
+  }, [scrollToRow]);
+
+  useEffect(() => {
+    if (!containerRef.current || !tableRef.current) {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      tableRef.current?.resize();
     });
 
     resizeObserver.observe(containerRef.current);
@@ -80,127 +243,18 @@ export function VirtualTable({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [height]);
-
-  // 滚动到指定行
-  useEffect(() => {
-    if (scrollToRow !== undefined && containerRef.current) {
-      const targetScrollTop = scrollToRow * rowHeight;
-      containerRef.current.scrollTop = targetScrollTop;
-      setScrollTop(targetScrollTop);
-    }
-  }, [scrollToRow, rowHeight]);
-
-  // 处理滚动
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    requestAnimationFrame(() => {
-      const scrollTop = e.currentTarget.scrollTop;
-      console.log('scrollTop', scrollTop);
-      setScrollTop(scrollTop);
-    });
   }, []);
-
-  // 处理行点击
-  const handleRowClick = useCallback(
-    (index: number, cell: CellData) => {
-      onRowClick?.(index, cell);
-    },
-    [onRowClick]
-  );
-
-  // 计算列宽
-  const columnWidths = columns.map((col) => col.width || 100);
-  const totalWidth = columnWidths.reduce((sum, width) => sum + width, 0);
 
   return (
     <div
       ref={containerRef}
       style={{
         height: typeof height === 'number' ? `${height}px` : height,
-        overflow: 'auto',
+        width: '100%',
         border: '1px solid #e0e0e0',
         borderRadius: '4px',
+        overflow: 'hidden',
       }}
-      onScroll={handleScroll}
-    >
-      <div
-        style={{
-          width: totalWidth,
-          minHeight: data.length * rowHeight,
-        }}
-      >
-        {/* 表头 */}
-        <div
-          style={{
-            display: 'flex',
-            position: 'sticky',
-            top: 0,
-            backgroundColor: '#f5f5f5',
-            borderBottom: '1px solid #e0e0e0',
-            zIndex: 1,
-          }}
-        >
-          {columns.map((col) => (
-            <div
-              key={col.key}
-              style={{
-                width: col.width || 100,
-                padding: '8px',
-                fontWeight: 'bold',
-                fontSize: '12px',
-                borderRight: '1px solid #e0e0e0',
-                boxSizing: 'border-box',
-              }}
-            >
-              {col.title}
-            </div>
-          ))}
-        </div>
-
-        {/* 表格内容 */}
-        <div>
-          {data.slice(startIndex, endIndex).map((cell, index) => {
-            const actualIndex = startIndex + index;
-            const isHighlighted = actualIndex === highlightedRow;
-
-            return (
-              <div
-                key={`${cell.row}-${cell.col}`}
-                style={{
-                  display: 'flex',
-                  height: rowHeight,
-                  borderBottom: '1px solid #f0f0f0',
-                  backgroundColor: isHighlighted ? '#e3f2fd' : 'white',
-                  cursor: onRowClick ? 'pointer' : 'default',
-                }}
-                onClick={() => handleRowClick(actualIndex, cell)}
-              >
-                {columns.map((col) => {
-                  const value = (cell.metadata?.[col.key] as unknown) ?? (cell as Record<string, unknown>)[col.key];
-
-                  return (
-                    <div
-                      key={col.key}
-                      style={{
-                        width: col.width || 100,
-                        padding: '8px',
-                        fontSize: '12px',
-                        borderRight: '1px solid #f0f0f0',
-                        boxSizing: 'border-box',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {col.render ? col.render(value, cell) : String(value ?? '')}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+    />
   );
 }
