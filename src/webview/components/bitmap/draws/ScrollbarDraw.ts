@@ -271,7 +271,7 @@ export class ScrollbarDraw {
    * 附加横向滚动条事件
    */
   private attachHorizontalEvents(): void {
-    if (!this.horizontalThumb) return;
+    if (!this.horizontalThumb) { return; }
 
     const eventBus = this.engine.getEventBus();
     const virtualScrollSync = this.engine.getVirtualScrollSync();
@@ -312,7 +312,7 @@ export class ScrollbarDraw {
 
     // 添加轨道点击事件
     this.horizontalGroup.on('click', (e) => {
-      if (e.target === this.horizontalThumb) return;
+      if (e.target === this.horizontalThumb) { return; }
 
       const { layout, virtualScrollSync } = this.getLayoutAndScrollbarState();
 
@@ -348,7 +348,7 @@ export class ScrollbarDraw {
    * 附加纵向滚动条事件
    */
   private attachVerticalEvents(): void {
-    if (!this.verticalThumb) return;
+    if (!this.verticalThumb) { return; }
 
     const eventBus = this.engine.getEventBus();
     const virtualScrollSync = this.engine.getVirtualScrollSync();
@@ -389,7 +389,7 @@ export class ScrollbarDraw {
 
     // 添加轨道点击事件
     this.verticalGroup.on('click', (e) => {
-      if (e.target === this.verticalThumb) return;
+      if (e.target === this.verticalThumb) { return; }
 
       const { layout, virtualScrollSync } = this.getLayoutAndScrollbarState();
 

@@ -87,9 +87,10 @@ export class CellLayer {
       for (let col = visibleRange.startCol; col <= visibleRange.endCol; col++) {
         const cell = dataManager.getCell(row, col);
         if (cell) {
+          // 有数据的格子，使用实际数据
           visibleCells.push(cell);
         } else {
-          // 无数据的格子，创建一个灰色格子
+          // 无数据的格子，创建一个灰色格子（占位）
           visibleCells.push({
             row,
             col,

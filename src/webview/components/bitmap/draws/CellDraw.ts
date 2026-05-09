@@ -60,12 +60,14 @@ export class CellDraw {
     const colorRules = config.colorRules;
     const cellSize = this.engine.getZoomLevel();
 
-    // 隐藏不可见格子
+    // 收集当前可见格子的 key
     const visibleKeys = new Set(cells.map((cell) => `${cell.row},${cell.col}`));
 
+    // 清理不可见的格子（从对象池中移除并销毁）
     for (const [key, rect] of this.cellPool) {
       if (!visibleKeys.has(key)) {
-        rect.visible(false);
+        rect.destroy();
+        this.cellPool.delete(key);
       }
     }
 
@@ -101,11 +103,14 @@ export class CellDraw {
       rect.width(cellSize);
       rect.height(cellSize);
 
-      // 无数据的格子显示灰色
+      // 根据颜色规则映射颜色
       if (cell.value === -1) {
+        // 无数据的格子显示灰色
         rect.fill(theme.defaultCellColor);
       } else {
-        rect.fill(this.mapColor(cell.value, colorRules) || theme.defaultCellColor);
+        // 有数据的格子根据 colorRules 映射颜色
+        const color = this.mapColor(cell.value, colorRules);
+        rect.fill(color || theme.defaultCellColor);
       }
     }
   }

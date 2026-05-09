@@ -96,6 +96,7 @@ export class BitmapGridEngine {
    */
   private setupLayers(): void {
     // 添加所有图层到 stage（注意顺序：后面的图层会覆盖前面的）
+    // 滚动条必须在最顶层，否则会被其他图层覆盖
     this.addLayer('cell', this.cellLayer.getLayer());
     this.addLayer('axis', this.axisLayer.getLayer());
     this.addLayer('highlight', this.highlightLayer.getLayer());
@@ -202,9 +203,9 @@ export class BitmapGridEngine {
   setData(data: MatrixData): void {
     this.dataManager.setData(data);
 
-    // 使用实际数据的行列数，但最小为 64x64
-    const rows = Math.max(DEFAULT_ROWS, data.rows);
-    const cols = Math.max(DEFAULT_COLS, data.cols);
+    // 使用实际数据的行列数
+    const rows = data.rows;
+    const cols = data.cols;
     this.virtualScrollSync.updateDataSize(rows, cols);
 
     // 触发数据更新事件，通知图层重新渲染
