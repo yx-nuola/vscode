@@ -233,7 +233,7 @@ export class ScrollbarDraw {
    * 附加横向滚动条事件
    */
   private attachHorizontalEvents(): void {
-    if (!this.horizontalThumb) return;
+    if (!this.horizontalThumb) { return; }
 
     const eventBus = this.engine.getEventBus();
     const virtualScrollSync = this.engine.getVirtualScrollSync();
@@ -243,7 +243,7 @@ export class ScrollbarDraw {
     });
 
     this.horizontalThumb.on('dragmove', () => {
-      if (!this.isDraggingHorizontal || !this.horizontalThumb) return;
+      if (!this.isDraggingHorizontal || !this.horizontalThumb) { return; }
 
       const { layout } = this.getLayoutAndScrollbarState();
 
@@ -255,8 +255,9 @@ export class ScrollbarDraw {
         layout.horizontalScrollbar.height
       );
 
-      // 拖动时不触发 scroll:change，避免重新设置 Group 位置导致滑块偏移
-      // 只在 dragend 时触发
+      // 拖动时实时更新 scrollState，触发格子/坐标轴重绘
+      // 由于 XAxisScrollbarLayer/YAxisScrollbarLayer 已有条件判断，不会重新设置 Group 位置
+      eventBus.emit('scroll:change', scrollState);
     });
 
     this.horizontalThumb.on('dragend', () => {
@@ -281,7 +282,7 @@ export class ScrollbarDraw {
 
     // 添加轨道点击事件
     this.horizontalGroup.on('click', (e) => {
-      if (e.target === this.horizontalThumb) return;
+      if (e.target === this.horizontalThumb) { return; }
 
       const { layout, virtualScrollSync } = this.getLayoutAndScrollbarState();
 
@@ -314,7 +315,7 @@ export class ScrollbarDraw {
    * 附加纵向滚动条事件
    */
   private attachVerticalEvents(): void {
-    if (!this.verticalThumb) return;
+    if (!this.verticalThumb) { return; }
 
     const eventBus = this.engine.getEventBus();
     const virtualScrollSync = this.engine.getVirtualScrollSync();
@@ -324,7 +325,7 @@ export class ScrollbarDraw {
     });
 
     this.verticalThumb.on('dragmove', () => {
-      if (!this.isDraggingVertical || !this.verticalThumb) return;
+      if (!this.isDraggingVertical || !this.verticalThumb) { return; }
 
       const { layout } = this.getLayoutAndScrollbarState();
 
@@ -336,8 +337,9 @@ export class ScrollbarDraw {
         layout.verticalScrollbar.height
       );
 
-      // 拖动时不触发 scroll:change，避免重新设置 Group 位置导致滑块偏移
-      // 只在 dragend 时触发
+      // 拖动时实时更新 scrollState，触发格子/坐标轴重绘
+      // 由于 XAxisScrollbarLayer/YAxisScrollbarLayer 已有条件判断，不会重新设置 Group 位置
+      eventBus.emit('scroll:change', scrollState);
     });
 
     this.verticalThumb.on('dragend', () => {
@@ -362,7 +364,7 @@ export class ScrollbarDraw {
 
     // 添加轨道点击事件
     this.verticalGroup.on('click', (e) => {
-      if (e.target === this.verticalThumb) return;
+      if (e.target === this.verticalThumb) { return; }
 
       const { layout, virtualScrollSync } = this.getLayoutAndScrollbarState();
 

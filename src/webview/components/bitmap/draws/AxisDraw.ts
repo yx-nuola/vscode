@@ -7,8 +7,6 @@ import type { BitmapGridEngine } from '../core/BitmapGridEngine';
 
 const { Group, Line, Text } = Konva;
 type GroupType = InstanceType<typeof Group>;
-type LineType = InstanceType<typeof Line>;
-type TextType = InstanceType<typeof Text>;
 
 /**
  * 坐标轴绘制类
@@ -66,7 +64,6 @@ export class AxisDraw {
 
     this.xAxisGroup.destroyChildren();
 
-    // 获取布局
     const layout = layoutCalculator.calculate(
       this.engine.getStage()?.width() || 0,
       this.engine.getStage()?.height() || 0
@@ -75,11 +72,7 @@ export class AxisDraw {
     const { xAxis } = layout;
     const cellSize = virtualScrollSync.currentCellSize;
     const totalCols = virtualScrollSync.getTotalCols();
-
-    // 计算可见范围
     const visibleRange = virtualScrollSync.getVisibleRange(scrollState.scrollX, scrollState.scrollY);
-
-    // 计算刻度步长（基于整个数据范围，不受滚动影响）
     const step = this.calculateStep(totalCols);
 
     // 绘制 X 轴线
@@ -90,12 +83,13 @@ export class AxisDraw {
     });
     this.xAxisGroup.add(axisLine);
 
-    // 绘制刻度和标签：遍历所有列号，只绘制落在可见范围内的
-    for (let col = 0; col <= totalCols; col += step) {
-      // 列号在可视范围内才绘制
-      if (col < visibleRange.startCol || col > visibleRange.endCol) continue;
+    // 从可见范围起始列对齐 step，确保滚动后始终有刻度可见
+    const firstTick = Math.ceil(visibleRange.startCol / step) * step;
+    const lastTick = Math.min(visibleRange.endCol + step, totalCols);
 
-      // 根据滚动偏移计算刻度在轴上的位置
+    for (let col = firstTick; col <= lastTick; col += step) {
+      if (col < 0 || col > totalCols) { continue; }
+
       const x = col * cellSize - scrollState.scrollX;
 
       // 刻度线
@@ -135,7 +129,6 @@ export class AxisDraw {
 
     this.yAxisGroup.destroyChildren();
 
-    // 获取布局
     const layout = layoutCalculator.calculate(
       this.engine.getStage()?.width() || 0,
       this.engine.getStage()?.height() || 0
@@ -144,11 +137,7 @@ export class AxisDraw {
     const { yAxis } = layout;
     const cellSize = virtualScrollSync.currentCellSize;
     const totalRows = virtualScrollSync.getTotalRows();
-
-    // 计算可见范围
     const visibleRange = virtualScrollSync.getVisibleRange(scrollState.scrollX, scrollState.scrollY);
-
-    // 计算刻度步长（基于整个数据范围，不受滚动影响）
     const step = this.calculateStep(totalRows);
 
     // 绘制 Y 轴线
@@ -159,12 +148,13 @@ export class AxisDraw {
     });
     this.yAxisGroup.add(axisLine);
 
-    // 绘制刻度和标签：遍历所有行号，只绘制落在可见范围内的
-    for (let row = 0; row < totalRows; row += step) {
-      // 行号在可视范围内才绘制
-      if (row < visibleRange.startRow || row > visibleRange.endRow) continue;
+    // 从可见范围起始行对齐 step，确保滚动后始终有刻度可见
+    const firstTick = Math.ceil(visibleRange.startRow / step) * step;
+    const lastTick = Math.min(visibleRange.endRow + step, totalRows);
 
-      // 根据滚动偏移计算刻度在轴上的位置
+    for (let row = firstTick; row <= lastTick; row += step) {
+      if (row < 0 || row > totalRows) { continue; }
+
       const y = row * cellSize - scrollState.scrollY;
 
       // 刻度线
@@ -194,16 +184,12 @@ export class AxisDraw {
 
   /**
    * 计算刻度步长（基于数据总量，不随滚动变化）
+   * 目标：确保坐标轴上始终有合理密度的刻度
    */
   private calculateStep(totalCount: number): number {
-    if (totalCount <= 10) return 1;
-    if (totalCount <= 20) return 2;
-    if (totalCount <= 50) return 5;
-    if (totalCount <= 100) return 10;
-    if (totalCount <= 200) return 20;
-    if (totalCount <= 500) return 50;
-    if (totalCount <= 1000) return 100;
-    return 200;
+    if (totalCount <= 64) { return 2; }
+    if (totalCount <= 128) { return 5; }
+    return 10;
   }
 
   /**
