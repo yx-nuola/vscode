@@ -50,6 +50,7 @@ export interface UseBitmapGridReturn {
   getScrollState: () => ScrollState;
   /** 获取选中的格子 */
   getSelectedCell: () => CellData | null;
+  setViewportData: (rows: number, cols: number, cells: CellData[]) => void;
 }
 
 /**
@@ -178,6 +179,10 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
     return engineRef.current?.getSelectedCell() || null;
   }, []);
 
+  const setViewportData = useCallback((rows: number, cols: number, cells: CellData[]) => {
+    engineRef.current?.setViewportData(rows, cols, cells);
+  }, []);
+
   return {
     engine: engineRef.current,
     containerRef,
@@ -191,5 +196,6 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
     getZoomLevel,
     getScrollState,
     getSelectedCell,
+    setViewportData,
   };
 }

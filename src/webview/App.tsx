@@ -1,8 +1,22 @@
 import React from 'react';
-import { BitmapTestPage } from './components/bitmap';
+import { BitmapActivityPanel } from './components/bitmap/components/BitmapActivityPanel';
+import { BitmapEditorPage } from './components/bitmap/components/BitmapEditorPage';
+
+declare global {
+  interface Window {
+    __BITMAP_WEBVIEW__?: {
+      role?: 'activity' | 'editor';
+      datasetId?: string;
+    };
+  }
+}
 
 const App: React.FC = () => {
-  return <BitmapTestPage />;
+  if (window.__BITMAP_WEBVIEW__?.role === 'editor') {
+    return <BitmapEditorPage />;
+  }
+
+  return <BitmapActivityPanel />;
 };
 
 export default App;

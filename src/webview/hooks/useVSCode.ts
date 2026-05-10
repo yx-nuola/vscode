@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 
-import { VSCodeMessage, Commands } from '../types';
+import { useCallback } from 'react';
+import { BitmapCommands, type VSCodeMessage } from '../../shared/bitmapProtocol';
+import { Commands as LegacyCommands } from '../types';
 
 interface VSCodeApi {
   postMessage: (message: unknown) => void;
@@ -33,22 +35,32 @@ function getVSCodeApi(): VSCodeApi | null {
 export function useVSCode() {
   const vscode = getVSCodeApi();
 
-  const send = (command: string, payload?: unknown): void => {
-    if (!vscode) return;
+  const send = useCallback((command: string, payload?: unknown): void => {
+    if (!vscode) {
+      return;
+    }
     const requestId = crypto.randomUUID();
     vscode.postMessage({ command, requestId, payload });
-  };
+  }, [vscode]);
 
-  const request = async <T>(command: string, payload?: unknown): Promise<T> => {
+  const request = useCallback(async <T>(command: string, payload?: unknown): Promise<T> => {
     if (!vscode) {
       return Promise.reject(new Error('VSCode API not available'));
     }
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const requestId = crypto.randomUUID();
 
       const handler = (message: VSCodeMessage) => {
         if (message.requestId === requestId) {
-          resolve(message.payload as T);
+          const index = messageHandlers.indexOf(handler);
+          if (index > -1) {
+            messageHandlers.splice(index, 1);
+          }
+          if (message.error) {
+            reject(new Error(message.error));
+          } else {
+            resolve(message.payload as T);
+          }
         }
       };
 
@@ -62,9 +74,9 @@ export function useVSCode() {
         }
       }, 30000);
     });
-  };
+  }, [vscode]);
 
-  const on = (command: string, callback: (payload: unknown) => void): (() => void) => {
+  const on = useCallback((command: string, callback: (payload: unknown) => void): (() => void) => {
     const handler = (message: VSCodeMessage) => {
       if (message.command === command) {
         callback(message.payload);
@@ -77,7 +89,7 @@ export function useVSCode() {
         messageHandlers.splice(index, 1);
       }
     };
-  };
+  }, []);
 
-  return { send, request, on, Commands };
+  return { send, request, on, Commands: { ...LegacyCommands, ...BitmapCommands } };
 }

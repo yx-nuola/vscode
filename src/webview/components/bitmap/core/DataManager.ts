@@ -32,6 +32,20 @@ export class DataManager {
     }
   }
 
+  setDimensions(rows: number, cols: number): void {
+    this.totalRows = rows;
+    this.totalCols = cols;
+  }
+
+  setViewportData(cells: CellData[]): void {
+    this.cellMap.clear();
+
+    for (const cell of cells) {
+      const key = `${cell.row},${cell.col}`;
+      this.cellMap.set(key, cell);
+    }
+  }
+
   /**
    * 获取单个格子数据
    */

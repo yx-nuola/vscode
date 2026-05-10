@@ -64,6 +64,10 @@ export class AxisLayer {
     this.update();
   }
 
+  render(): void {
+    this.update();
+  }
+
   /**
    * 更新坐标轴和滚动条
    */

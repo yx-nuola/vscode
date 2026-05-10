@@ -155,6 +155,8 @@ export interface BitmapGridCallbacks {
   onScrollChange?: (state: ScrollState) => void;
   /** 缩放变化回调 */
   onZoomChange?: (cellSize: number) => void;
+  /** 可视区域变化回调 */
+  onViewportChange?: (range: VisibleRange) => void;
 }
 
 /**

@@ -11,6 +11,7 @@
   ],
   "activationEvents": [
     "onCommand:my-extension.helloWorld",
+    "onCommand:my-extension.openBitmapEditor",
     "onView:my-extension.dataPanel"
   ],
   "main": "./dist/extension.js",
@@ -25,6 +26,10 @@
         "title": "打开数据面板"
       },
       {
+        "command": "my-extension.openBitmapEditor",
+        "title": "Open Bitmap Matrix"
+      },
+      {
         "command": "my-extension.openElectronWorkbench",
         "title": "打开 Electron 工作台"
       },
@@ -34,10 +39,11 @@
       }
     ],
     "viewsContainers": {
-      "panel": [
+      "activitybar": [
         {
           "id": "my-extension-panel",
-          "title": "数据面板"
+          "title": "Bitmap",
+          "icon": "$(symbol-array)"
         }
       ]
     },
@@ -46,7 +52,7 @@
         {
           "type": "webview",
           "id": "my-extension.dataPanel",
-          "name": "数据表格",
+          "name": "Bitmap Data",
           "icon": "$(table)"
         }
       ]

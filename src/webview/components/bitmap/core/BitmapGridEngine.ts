@@ -191,6 +191,9 @@ export class BitmapGridEngine {
     const layout = this.layoutCalculator.calculate(width, height);
     // 只更新视口高度，宽度固定为 BITMAP_WIDTH
     this.virtualScrollSync.updateViewport(BITMAP_WIDTH, layout.cellArea.height);
+    this.cellLayer.render();
+    this.axisLayer.render();
+    this.highlightLayer.render();
   }
 
   /**
@@ -213,6 +216,13 @@ export class BitmapGridEngine {
 
     // 触发数据更新事件，通知图层重新渲染
     this.eventBus.emit('data:change', data);
+  }
+
+  setViewportData(rows: number, cols: number, cells: CellData[]): void {
+    this.dataManager.setDimensions(rows, cols);
+    this.dataManager.setViewportData(cells);
+    this.virtualScrollSync.updateDataSize(rows, cols);
+    this.eventBus.emit('data:change', { rows, cols, cells });
   }
 
   /**

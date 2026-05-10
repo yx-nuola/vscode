@@ -29,6 +29,7 @@ export interface BitmapGridRef {
   getScrollState: () => ScrollState;
   /** 获取选中的格子 */
   getSelectedCell: () => CellData | null;
+  setViewportData: (rows: number, cols: number, cells: CellData[]) => void;
 }
 
 /**
@@ -52,6 +53,7 @@ export const BitmapGrid = forwardRef<BitmapGridRef, BitmapGridProps>((props, ref
     getZoomLevel,
     getScrollState,
     getSelectedCell,
+    setViewportData,
   } = useBitmapGrid({ ...hookParams, containerId });
 
   // 暴露 ref API
@@ -68,6 +70,7 @@ export const BitmapGrid = forwardRef<BitmapGridRef, BitmapGridProps>((props, ref
       getZoomLevel,
       getScrollState,
       getSelectedCell,
+      setViewportData,
     }),
     [
       zoomIn,
@@ -80,6 +83,7 @@ export const BitmapGrid = forwardRef<BitmapGridRef, BitmapGridProps>((props, ref
       getZoomLevel,
       getScrollState,
       getSelectedCell,
+      setViewportData,
     ]
   );
 
