@@ -121,8 +121,6 @@ export function BitmapTableLayout(props: BitmapTableLayoutProps) {
             </Button>
           </Space>
         </div>
-
-        {/* BitmapGrid */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <BitmapGrid
             ref={bitmapRef}
@@ -137,8 +135,6 @@ export function BitmapTableLayout(props: BitmapTableLayoutProps) {
           />
         </div>
       </div>
-
-      {/* 右侧剩余空间 DataTable */}
       <div
         style={{
           flex: 1,

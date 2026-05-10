@@ -1,25 +1,13 @@
-/**
- * React 组件（forwardRef）
- */
 
-import { forwardRef, useImperativeHandle, useRef } from 'react';
-import { useBitmapGrid, UseBitmapGridParams, UseBitmapGridReturn } from '../hooks/useBitmapGrid';
-import type { BitmapGridEngine } from '../core/BitmapGridEngine';
+import { useRef, forwardRef, useImperativeHandle } from 'react';
+import { useBitmapGrid, UseBitmapGridParams } from '../hooks/useBitmapGrid';
 import type { CellData, ScrollState } from '../types';
 
-/**
- * BitmapGrid 组件 Props
- */
 export interface BitmapGridProps extends Omit<UseBitmapGridParams, 'containerId'> {
-  /** 类名 */
   className?: string;
-  /** 样式 */
   style?: React.CSSProperties;
 }
 
-/**
- * BitmapGrid 组件 Ref API
- */
 export interface BitmapGridRef {
   /** 放大 */
   zoomIn: () => void;
