@@ -38,9 +38,10 @@ export class LocationManager {
 
     // 获取视口尺寸
     const layoutCalculator = this.engine.getLayoutCalculator();
-    const config = layoutCalculator.getConfig();
-    const viewportWidth = config.axisSize + config.spacing + config.scrollbarSize + config.spacing;
-    const viewportHeight = config.toolbarHeight + config.spacing + config.axisSize + config.spacing + config.scrollbarSize + config.spacing;
+    const stage = this.engine.getStage();
+    const layout = layoutCalculator.calculate(stage?.width() || 0, stage?.height() || 0);
+    const viewportWidth = layout.cellArea.width;
+    const viewportHeight = layout.cellArea.height;
 
     // 计算需要的滚动位置，确保目标格子完整显示
     let newScrollX = scrollState.scrollX;

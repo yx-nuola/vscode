@@ -46,6 +46,7 @@ export class HighlightLayer {
       this.engine.getStage()?.height() || 0
     );
     this.highlightDraw.setPosition(layout.cellArea.x, layout.cellArea.y);
+    this.highlightDraw.setClip(layout.cellArea.width, layout.cellArea.height);
 
     eventBus.on('highlight', (data) => {
       if (data) {
@@ -66,6 +67,28 @@ export class HighlightLayer {
         this.highlightDraw.clear();
       }
     });
+
+    eventBus.on('scroll:change', () => {
+      this.redrawSelectedCell();
+    });
+
+    eventBus.on('zoom:change', () => {
+      this.redrawSelectedCell();
+    });
+
+    eventBus.on('data:change', () => {
+      this.redrawSelectedCell();
+    });
+  }
+
+  private redrawSelectedCell(): void {
+    const selectedCell = this.engine.getSelectedCell();
+
+    if (selectedCell) {
+      this.highlightDraw.draw(selectedCell.col, selectedCell.row);
+    } else {
+      this.highlightDraw.clear();
+    }
   }
 
   /**

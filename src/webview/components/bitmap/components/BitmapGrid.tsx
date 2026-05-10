@@ -2,7 +2,7 @@
  * React 组件（forwardRef）
  */
 
-import { forwardRef, useImperativeHandle } from 'react';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { useBitmapGrid, UseBitmapGridParams, UseBitmapGridReturn } from '../hooks/useBitmapGrid';
 import type { BitmapGridEngine } from '../core/BitmapGridEngine';
 import type { CellData, ScrollState } from '../types';
@@ -49,7 +49,8 @@ export interface BitmapGridRef {
 export const BitmapGrid = forwardRef<BitmapGridRef, BitmapGridProps>((props, ref) => {
   const { className, style, ...hookParams } = props;
 
-  const containerId = `bitmap-grid-${Math.random().toString(36).substr(2, 9)}`;
+  const containerIdRef = useRef(`bitmap-grid-${Math.random().toString(36).substr(2, 9)}`);
+  const containerId = containerIdRef.current;
 
   const {
     containerRef,

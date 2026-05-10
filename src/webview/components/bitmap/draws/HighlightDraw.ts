@@ -38,6 +38,13 @@ export class HighlightDraw {
     this.group.y(y);
   }
 
+  setClip(width: number, height: number): void {
+    this.group.clipX(0);
+    this.group.clipY(0);
+    this.group.clipWidth(width);
+    this.group.clipHeight(height);
+  }
+
   /**
    * 绘制高亮
    */
@@ -45,21 +52,24 @@ export class HighlightDraw {
     const config = this.engine.getConfig();
     const theme = config.theme;
     const cellSize = this.engine.getZoomLevel();
+    const scrollState = this.engine.getScrollState();
 
     if (this.highlightRect) {
       this.highlightRect.destroy();
     }
 
     this.highlightRect = new Rect({
-      x: col * cellSize,
-      y: row * cellSize,
+      x: col * cellSize - scrollState.scrollX,
+      y: row * cellSize - scrollState.scrollY,
       width: cellSize,
       height: cellSize,
       stroke: theme.highlightColor,
       strokeWidth: 2,
+      listening: false,
     });
 
     this.group.add(this.highlightRect);
+    this.group.getLayer()?.batchDraw();
   }
 
   /**
@@ -69,6 +79,7 @@ export class HighlightDraw {
     if (this.highlightRect) {
       this.highlightRect.destroy();
       this.highlightRect = null;
+      this.group.getLayer()?.batchDraw();
     }
   }
 

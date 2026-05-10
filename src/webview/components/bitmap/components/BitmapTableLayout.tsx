@@ -55,6 +55,8 @@ export function BitmapTableLayout(props: BitmapTableLayoutProps) {
   const handleTableRowClick = useCallback(
     (row: number, cell: CellData) => {
       // 图形定位并高亮
+      setHighlightedRow(row);
+      setScrollToRow(row);
       bitmapRef.current?.locateAndHighlight(cell.col, cell.row);
       onTableRowClick?.(row, cell);
     },

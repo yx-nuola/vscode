@@ -11,6 +11,7 @@ import { VirtualScrollSync } from './VirtualScrollSync';
 import { AxisLayer } from '../layers/AxisLayer';
 import { CellLayer } from '../layers/CellLayer';
 import { HighlightLayer } from '../layers/HighlightLayer';
+import { LocationManager } from '../tools/LocationManager';
 
 const { Stage, Layer } = Konva;
 type StageType = InstanceType<typeof Stage>;
@@ -38,6 +39,7 @@ export class BitmapGridEngine {
   private scrollState: ScrollState;
   private cellSize: number;
   private selectedCell: CellData | null;
+  private locationManager: LocationManager;
 
   // 图层实例
   private axisLayer: AxisLayer;
@@ -56,6 +58,7 @@ export class BitmapGridEngine {
     this.scrollState = { scrollX: 0, scrollY: 0 };
     this.cellSize = DEFAULT_CELL_SIZE;
     this.selectedCell = null;
+    this.locationManager = new LocationManager(this);
 
     // 初始化图层
     this.axisLayer = new AxisLayer(this);
@@ -313,6 +316,7 @@ export class BitmapGridEngine {
    * 定位并高亮格子
    */
   locateAndHighlight(col: number, row: number): void {
+    this.locationManager.locateToCell(col, row);
     this.eventBus.emit('locate', { col, row });
     this.selectCell(col, row);
   }
