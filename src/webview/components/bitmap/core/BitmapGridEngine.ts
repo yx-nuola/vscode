@@ -195,11 +195,11 @@ export class BitmapGridEngine {
    * 设置数据
    */
   setData(data: MatrixData): void {
-    this.dataManager.setData(data);
 
-    // 使用实际数据的行列数
-    const rows = data.rows;
-    const cols = data.cols;
+    this.dataManager.setData(data);
+    const rows = Math.max(DEFAULT_ROWS, data.rows);
+    const cols = Math.max(DEFAULT_COLS, data.cols);
+
     this.virtualScrollSync.updateDataSize(rows, cols);
 
     // 触发数据更新事件，通知图层重新渲染

@@ -41,13 +41,36 @@ export interface VirtualTableProps {
   /** 高亮行索引 */
   highlightedRow?: number;
   /** 滚动到指定行 */
-  scrollToRow?: number;
+  scrollToRow?: ScrollToRowRequest;
 }
 
 interface TableRecord extends Record<string, unknown> {
   __index: number;
   __cell: CellData;
 }
+
+export interface ScrollToRowRequest {
+  row: number;
+  nonce: number;
+}
+
+const TABLE_COLUMNS: TableColumn[] = [
+  { key: 'bl', title: 'BL', width: 60 },
+  { key: 'wl', title: 'WL', width: 60 },
+  { key: 'vset', title: 'Vset', width: 80 },
+  { key: 'vreset', title: 'Vreset', width: 80 },
+  { key: 'imeas', title: 'Imeas', width: 80 },
+  {
+    key: 'status',
+    title: 'Status',
+    width: 80,
+    render: (value) => {
+      const status = String(value);
+      const color = status === 'pass' ? 'green' : status === 'fail' ? 'red' : 'gray';
+      return <span style={{ color }}>{status}</span>;
+    },
+  },
+];
 
 function getColumnValue(cell: CellData, key: string): unknown {
   return (cell.metadata?.[key] as unknown) ?? (cell as unknown as Record<string, unknown>)[key];
@@ -76,25 +99,6 @@ export function VirtualTable({
   highlightedRow,
   scrollToRow,
 }: VirtualTableProps) {
-
-    const columns: TableColumn[] = [
-      { key: 'bl', title: 'BL', width: 60 },
-      { key: 'wl', title: 'WL', width: 60 },
-      { key: 'vset', title: 'Vset', width: 80 },
-      { key: 'vreset', title: 'Vreset', width: 80 },
-      { key: 'imeas', title: 'Imeas', width: 80 },
-      {
-        key: 'status',
-        title: 'Status',
-        width: 80,
-        render: (value) => {
-          const status = String(value);
-          const color = status === 'pass' ? 'green' : status === 'fail' ? 'red' : 'gray';
-          return <span style={{ color }}>{status}</span>;
-        },
-      },
-    ];
-  
   const containerRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<ListTable | null>(null);
   const onRowClickRef = useRef(onRowClick);
@@ -109,18 +113,18 @@ export function VirtualTable({
           __cell: cell,
         };
 
-        for (const column of columns) {
+        for (const column of TABLE_COLUMNS) {
           record[column.key] = stringifyCellValue(getColumnValue(cell, column.key));
         }
 
         return record;
       }),
-    [columns, data]
+    [data]
   );
 
   const vtableColumns = useMemo<VTableColumnDefine[]>(
     () =>
-      columns.map((column) => ({
+      TABLE_COLUMNS.map((column) => ({
         field: column.key,
         title: column.title,
         width: column.width ?? 100,
@@ -153,7 +157,7 @@ export function VirtualTable({
           padding: [0, 8, 0, 8],
         },
       })),
-    [columns]
+    []
   );
 
   useEffect(() => {
@@ -236,13 +240,19 @@ export function VirtualTable({
   }, [records, rowHeight, vtableColumns]);
 
   useEffect(() => {
-    if (scrollToRow === undefined || !tableRef.current) {
+    if (!scrollToRow || !tableRef.current) {
       return;
     }
 
-    const tableRow = tableRef.current.getTableIndexByRecordIndex(scrollToRow);
-    tableRef.current.scrollToRow(typeof tableRow === 'number' ? tableRow : scrollToRow + 1);
-    tableRef.current.selectCell(0, typeof tableRow === 'number' ? tableRow : scrollToRow + 1, false, false, false);
+    const tableRow = tableRef.current.getTableIndexByRecordIndex(scrollToRow.row);
+    const targetTableRow = typeof tableRow === 'number' ? tableRow : scrollToRow.row + 1;
+    const visibleRows = containerRef.current
+      ? Math.max(1, Math.floor((containerRef.current.clientHeight - rowHeight) / rowHeight))
+      : 1;
+    const centeredTableRow = Math.max(1, targetTableRow - Math.floor(visibleRows / 2));
+
+    tableRef.current.scrollToRow(centeredTableRow);
+    tableRef.current.selectCell(0, targetTableRow, false, false, false);
   }, [scrollToRow]);
 
   useEffect(() => {

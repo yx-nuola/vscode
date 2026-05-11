@@ -1,7 +1,7 @@
 import { useRef, useCallback, useState } from 'react';
 import { Button, Space } from '@arco-design/web-react';
 import { BitmapGrid, BitmapGridRef, BitmapGridProps } from './BitmapGrid';
-import { VirtualTable } from './VirtualTable';
+import { ScrollToRowRequest, VirtualTable } from './VirtualTable';
 import type { CellData } from '../types';
 
 /**
@@ -21,15 +21,15 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
   const { onTableRowClick, onCellClick, data, config } = props;
 
   const bitmapRef = useRef<BitmapGridRef>(null);
+  const scrollRequestNonceRef = useRef(0);
   const [highlightedRow, setHighlightedRow] = useState<number | undefined>();
-  const [scrollToRow, setScrollToRow] = useState<number | undefined>();
+  const [scrollToRow, setScrollToRow] = useState<ScrollToRowRequest | undefined>();
 
   // 处理表格行点击
   const handleTableRowClick = useCallback(
     (row: number, cell: CellData) => {
       // 图形定位并高亮
       setHighlightedRow(row);
-      setScrollToRow(row);
       bitmapRef.current?.locateAndHighlight(cell.col, cell.row);
       onTableRowClick?.(row, cell);
     },
@@ -48,7 +48,11 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
         );
         if (rowIndex >= 0) {
           setHighlightedRow(rowIndex);
-          setScrollToRow(rowIndex);
+          scrollRequestNonceRef.current += 1;
+          setScrollToRow({
+            row: rowIndex,
+            nonce: scrollRequestNonceRef.current,
+          });
         }
       }
     },

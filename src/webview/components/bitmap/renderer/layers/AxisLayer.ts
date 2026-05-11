@@ -60,6 +60,10 @@ export class AxisLayer {
       this.update();
     });
 
+    eventBus.on('data:change', () => {
+      this.update();
+    });
+
     this.update();
   }
 

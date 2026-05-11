@@ -12,8 +12,8 @@ export class HorizontalAxisDraw extends BaseAxisDraw {
 
   protected renderTicks(state: AxisRenderState): void {
     const step = this.calculateStep(state.totalCols);
-    const firstTick = Math.ceil(state.visibleRange.startCol / step) * step;
-    const lastTick = Math.min(state.visibleRange.endCol + step, state.totalCols);
+    const firstTick = Math.max(0, state.visibleRange.startCol);
+    const lastTick = Math.min(state.visibleRange.endCol + 1, state.totalCols);
 
     for (let col = firstTick; col <= lastTick; col ++) {
       if (col < 0 || col > state.totalCols) {

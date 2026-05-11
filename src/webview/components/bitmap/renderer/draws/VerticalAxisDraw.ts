@@ -12,8 +12,8 @@ export class VerticalAxisDraw extends BaseAxisDraw {
 
   protected renderTicks(state: AxisRenderState): void {
     const step = this.calculateStep(state.totalRows);
-    const firstTick = Math.ceil(state.visibleRange.startRow / step) * step;
-    const lastTick = Math.min(state.visibleRange.endRow + step, state.totalRows);
+    const firstTick = Math.max(0, state.visibleRange.startRow);
+    const lastTick = Math.min(state.visibleRange.endRow + 1, state.totalRows);
 
     for (let row = firstTick; row <= lastTick; row ++) {
       if (row < 0 || row > state.totalRows) {
