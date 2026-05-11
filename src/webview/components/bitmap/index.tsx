@@ -36,7 +36,7 @@ export function BitmapTestPage() {
     },
     theme: LIGHT_THEME,
     colorRules,
-    initialCellSize: 10,
+    initialCellSize: 14,
     minCellSize: 2,
     maxCellSize: 50,
   }), [colorRules]);

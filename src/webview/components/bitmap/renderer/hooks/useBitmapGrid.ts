@@ -6,9 +6,6 @@ import { useEffect, useRef, useCallback } from 'react';
 import { BitmapGridEngine } from '../../core/BitmapGridEngine';
 import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData } from '../../types';
 
-/**
- * Bitmap Grid Hook 参数
- */
 export interface UseBitmapGridParams {
   /** 容器 ID */
   containerId: string;
@@ -22,9 +19,6 @@ export interface UseBitmapGridParams {
   colorRules?: ColorRule[];
 }
 
-/**
- * Bitmap Grid Hook 返回值
- */
 export interface UseBitmapGridReturn {
   /** 引擎实例 */
   engine: BitmapGridEngine | null;
@@ -51,10 +45,6 @@ export interface UseBitmapGridReturn {
   /** 获取选中的格子 */
   getSelectedCell: () => CellData | null;
 }
-
-/**
- * Bitmap Grid Hook
- */
 export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn {
   const { containerId, config, data, theme, colorRules } = params;
 
@@ -67,6 +57,7 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
 
     const engine = new BitmapGridEngine(config);
     engineRef.current = engine;
+    // debugger
 
     engine.initialize(containerRef.current);
 

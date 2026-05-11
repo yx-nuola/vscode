@@ -3,9 +3,7 @@
  */
 
 import type { VisibleRange, ScrollbarState, ScrollState } from '../types';
-
-// 固定常量
-const BITMAP_WIDTH = 896;
+import { BITMAP_WIDTH } from '../constants';
 
 /**
  * 虚拟滚动同步类

@@ -8,7 +8,7 @@ import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
  * 缩放管理器类
  */
 export class ZoomManager {
-  private engine: BitmapGridEngine;
+  private engine: any;
   private minCellSize: number;
   private maxCellSize: number;
 

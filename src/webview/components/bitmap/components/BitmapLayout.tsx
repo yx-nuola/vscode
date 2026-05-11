@@ -18,7 +18,7 @@ export interface BitmapTableLayoutProps extends Omit<BitmapGridProps, 'style'> {
  * BitmapLayout 组件
  */
 export function BitmapLayout(props: BitmapTableLayoutProps) {
-  const { onTableRowClick, onCellClick, ...bitmapProps } = props;
+  const { onTableRowClick, onCellClick, data, config } = props;
 
   const bitmapRef = useRef<BitmapGridRef>(null);
   const [highlightedRow, setHighlightedRow] = useState<number | undefined>();
@@ -42,9 +42,9 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
       onCellClick?.(col, row);
 
       // 查找对应的表格行索引
-      if (bitmapProps.data) {
-        const rowIndex = bitmapProps.data.cells.findIndex(
-          (c) => c.row === row && c.col === col
+      if (data) {
+        const rowIndex = data.cells.findIndex(
+          (c: any) => c.row === row && c.col === col
         );
         if (rowIndex >= 0) {
           setHighlightedRow(rowIndex);
@@ -52,7 +52,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
         }
       }
     },
-    [onCellClick, bitmapProps.data]
+    [onCellClick, data]
   );
 
   return (
@@ -97,11 +97,10 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <BitmapGrid
             ref={bitmapRef}
-            {...bitmapProps}
+            data={data}
             config={{
-              ...bitmapProps.config,
+              ...config,
               callbacks: {
-                ...bitmapProps.config.callbacks,
                 onCellClick: (cell) => handleCellClick(cell.col, cell.row),
               },
             }}
@@ -117,9 +116,9 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
           overflow: 'auto',
         }}
       >
-        {bitmapProps.data && (
+        {data && (
           <VirtualTable
-            data={bitmapProps.data.cells}
+            data={data.cells}
             height="100%"
             onRowClick={handleTableRowClick}
             highlightedRow={highlightedRow}

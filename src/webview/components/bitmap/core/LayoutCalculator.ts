@@ -4,9 +4,7 @@
 
 import type { LayoutConfig, LayoutResult, Area } from '../types';
 
-// 固定常量
-const BITMAP_WIDTH = 896;
-const BITMAP_HEIGHT = 896;
+import { BITMAP_WIDTH} from '../constants';
 
 /**
  * 布局计算器类
@@ -25,12 +23,12 @@ export class LayoutCalculator {
     const { axisSize, scrollbarSize, spacing } = this.config;
 
     // 工具栏区域（顶部，全宽）- 现在外层处理，这里保留占位
-    const toolbar: Area = {
-      x: 0,
-      y: 0,
-      width: containerWidth,
-      height: 0,
-    };
+    // const toolbar: Area = {
+    //   x: 0,
+    //   y: 0,
+    //   width: containerWidth,
+    //   height: 0,
+    // };
 
     // 格子区域（固定宽度 896px，高度根据容器计算）
     const cellArea: Area = {
@@ -73,7 +71,7 @@ export class LayoutCalculator {
     };
 
     return {
-      toolbar,
+      // toolbar,
       xAxis,
       yAxis,
       cellArea,

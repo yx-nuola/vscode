@@ -1,35 +1,3 @@
-/**
- * Bitmap Grid 组件类型定义
- */
-
-// ==================== 常量 ====================
-
-/**
- * 格子矩阵图形固定宽度,高度（不包含坐标轴、滚动条）
- */
-export const BITMAP_WIDTH = 896;
-export const BITMAP_HEIGHT = 896;
-/**
- * 默认格子尺寸（一行64个格子）
- */
-export const DEFAULT_CELL_SIZE = 14;
-
-/**
- * 最大格子尺寸（一行16个格子）
- */
-export const MAX_CELL_SIZE = 56;
-
-/**
- * 默认列数（固定64列）
- */
-export const DEFAULT_COLS = 64;
-
-/**
- * 默认行数（固定64行）
- */
-export const DEFAULT_ROWS = 64;
-
-// ==================== 数据类型 ====================
 
 /**
  * 单个格子数据
@@ -90,7 +58,7 @@ export interface Area {
  */
 export interface LayoutResult {
   /** 工具栏区域 */
-  toolbar: Area;
+  // toolbar: Area;
   /** X 轴区域 */
   xAxis: Area;
   /** Y 轴区域 */
@@ -255,11 +223,18 @@ export interface BitmapEvents {
  */
 export type ImportMode = 'overwrite' | 'append';
 
-
+export interface CellType {
+  bl: number;      // 位线（行）
+  wl: number;      // 字线（列）
+  vset: string | number;    // 设置电压
+  vreset: string | number;  // 复位电压
+  imeas: string | number;   // 测量电流
+  status: string;  // 状态（pass/fail）
+}
 /**
  * RRAM 测试数据原始格式
  */
-export interface RRAMTestData {
+export interface DataType {
   rows: number;
   cols: number;
   metadata: {
@@ -267,12 +242,5 @@ export interface RRAMTestData {
     date: string;
     mode: string;
   };
-  cells: Array<{
-    bl: number;      // 位线（行）
-    wl: number;      // 字线（列）
-    vset: string | number;    // 设置电压
-    vreset: string | number;  // 复位电压
-    imeas: string | number;   // 测量电流
-    status: string;  // 状态（pass/fail）
-  }>;
+  cells: Array<CellType>;
 }

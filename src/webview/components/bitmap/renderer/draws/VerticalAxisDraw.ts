@@ -15,21 +15,23 @@ export class VerticalAxisDraw extends BaseAxisDraw {
     const firstTick = Math.ceil(state.visibleRange.startRow / step) * step;
     const lastTick = Math.min(state.visibleRange.endRow + step, state.totalRows);
 
-    for (let row = firstTick; row <= lastTick; row += step) {
+    for (let row = firstTick; row <= lastTick; row ++) {
       if (row < 0 || row > state.totalRows) {
         continue;
       }
-
       const y = row * state.cellSize - state.scrollY;
-
-      this.addLine([state.area.width - 6, y, state.area.width - 1, y]);
-      this.addLabel({
-        x: state.area.width - 20,
-        y,
-        text: row.toString(),
-        align: 'right',
-        verticalAlign: 'middle',
-      });
+      if(row % step === 0){
+        this.addLabel({
+          x: state.area.width - 30,
+          y: y - 6,
+          text: row.toString(),
+          align: 'right',
+          verticalAlign: 'middle',
+        });
+        this.addLine([state.area.width - 10, y, state.area.width - 1, y]);
+      }else{
+        this.addLine([state.area.width - 6, y, state.area.width - 1, y]);
+      }
     }
   }
 }

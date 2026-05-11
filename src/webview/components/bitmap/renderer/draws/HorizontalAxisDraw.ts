@@ -15,21 +15,26 @@ export class HorizontalAxisDraw extends BaseAxisDraw {
     const firstTick = Math.ceil(state.visibleRange.startCol / step) * step;
     const lastTick = Math.min(state.visibleRange.endCol + step, state.totalCols);
 
-    for (let col = firstTick; col <= lastTick; col += step) {
+    for (let col = firstTick; col <= lastTick; col ++) {
       if (col < 0 || col > state.totalCols) {
         continue;
       }
 
       const x = col * state.cellSize - state.scrollX;
 
-      this.addLine([x, state.area.height - 6, x, state.area.height - 1]);
-      this.addLabel({
-        x,
-        y: state.area.height - 20,
-        text: col.toString(),
-        align: 'center',
-        verticalAlign: 'top',
-      });
+      if(col % step === 0){
+        this.addLine([x, state.area.height - 10, x, state.area.height - 1]);
+        this.addLabel({
+          x: x - 2,
+          y: state.area.height - 20,
+          text: col.toString(),
+          align: 'center',
+          verticalAlign: 'top',
+        });
+      }else{
+        this.addLine([x, state.area.height - 6, x, state.area.height - 1]);
+      }
+      
     }
   }
 }

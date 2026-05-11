@@ -3,7 +3,7 @@
  * 将 JSON 格式的测试数据转换为 MatrixData 格式
  */
 
-import type { MatrixData, CellData, RRAMTestData, ImportMode } from '../types';
+import type { MatrixData, CellData, DataType, ImportMode } from '../types';
 
 /**
  * 数据解析器类
@@ -12,7 +12,7 @@ export class DataParser {
   /**
    * 解析 RRAM 测试数据
    */
-  static parseRRAMData(data: RRAMTestData): MatrixData {
+  static parseRRAMData(data: DataType): MatrixData {
     const cells: CellData[] = data.cells.map((cell) => ({
       row: cell.wl,      // wl → row（Y 轴）
       col: cell.bl,      // bl → col（X 轴）
@@ -74,7 +74,7 @@ export class DataParser {
    */
   static parseJSON(jsonString: string): MatrixData {
     try {
-      const data = JSON.parse(jsonString) as RRAMTestData;
+      const data = JSON.parse(jsonString) as DataType;
       return this.parseRRAMData(data);
     } catch (error) {
       throw new Error(`Failed to parse JSON: ${error instanceof Error ? error.message : String(error)}`);
@@ -84,12 +84,12 @@ export class DataParser {
   /**
    * 验证数据格式
    */
-  static validateData(data: unknown): data is RRAMTestData {
+  static validateData(data: unknown): data is DataType {
     if (typeof data !== 'object' || data === null) {
       return false;
     }
 
-    const rramData = data as RRAMTestData;
+    const rramData = data as DataType;
 
     return (
       typeof rramData.rows === 'number' &&

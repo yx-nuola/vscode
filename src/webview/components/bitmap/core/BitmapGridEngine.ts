@@ -4,23 +4,16 @@
 
 import Konva from 'konva';
 import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData } from '../types';
-import { EventBus } from './EventBus';
-import { LayoutCalculator } from './LayoutCalculator';
-import { DataManager } from './DataManager';
-import { VirtualScrollSync } from './VirtualScrollSync';
+import { VirtualScrollSync, DataManager, LayoutCalculator, EventBus } from './index';
 import { AxisLayer, CellLayer, HighlightLayer } from '../renderer/layers';
 import { LocationManager } from '../renderer/tools';
+import { BITMAP_WIDTH, DEFAULT_CELL_SIZE, MAX_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
+
 
 const { Stage, Layer } = Konva;
 type StageType = InstanceType<typeof Stage>;
 type LayerType = InstanceType<typeof Layer>;
 
-// 固定常量
-const BITMAP_WIDTH = 896;
-const DEFAULT_CELL_SIZE = 14;
-const MAX_CELL_SIZE = 56;
-const DEFAULT_COLS = 64;
-const DEFAULT_ROWS = 64;
 
 /**
  * Bitmap Grid 引擎类
@@ -212,26 +205,6 @@ export class BitmapGridEngine {
     // 触发数据更新事件，通知图层重新渲染
     this.eventBus.emit('data:change', data);
   }
-
-  /**
-   * 自动计算合适的cellSize以全屏展示
-   */
-  // private autoFitCellSize(): void {
-  //   if (!this.stage) return;
-
-  //   const layout = this.layoutCalculator.calculate(this.stage.width(), this.stage.height());
-  //   const cellAreaWidth = layout.cellArea.width;
-
-  //   // 优先根据 X 轴宽度计算格子大小，确保 64 列完全占满 X 轴
-  //   const cellSizeX = cellAreaWidth / 64;
-
-  //   // 确保cellSize在合理范围内
-  //   const minSize = this.config.minCellSize || 2;
-  //   const maxSize = this.config.maxCellSize || 50;
-  //   const finalCellSize = Math.max(minSize, Math.min(cellSizeX, maxSize));
-
-  //   this.setCellSize(finalCellSize);
-  // }
 
   /**
    * 设置颜色规则
