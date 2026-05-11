@@ -3,8 +3,8 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { BitmapGridEngine } from '../core/BitmapGridEngine';
-import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData } from '../types';
+import { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData } from '../../types';
 
 /**
  * Bitmap Grid Hook 参数

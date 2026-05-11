@@ -1,6 +1,6 @@
 
 import { useRef, forwardRef, useImperativeHandle } from 'react';
-import { useBitmapGrid, UseBitmapGridParams } from '../hooks/useBitmapGrid';
+import { useBitmapGrid, UseBitmapGridParams } from '../renderer/hooks/useBitmapGrid';
 import type { CellData, ScrollState } from '../types';
 
 export interface BitmapGridProps extends Omit<UseBitmapGridParams, 'containerId'> {

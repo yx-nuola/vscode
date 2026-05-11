@@ -2,7 +2,7 @@
  * 定位到格子，确保可见
  */
 
-import type { BitmapGridEngine } from '../core/BitmapGridEngine';
+import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
 
 /**
  * 定位管理器类

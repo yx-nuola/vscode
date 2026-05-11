@@ -2,7 +2,7 @@
  * RAF 调度 + 防抖
  */
 
-import type { BitmapGridEngine } from '../core/BitmapGridEngine';
+import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
 
 /**
  * 事件优化器类

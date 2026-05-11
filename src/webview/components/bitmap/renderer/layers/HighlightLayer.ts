@@ -3,7 +3,7 @@
  */
 
 import Konva from 'konva';
-import type { BitmapGridEngine } from '../core/BitmapGridEngine';
+import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
 import { HighlightDraw } from '../draws/HighlightDraw';
 
 const { Layer } = Konva;

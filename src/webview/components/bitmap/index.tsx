@@ -3,27 +3,28 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { BitmapLayout } from './components/BitmapLayout';
+import { FileUpload } from './components/FileUpload';
 import {
-  BitmapTableLayout,
-  FileUpload,
   DataParser,
-  ImportMode,
-  MatrixData,
-  ColorRule,
-  LIGHT_THEME,
-  type BitmapGridConfig,
-} from '..';
+} from './core';
 
-/**
- * 测试页面组件
- */
+import type {
+  MatrixData,
+  BitmapGridConfig,
+  ColorRule,
+  ImportMode, 
+} from './types';
+
+import { LIGHT_THEME } from './theme/presets';
+
 export function BitmapTestPage() {
   const [data, setData] = useState<MatrixData | null>(null);
   const [parsedData, setParsedData] = useState<MatrixData | null>(null);
   const [colorRules, setColorRules] = useState<ColorRule[]>([
     { min: 0, max: 5, color: '#ff9800' },   // 橙色
-    { min: 5, max: 10, color: '#2196f3' },  // 蓝色
-    { min: 10, max: 100, color: '#4caf50' }, // 绿色
+    { min: 5, max: 10, color: '#4caf50' },  // 绿色
+    { min: 10, max: 100, color: '#ec4646' }, // 红色
   ]);
 
   // 使用 useMemo 确保 config 对象在 colorRules 变化时重新创建
@@ -120,7 +121,7 @@ export function BitmapTestPage() {
       {/* 主内容区域 */}
       <div style={{ flex: 1, overflow: 'hidden' }}>
         {parsedData ? (
-          <BitmapTableLayout
+          <BitmapLayout
             config={config}
             data={parsedData}
             onCellClick={handleCellClick}

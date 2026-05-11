@@ -3,8 +3,8 @@
  */
 
 import Konva from 'konva';
-import type { BitmapGridEngine } from '../core/BitmapGridEngine';
-import type { CellData } from '../types';
+import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { CellData } from '../../types';
 import { CellDraw } from '../draws/CellDraw';
 
 const { Layer } = Konva;

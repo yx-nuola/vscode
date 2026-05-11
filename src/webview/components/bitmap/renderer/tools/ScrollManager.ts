@@ -2,7 +2,7 @@
  * 滚动位置管理 + 边界钳制
  */
 
-import type { BitmapGridEngine } from '../core/BitmapGridEngine';
+import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
 
 /**
  * 滚动管理器类

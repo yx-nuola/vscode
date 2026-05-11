@@ -3,8 +3,8 @@
  */
 
 import Konva from 'konva';
-import type { BitmapGridEngine } from '../core/BitmapGridEngine';
-import type { CellData, ColorRule } from '../types';
+import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { CellData, ColorRule } from '../../types';
 
 const { Group, Rect } = Konva;
 type GroupType = InstanceType<typeof Group>;

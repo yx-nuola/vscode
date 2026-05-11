@@ -2,8 +2,8 @@
  * 坐标定位选择
  */
 
-import type { BitmapGridEngine } from '../core/BitmapGridEngine';
-import type { CellData } from '../types';
+import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { CellData } from '../../types';
 
 /**
  * 选择管理器类

@@ -4,7 +4,8 @@
  */
 
 import React, { useRef, useCallback } from 'react';
-import { DataParser, ImportMode, MatrixData } from '../core/DataParser';
+import { DataParser, ImportMode } from '../core/DataParser';
+import { MatrixData } from '../types';
 
 /**
  * 文件上传组件 Props

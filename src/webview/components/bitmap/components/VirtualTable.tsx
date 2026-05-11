@@ -32,8 +32,6 @@ export interface TableColumn {
 export interface VirtualTableProps {
   /** 数据 */
   data: CellData[];
-  /** 列配置 */
-  columns: TableColumn[];
   /** 行高 */
   rowHeight?: number;
   /** 容器高度 */
@@ -72,13 +70,31 @@ function stringifyCellValue(value: unknown): string {
  */
 export function VirtualTable({
   data,
-  columns,
   rowHeight = 32,
   height = 400,
   onRowClick,
   highlightedRow,
   scrollToRow,
 }: VirtualTableProps) {
+
+    const columns: TableColumn[] = [
+      { key: 'bl', title: 'BL', width: 60 },
+      { key: 'wl', title: 'WL', width: 60 },
+      { key: 'vset', title: 'Vset', width: 80 },
+      { key: 'vreset', title: 'Vreset', width: 80 },
+      { key: 'imeas', title: 'Imeas', width: 80 },
+      {
+        key: 'status',
+        title: 'Status',
+        width: 80,
+        render: (value) => {
+          const status = String(value);
+          const color = status === 'pass' ? 'green' : status === 'fail' ? 'red' : 'gray';
+          return <span style={{ color }}>{status}</span>;
+        },
+      },
+    ];
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<ListTable | null>(null);
   const onRowClickRef = useRef(onRowClick);

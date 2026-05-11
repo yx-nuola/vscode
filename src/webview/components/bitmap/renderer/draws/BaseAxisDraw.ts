@@ -1,6 +1,6 @@
 import Konva from 'konva';
-import type { BitmapGridEngine } from '../core/BitmapGridEngine';
-import type { Area, VisibleRange } from '../types';
+import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { Area, VisibleRange } from '../../types';
 
 const { Group, Line, Text } = Konva;
 type GroupType = InstanceType<typeof Group>;

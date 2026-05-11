@@ -8,10 +8,8 @@ import { EventBus } from './EventBus';
 import { LayoutCalculator } from './LayoutCalculator';
 import { DataManager } from './DataManager';
 import { VirtualScrollSync } from './VirtualScrollSync';
-import { AxisLayer } from '../layers/AxisLayer';
-import { CellLayer } from '../layers/CellLayer';
-import { HighlightLayer } from '../layers/HighlightLayer';
-import { LocationManager } from '../tools/LocationManager';
+import { AxisLayer, CellLayer, HighlightLayer } from '../renderer/layers';
+import { LocationManager } from '../renderer/tools';
 
 const { Stage, Layer } = Konva;
 type StageType = InstanceType<typeof Stage>;

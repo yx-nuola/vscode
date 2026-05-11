@@ -1,4 +1,4 @@
-import type { BitmapGridEngine } from '../core/BitmapGridEngine';
+import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
 import { BaseAxisDraw, type AxisRenderState } from './BaseAxisDraw';
 
 export class HorizontalAxisDraw extends BaseAxisDraw {

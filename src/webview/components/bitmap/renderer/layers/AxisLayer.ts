@@ -3,12 +3,11 @@
  */
 
 import Konva from 'konva';
-import type { BitmapGridEngine } from '../core/BitmapGridEngine';
-import type { LayoutResult } from '../types';
-import { HorizontalAxisDraw } from '../draws/HorizontalAxisDraw';
-import { VerticalAxisDraw } from '../draws/VerticalAxisDraw';
-import { HorizontalScrollbarDraw } from '../draws/HorizontalScrollbarDraw';
-import { VerticalScrollbarDraw } from '../draws/VerticalScrollbarDraw';
+import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { LayoutResult } from '../../types';
+import { HorizontalAxisDraw, VerticalAxisDraw, HorizontalScrollbarDraw, VerticalScrollbarDraw } from '../draws';
+
+
 
 const { Layer } = Konva;
 type LayerType = InstanceType<typeof Layer>;

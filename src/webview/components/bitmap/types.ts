@@ -248,3 +248,31 @@ export interface BitmapEvents {
   /** 数据变化事件 */
   'data:change': MatrixData;
 }
+
+
+/**
+ * 数据导入模式
+ */
+export type ImportMode = 'overwrite' | 'append';
+
+
+/**
+ * RRAM 测试数据原始格式
+ */
+export interface RRAMTestData {
+  rows: number;
+  cols: number;
+  metadata: {
+    total: number;
+    date: string;
+    mode: string;
+  };
+  cells: Array<{
+    bl: number;      // 位线（行）
+    wl: number;      // 字线（列）
+    vset: string | number;    // 设置电压
+    vreset: string | number;  // 复位电压
+    imeas: string | number;   // 测量电流
+    status: string;  // 状态（pass/fail）
+  }>;
+}
