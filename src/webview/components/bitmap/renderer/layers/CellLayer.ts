@@ -10,9 +10,6 @@ import { CellDraw } from '../draws/CellDraw';
 const { Layer } = Konva;
 type LayerType = InstanceType<typeof Layer>;
 
-/**
- * 格子图层类
- */
 export class CellLayer {
   private layer: LayerType;
   private engine: BitmapGridEngine;

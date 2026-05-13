@@ -9,9 +9,6 @@ import { HighlightDraw } from '../draws/HighlightDraw';
 const { Layer } = Konva;
 type LayerType = InstanceType<typeof Layer>;
 
-/**
- * 高亮图层类
- */
 export class HighlightLayer {
   private layer: LayerType;
   private engine: BitmapGridEngine;
@@ -33,6 +30,14 @@ export class HighlightLayer {
     return this.layer;
   }
 
+  handle(data: any): void {
+    if (data) {
+      this.highlightDraw.draw(data.col, data.row);
+    } else {
+      this.highlightDraw.clear();
+    }
+  };
+
   /**
    * 初始化图层
    */
@@ -48,24 +53,15 @@ export class HighlightLayer {
     this.highlightDraw.setPosition(layout.cellArea.x, layout.cellArea.y);
     this.highlightDraw.setClip(layout.cellArea.width, layout.cellArea.height);
 
-    eventBus.on('highlight', (data) => {
-      if (data) {
-        this.highlightDraw.draw(data.col, data.row);
-      } else {
-        this.highlightDraw.clear();
-      }
-    });
+    eventBus.on('highlight', (data) => this.handle(data));
 
     eventBus.on('clear-highlight', () => {
       this.highlightDraw.clear();
     });
 
-    eventBus.on('selection:change', (cell) => {
-      if (cell) {
-        this.highlightDraw.draw(cell.col, cell.row);
-      } else {
-        this.highlightDraw.clear();
-      }
+    eventBus.on('selection:change', (data) => {
+      console.log('selection:change', data);
+      this.handle(data);
     });
 
     eventBus.on('scroll:change', () => {
@@ -83,12 +79,7 @@ export class HighlightLayer {
 
   private redrawSelectedCell(): void {
     const selectedCell = this.engine.getSelectedCell();
-
-    if (selectedCell) {
-      this.highlightDraw.draw(selectedCell.col, selectedCell.row);
-    } else {
-      this.highlightDraw.clear();
-    }
+    this.handle(selectedCell);
   }
 
   /**

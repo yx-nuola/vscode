@@ -9,7 +9,8 @@ import type { BitmapTheme } from '../types';
  */
 export const LIGHT_THEME: BitmapTheme = {
   backgroundColor: '#ffffff',
-  axisColor: '#e0e0e0',
+  axisColor: '#838282',
+  axisTitleColor: '#111111',
   axisTextColor: '#333333',
   scrollbarTrackColor: '#f0f0f0',
   scrollbarThumbColor: '#c0c0c0',
@@ -24,6 +25,7 @@ export const LIGHT_THEME: BitmapTheme = {
 export const DARK_THEME: BitmapTheme = {
   backgroundColor: '#1e1e1e',
   axisColor: '#3e3e3e',
+  axisTitleColor: '#cccccc',
   axisTextColor: '#cccccc',
   scrollbarTrackColor: '#2e2e2e',
   scrollbarThumbColor: '#4e4e4e',

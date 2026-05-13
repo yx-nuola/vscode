@@ -105,6 +105,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
             config={{
               ...config,
               callbacks: {
+                ...config.callbacks,
                 onCellClick: (cell) => handleCellClick(cell.col, cell.row),
               },
             }}

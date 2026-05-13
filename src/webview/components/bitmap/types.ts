@@ -95,6 +95,8 @@ export interface BitmapTheme {
   axisColor: string;
   /** 坐标轴文字颜色 */
   axisTextColor: string;
+  /** 坐标轴标题颜色 */
+  axisTitleColor: string;
   /** 滚动条轨道颜色 */
   scrollbarTrackColor: string;
   /** 滚动条滑块颜色 */

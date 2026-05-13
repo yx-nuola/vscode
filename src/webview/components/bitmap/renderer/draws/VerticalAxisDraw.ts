@@ -7,6 +7,7 @@ export class VerticalAxisDraw extends BaseAxisDraw {
   }
 
   protected renderAxisLine(state: AxisRenderState): void {
+    this.renderTitle({ x: state.area.width - 25, y: -18, text: 'BL', align: 'center', verticalAlign: 'middle' });
     this.addLine([state.area.width - 1, 0, state.area.width - 1, state.area.height]);
   }
 

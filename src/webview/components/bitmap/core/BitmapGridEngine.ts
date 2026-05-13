@@ -89,15 +89,14 @@ export class BitmapGridEngine {
    * 设置图层
    */
   private setupLayers(): void {
-    // 添加所有图层到 stage（注意顺序：后面的图层会覆盖前面的）
     // 滚动条必须在最顶层，否则会被其他图层覆盖
-    this.addLayer('cell', this.cellLayer.getLayer());
     this.addLayer('axis', this.axisLayer.getLayer());
+    this.addLayer('cell', this.cellLayer.getLayer());
     this.addLayer('highlight', this.highlightLayer.getLayer());
 
     // 初始化图层
-    this.cellLayer.initialize();
     this.axisLayer.initialize();
+    this.cellLayer.initialize();
     this.highlightLayer.initialize();
   }
 
@@ -126,7 +125,10 @@ export class BitmapGridEngine {
     });
 
     this.eventBus.on('cell:hover', (cell) => {
-      this.config.callbacks?.onCellHover?.(cell);
+      if(cell){
+        console.log('cell:hover', cell);
+        this.config.callbacks?.onCellHover?.(cell);
+      }
     });
   }
 

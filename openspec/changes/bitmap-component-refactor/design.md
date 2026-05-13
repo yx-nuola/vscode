@@ -1,7 +1,7 @@
 ## Context
 
 当前 BitmapCanvas 组件基于 Konva.js 实现，但与业务逻辑紧密耦合：
-- 数据结构固定为 `{ bl, wl, vset, vreset, imeas }`
+- 数据结构固定为 `{ wl, bl, vset, vreset, imeas }`
 - 颜色映射逻辑硬编码在组件内
 - 事件处理直接调用 Context dispatch
 - 滚动条、缩放等交互行为不可配置

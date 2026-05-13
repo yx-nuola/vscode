@@ -7,6 +7,8 @@ export class HorizontalAxisDraw extends BaseAxisDraw {
   }
 
   protected renderAxisLine(state: AxisRenderState): void {
+    this.renderTitle({ x: -23, y: state.area.height -25, text: 'WL', align: 'center', verticalAlign: 'middle' });
+    this.addLine([-30, state.area.height - 22, -4, state.area.height - 1], 2);
     this.addLine([0, state.area.height - 1, state.area.width, state.area.height - 1]);
   }
 
@@ -26,7 +28,7 @@ export class HorizontalAxisDraw extends BaseAxisDraw {
         this.addLine([x, state.area.height - 10, x, state.area.height - 1]);
         this.addLabel({
           x: x - 2,
-          y: state.area.height - 20,
+          y: state.area.height - 28,
           text: col.toString(),
           align: 'center',
           verticalAlign: 'top',
