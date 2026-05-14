@@ -50,8 +50,6 @@ export class AxisLayer {
   initialize(): void {
     const eventBus = this.engine.getEventBus();
 
-    this.updatePositions();
-
     eventBus.on('scroll:change', () => {
       this.update();
     });
@@ -74,8 +72,10 @@ export class AxisLayer {
     this.updatePositions();
 
     const virtualScrollSync = this.engine.getVirtualScrollSync();
+    // 获取滚动位置
     const scrollState = this.engine.getScrollState();
     const layout = this.getLayout();
+    // 格子显示的范围
     const visibleRange = virtualScrollSync.getVisibleRange(scrollState.scrollX, scrollState.scrollY);
     const axisState = {
       cellSize: virtualScrollSync.currentCellSize,
@@ -86,15 +86,19 @@ export class AxisLayer {
       visibleRange,
     };
 
+    // 渲染图形
+    // 渲染X 轴
     this.horizontalAxisDraw.render({
       ...axisState,
       area: layout.xAxis,
     });
+    // 渲染Y 轴
     this.verticalAxisDraw.render({
       ...axisState,
       area: layout.yAxis,
     });
 
+    // 渲染横向滚动条
     this.horizontalScrollbarDraw.render({
       area: layout.horizontalScrollbar,
       scrollbar: virtualScrollSync.getScrollbarState(
@@ -104,6 +108,7 @@ export class AxisLayer {
         layout.horizontalScrollbar.height
       ),
     });
+    // 渲染纵向滚动条
     this.verticalScrollbarDraw.render({
       area: layout.verticalScrollbar,
       scrollbar: virtualScrollSync.getScrollbarState(

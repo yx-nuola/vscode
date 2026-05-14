@@ -32,6 +32,6 @@ The system SHALL support auto-hide mode for scrollbars (optional).
 ### Requirement: Scrollbar moves visible area
 The system SHALL allow users to move the visible area by dragging the scrollbar.
 
-#### Scenario: Drag scrollbar thumb
-- **WHEN** user drags the scrollbar thumb
+#### Scenario: Drag scrollbar slider
+- **WHEN** user drags the scrollbar slider
 - **THEN** the visible area SHALL move accordingly

@@ -3,7 +3,7 @@
  * 将 JSON 格式的测试数据转换为 MatrixData 格式
  */
 
-import type { MatrixData, CellData, DataType, ImportMode } from '../types';
+import type { MatrixData, CellData, DataType } from '../types';
 
 /**
  * 数据解析器类
@@ -13,24 +13,35 @@ export class DataParser {
    * 解析 RRAM 测试数据
    */
   static parseRRAMData(data: DataType): MatrixData {
-    const cells: CellData[] = data.cells.map((cell) => ({
-      row: cell.bl,      // bl → row（Y 轴）
-      col: cell.wl,      // wl → col（X 轴）
-      value: parseFloat(String(cell.imeas)),  // 使用 imeas 作为颜色映射值
-      metadata: {
-        wl: cell.wl,
-        bl: cell.bl,
-        vset: String(cell.vset),
-        vreset: String(cell.vreset),
-        imeas: String(cell.imeas),
-        status: cell.status,
-      },
-    }));
+    console.log( '原始数据', data);
+    const { cells } = data || [];
+    const cellsData: CellData[] = [];
+    let rows = 0;
+    let cols = 0;
+    for(let i = 0; i <= data.cells.length; i++){
+      const cell: any = cells[i];
+      if(!cell) continue;
+      rows = Math.max(cell.bl, rows);
+      cols = Math.max(cell.wl , cols);
+      cellsData.push({
+        row: cell.bl,      // bl → row（Y 轴）
+        col: cell.wl,      // wl → col（X 轴）
+        value: parseFloat(String(cell.imeas)),  // 使用 imeas 作为颜色映射值
+        metadata: {
+          wl: cell.wl,
+          bl: cell.bl,
+          vset: String(cell.vset),
+          vreset: String(cell.vreset),
+          imeas: String(cell.imeas),
+          status: cell.status,
+        },
+      });
+    };
 
-    return {
-      rows: data.rows,
-      cols: data.cols,
-      cells,
+    return  {
+      rows: rows + 1,
+      cols: cols + 1,
+      cells:cellsData,
     };
   }
 
@@ -46,25 +57,27 @@ export class DataParser {
       cellMap.set(key, cell);
     }
 
+    let maxRow = existingData.rows;
+    let maxCol = existingData.cols;
+
     // 添加新数据（覆盖重复的）
     for (const cell of newData.cells) {
       const key = `${cell.row},${cell.col}`;
+      console.log('新追加的-----', cell);
       cellMap.set(key, cell);
+      maxRow = Math.max(
+        existingData.rows,
+        cell.row + 1
+      );
+      maxCol = Math.max(
+        existingData.cols,
+        cell.col + 1
+      );
     }
 
-    // 计算新的行列数
-    const maxRow = Math.max(
-      existingData.rows,
-      ...newData.cells.map((c) => c.row)
-    );
-    const maxCol = Math.max(
-      existingData.cols,
-      ...newData.cells.map((c) => c.col)
-    );
-
     return {
-      rows: maxRow + 1,
-      cols: maxCol + 1,
+      rows: maxRow,
+      cols: maxCol,
       cells: Array.from(cellMap.values()),
     };
   }
@@ -92,8 +105,6 @@ export class DataParser {
     const rramData = data as DataType;
 
     return (
-      typeof rramData.rows === 'number' &&
-      typeof rramData.cols === 'number' &&
       typeof rramData.metadata === 'object' &&
       Array.isArray(rramData.cells) &&
       rramData.cells.every(

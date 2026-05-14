@@ -87,29 +87,29 @@ const totalWidth = this.totalCols * this.cellSize;
 const totalHeight = this.totalRows * this.cellSize;
 
 // 如果数据小于视口，滑块占满整个轨道
-const thumbWidth = totalWidth <= this.viewportWidth
+const sliderWidth = totalWidth <= this.viewportWidth
   ? trackWidth
   : Math.max((this.viewportWidth / totalWidth) * trackWidth, 20);
-const thumbHeight = totalHeight <= this.viewportHeight
+const sliderHeight = totalHeight <= this.viewportHeight
   ? trackHeight
   : Math.max((this.viewportHeight / totalHeight) * trackHeight, 20);
 
-const maxThumbX = trackWidth - thumbWidth;
-const maxThumbY = trackHeight - thumbHeight;
+const maxSliderX = trackWidth - sliderWidth;
+const maxSliderY = trackHeight - sliderHeight;
 
 // 如果数据小于视口，滑块位置为0
-const thumbX = totalWidth <= this.viewportWidth
+const sliderX = totalWidth <= this.viewportWidth
   ? 0
-  : (scrollX / (totalWidth - this.viewportWidth)) * maxThumbX;
-const thumbY = totalHeight <= this.viewportHeight
+  : (scrollX / (totalWidth - this.viewportWidth)) * maxSliderX;
+const sliderY = totalHeight <= this.viewportHeight
   ? 0
-  : (scrollY / (totalHeight - this.viewportHeight)) * maxThumbY;
+  : (scrollY / (totalHeight - this.viewportHeight)) * maxSliderY;
 
 return {
-  thumbX: Math.max(0, Math.min(thumbX, maxThumbX)),
-  thumbY: Math.max(0, Math.min(thumbY, maxThumbY)),
-  thumbWidth,
-  thumbHeight,
+  sliderX: Math.max(0, Math.min(sliderX, maxSliderX)),
+  sliderY: Math.max(0, Math.min(sliderY, maxSliderY)),
+  sliderWidth,
+  sliderHeight,
 };
 ```
 
@@ -122,17 +122,17 @@ const scrollbarState = virtualScrollSync.getScrollbarState(
   600
 );
 console.log('滚动条状态:', scrollbarState);
-// { thumbX: 11.2, thumbY: 33.3, thumbWidth: 20, thumbHeight: 20 }
+// { sliderX: 11.2, sliderY: 33.3, sliderWidth: 20, sliderHeight: 20 }
 ```
 
 ### 滚动偏移计算
 
-#### `getScrollFromThumb(thumbX: number, thumbY: number, trackWidth: number, trackHeight: number): ScrollState`
+#### `getScrollFromSlider(sliderX: number, sliderY: number, trackWidth: number, trackHeight: number): ScrollState`
 从滑块位置反算滚动偏移
 
 **参数**:
-- `thumbX`: 滑块 X 位置
-- `thumbY`: 滑块 Y 位置
+- `sliderX`: 滑块 X 位置
+- `sliderY`: 滑块 Y 位置
 - `trackWidth`: 轨道宽度
 - `trackHeight`: 轨道高度
 
@@ -144,31 +144,31 @@ const totalWidth = this.totalCols * this.cellSize;
 const totalHeight = this.totalRows * this.cellSize;
 
 // 计算滑块尺寸
-const thumbWidth = Math.max(
+const sliderWidth = Math.max(
   (this.viewportWidth / totalWidth) * trackWidth,
   20
 );
-const thumbHeight = Math.max(
+const sliderHeight = Math.max(
   (this.viewportHeight / totalHeight) * trackHeight,
   20
 );
 
 // 计算滑块最大可移动范围
-const maxThumbX = trackWidth - thumbWidth;
-const maxThumbY = trackHeight - thumbHeight;
+const maxSliderX = trackWidth - sliderWidth;
+const maxSliderY = trackHeight - sliderHeight;
 
 // 计算滚动偏移
 let scrollX = 0;
 let scrollY = 0;
 
 // X轴滚动
-if (totalWidth > this.viewportWidth && maxThumbX > 0) {
-  scrollX = (thumbX / maxThumbX) * (totalWidth - this.viewportWidth);
+if (totalWidth > this.viewportWidth && maxSliderX > 0) {
+  scrollX = (sliderX / maxSliderX) * (totalWidth - this.viewportWidth);
 }
 
 // Y轴滚动
-if (totalHeight > this.viewportHeight && maxThumbY > 0) {
-  scrollY = (thumbY / maxThumbY) * (totalHeight - this.viewportHeight);
+if (totalHeight > this.viewportHeight && maxSliderY > 0) {
+  scrollY = (sliderY / maxSliderY) * (totalHeight - this.viewportHeight);
 }
 
 return {
@@ -179,7 +179,7 @@ return {
 
 **使用示例**:
 ```typescript
-const scrollState = virtualScrollSync.getScrollFromThumb(
+const scrollState = virtualScrollSync.getScrollFromSlider(
   11.2,
   33.3,
   896,
@@ -276,10 +276,10 @@ interface VisibleRange {
 ### ScrollbarState 接口
 ```typescript
 interface ScrollbarState {
-  thumbX: number;      // 滑块 X 位置
-  thumbY: number;      // 滑块 Y 位置
-  thumbWidth: number;  // 滑块宽度
-  thumbHeight: number; // 滑块高度
+  sliderX: number;      // 滑块 X 位置
+  sliderY: number;      // 滑块 Y 位置
+  sliderWidth: number;  // 滑块宽度
+  sliderHeight: number; // 滑块高度
 }
 ```
 
@@ -317,7 +317,7 @@ const scrollbarState = virtualScrollSync.getScrollbarState(100, 200, 896, 600);
 console.log('滚动条状态:', scrollbarState);
 
 // 从滑块位置反算滚动
-const scrollState = virtualScrollSync.getScrollFromThumb(11.2, 33.3, 896, 600);
+const scrollState = virtualScrollSync.getScrollFromSlider(11.2, 33.3, 896, 600);
 console.log('滚动状态:', scrollState);
 
 // 获取最大滚动

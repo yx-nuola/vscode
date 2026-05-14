@@ -53,6 +53,8 @@ export function FileUpload({
         // 解析数据
         const matrixData = DataParser.parseRRAMData(jsonData);
 
+        console.log('Loaded data:', jsonData, matrixData);
+
         // 回调加载数据
         onDataLoad(matrixData, importMode);
       } catch (err) {

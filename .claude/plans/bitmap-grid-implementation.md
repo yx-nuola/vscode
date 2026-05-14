@@ -76,7 +76,7 @@ mitt 封装：on/off/emit/clear，支持 BitmapEvents 类型
 ### core/VirtualScrollSync.ts
 - `getVisibleRange(scrollX, scrollY)` — 计算当前可视格子范围
 - `getScrollbarState(scrollX, scrollY, trackWidth, trackHeight)` — 计算滚动条滑块位置和尺寸
-- `getScrollFromThumb(thumbX, thumbY, trackWidth, trackHeight)` — 从滑块位置反算滚动偏移
+- `getScrollFromSlider(sliderX, sliderY, trackWidth, trackHeight)` — 从滑块位置反算滚动偏移
 - `updateViewport(width, height)`、`updateCellSize(cellSize)` — 更新视口/格子尺寸
 - `maxScrollX`、`maxScrollY` getter
 

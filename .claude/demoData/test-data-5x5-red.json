@@ -1,10 +1,6 @@
 {
-  "rows": 5,
-  "cols": 5,
   "metadata": {
-    "total": 25,
-    "date": "2026-04-24T00:00:00.000Z",
-    "mode": "Fail Capture"
+    "date": "2026-04-24T00:00:00.000Z"
   },
   "cells": [
     {

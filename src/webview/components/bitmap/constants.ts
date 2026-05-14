@@ -22,3 +22,19 @@ export const DEFAULT_COLS = 64;
  * 默认行数（固定64行）
  */
 export const DEFAULT_ROWS = 64;
+
+/**
+ * 起始位置
+ */
+export const START_POSITION = 40;
+
+/**
+ * 间距
+ */
+export const PADDING = 4;
+
+/**
+ * 滚动条
+ */
+export const SCROLL = 12;
+

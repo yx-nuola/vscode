@@ -6,9 +6,6 @@ import type { LayoutConfig, LayoutResult, Area } from '../types';
 
 import { BITMAP_WIDTH} from '../constants';
 
-/**
- * 布局计算器类
- */
 export class LayoutCalculator {
   private config: LayoutConfig;
 

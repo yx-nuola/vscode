@@ -230,12 +230,12 @@
 //   }
 
 //   // 通知 renderer 定位到指定 signal 的位置
-//   sendThumbtack(signalName: string) {
+//   sendSlidertack(signalName: string) {
 //     if (!this.channelTool) {
 //       console.warn('channelTool is not properly initialized');
 //       return;
 //     }
-//     this.channelTool.onThumbtackRequest(signalName);
+//     this.channelTool.onSlidertackRequest(signalName);
 //   }
 
 //   // 重设 stage 尺寸 暂时先不开放

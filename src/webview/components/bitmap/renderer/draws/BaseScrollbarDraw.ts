@@ -15,13 +15,13 @@ export abstract class BaseScrollbarDraw {
   protected readonly engine: BitmapGridEngine;
   protected readonly group: GroupType;
   protected track: RectType | null;
-  protected thumb: RectType | null;
+  protected slider: RectType | null;
 
   constructor(engine: BitmapGridEngine, name: string) {
     this.engine = engine;
     this.group = new Group({ name });
     this.track = null;
-    this.thumb = null;
+    this.slider = null;
   }
 
   getGroup(): GroupType {
@@ -34,21 +34,21 @@ export abstract class BaseScrollbarDraw {
   }
 
   isDragging(): boolean {
-    return this.thumb?.isDragging() ?? false;
+    return this.slider?.isDragging() ?? false;
   }
 
   render(state: ScrollbarRenderState): void {
-    if (!this.track || !this.thumb) {
+    if (!this.track || !this.slider) {
       this.createScrollbar(state);
       return;
     }
 
     this.track.width(state.area.width);
     this.track.height(state.area.height);
-    this.thumb.dragBoundFunc((pos) => this.getDragBound(pos, state));
+    this.slider.dragBoundFunc((pos) => this.getDragBound(pos, state));
 
-    if (!this.thumb.isDragging()) {
-      this.updateThumb(state);
+    if (!this.slider.isDragging()) {
+      this.updateSlider(state);
     }
   }
 
@@ -56,17 +56,17 @@ export abstract class BaseScrollbarDraw {
     this.group.destroy();
   }
 
-  protected abstract getThumbX(state: ScrollbarRenderState): number;
+  protected abstract getSliderX(state: ScrollbarRenderState): number;
 
-  protected abstract getThumbY(state: ScrollbarRenderState): number;
+  protected abstract getSliderY(state: ScrollbarRenderState): number;
 
-  protected abstract getThumbWidth(state: ScrollbarRenderState): number;
+  protected abstract getSliderWidth(state: ScrollbarRenderState): number;
 
-  protected abstract getThumbHeight(state: ScrollbarRenderState): number;
+  protected abstract getSliderHeight(state: ScrollbarRenderState): number;
 
   protected abstract getDragBound(pos: { x: number; y: number }, state: ScrollbarRenderState): { x: number; y: number };
 
-  protected abstract getScrollStateFromThumb(state: ScrollbarRenderState): ScrollState;
+  protected abstract getScrollStateFromSlider(state: ScrollbarRenderState): ScrollState;
 
   protected abstract getScrollStateFromTrackClick(state: ScrollbarRenderState, pointer: { x: number; y: number }): ScrollState;
 
@@ -84,48 +84,48 @@ export abstract class BaseScrollbarDraw {
     });
     this.group.add(this.track);
 
-    this.thumb = new Rect({
-      x: this.getThumbX(state),
-      y: this.getThumbY(state),
-      width: this.getThumbWidth(state),
-      height: this.getThumbHeight(state),
-      fill: theme.scrollbarThumbColor,
+    this.slider = new Rect({
+      x: this.getSliderX(state),
+      y: this.getSliderY(state),
+      width: this.getSliderWidth(state),
+      height: this.getSliderHeight(state),
+      fill: theme.scrollbarSliderColor,
       draggable: true,
       dragBoundFunc: (pos) => this.getDragBound(pos, state),
     });
 
     this.attachEvents();
-    this.group.add(this.thumb);
+    this.group.add(this.slider);
   }
 
-  private updateThumb(state: ScrollbarRenderState): void {
-    if (!this.thumb) {
+  private updateSlider(state: ScrollbarRenderState): void {
+    if (!this.slider) {
       return;
     }
 
-    this.thumb.x(this.getThumbX(state));
-    this.thumb.y(this.getThumbY(state));
-    this.thumb.width(this.getThumbWidth(state));
-    this.thumb.height(this.getThumbHeight(state));
+    this.slider.x(this.getSliderX(state));
+    this.slider.y(this.getSliderY(state));
+    this.slider.width(this.getSliderWidth(state));
+    this.slider.height(this.getSliderHeight(state));
   }
 
   private attachEvents(): void {
-    if (!this.thumb) {
+    if (!this.slider) {
       return;
     }
 
     const eventBus = this.engine.getEventBus();
 
-    this.thumb.on('dragmove', () => {
-      eventBus.emit('scroll:change', this.getScrollStateFromCurrentThumb());
+    this.slider.on('dragmove', () => {
+      eventBus.emit('scroll:change', this.getScrollStateFromCurrentSlider());
     });
 
-    this.thumb.on('dragend', () => {
-      eventBus.emit('scroll:change', this.getScrollStateFromCurrentThumb());
+    this.slider.on('dragend', () => {
+      eventBus.emit('scroll:change', this.getScrollStateFromCurrentSlider());
     });
 
     this.group.on('click', (event) => {
-      if (event.target === this.thumb) {
+      if (event.target === this.slider) {
         return;
       }
 
@@ -162,8 +162,8 @@ export abstract class BaseScrollbarDraw {
 
   protected abstract getArea(layout: LayoutResult): Area;
 
-  private getScrollStateFromCurrentThumb(): ScrollState {
-    return this.getScrollStateFromThumb(this.getCurrentRenderState());
+  private getScrollStateFromCurrentSlider(): ScrollState {
+    return this.getScrollStateFromSlider(this.getCurrentRenderState());
   }
 
   protected getPointerPositionInGroup(): { x: number; y: number } | null {

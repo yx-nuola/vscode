@@ -100,7 +100,7 @@ export interface BitmapTheme {
   /** 滚动条轨道颜色 */
   scrollbarTrackColor: string;
   /** 滚动条滑块颜色 */
-  scrollbarThumbColor: string;
+  scrollbarSliderColor: string;
   /** 高亮颜色 */
   highlightColor: string;
   /** 边框颜色 */
@@ -178,13 +178,13 @@ export interface VisibleRange {
  */
 export interface ScrollbarState {
   /** 滑块 X 坐标 */
-  thumbX: number;
+  sliderX: number;
   /** 滑块 Y 坐标 */
-  thumbY: number;
+  sliderY: number;
   /** 滑块宽度 */
-  thumbWidth: number;
+  sliderWidth: number;
   /** 滑块高度 */
-  thumbHeight: number;
+  sliderHeight: number;
 }
 
 // ==================== 事件类型 ====================

@@ -16,6 +16,7 @@ type RectType = InstanceType<typeof Rect>;
 export class CellDraw {
   private engine: BitmapGridEngine;
   private group: GroupType;
+  // 缓存格子
   private cellPool: Map<string, RectType>;
   private hoveredCell: CellData | null;
 

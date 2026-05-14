@@ -55,7 +55,7 @@
 - `render(state)` - 渲染滚动条（轨道 + 滑块）
 - `isDragging()` - 检查滑块是否正在拖拽
 - `createScrollbar(state)` - 创建滚动条组件
-- `updateThumb(state)` - 更新滑块位置
+- `updateSlider(state)` - 更新滑块位置
 - `attachEvents()` - 绑定拖拽和点击事件
 - `getDragBound(pos, state)` - 抽象方法，计算拖拽边界
 
@@ -72,12 +72,12 @@
 
 **核心方法**:
 - `getArea(layout)` - 获取水平滚动条区域
-- `getThumbX(state)` - 获取滑块 X 位置
-- `getThumbY()` - 返回 0（水平滚动条）
-- `getThumbWidth(state)` - 获取滑块宽度
-- `getThumbHeight(state)` - 获取滑块高度
+- `getSliderX(state)` - 获取滑块 X 位置
+- `getSliderY()` - 返回 0（水平滚动条）
+- `getSliderWidth(state)` - 获取滑块宽度
+- `getSliderHeight(state)` - 获取滑块高度
 - `getDragBound(pos, state)` - 计算水平拖拽边界
-- `getScrollStateFromThumb(state)` - 从滑块位置计算滚动状态
+- `getScrollStateFromSlider(state)` - 从滑块位置计算滚动状态
 - `getScrollStateFromTrackClick(state, pointer)` - 从轨道点击位置计算滚动状态
 
 ### VerticalScrollbarDraw.ts - 垂直滚动条
@@ -85,12 +85,12 @@
 
 **核心方法**:
 - `getArea(layout)` - 获取垂直滚动条区域
-- `getThumbX()` - 返回 0（垂直滚动条）
-- `getThumbY(state)` - 获取滑块 Y 位置
-- `getThumbWidth(state)` - 获取滑块宽度
-- `getThumbHeight(state)` - 获取滑块高度
+- `getSliderX()` - 返回 0（垂直滚动条）
+- `getSliderY(state)` - 获取滑块 Y 位置
+- `getSliderWidth(state)` - 获取滑块宽度
+- `getSliderHeight(state)` - 获取滑块高度
 - `getDragBound(pos, state)` - 计算垂直拖拽边界
-- `getScrollStateFromThumb(state)` - 从滑块位置计算滚动状态
+- `getScrollStateFromSlider(state)` - 从滑块位置计算滚动状态
 - `getScrollStateFromTrackClick(state, pointer)` - 从轨道点击位置计算滚动状态
 
 ### CellDraw.ts - 格子绘制

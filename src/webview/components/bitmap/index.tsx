@@ -2,7 +2,7 @@
  * RRAM 测试结果可视化测试页面
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { BitmapLayout } from './components/BitmapLayout';
 import { FileUpload } from './components/FileUpload';
 import {
@@ -15,6 +15,7 @@ import type {
   ColorRule,
   ImportMode, 
 } from './types';
+import { MAX_CELL_SIZE, DEFAULT_CELL_SIZE, START_POSITION, PADDING, SCROLL } from './constants';
 
 import { LIGHT_THEME } from './theme/presets';
 
@@ -27,18 +28,17 @@ export function BitmapTestPage() {
     { min: 10, max: 100, color: '#ec4646' }, // 红色
   ]);
 
-  // 使用 useMemo 确保 config 对象在 colorRules 变化时重新创建
   const config: BitmapGridConfig = useMemo(() => ({
     layout: {
-      axisSize: 40,
-      scrollbarSize: 12,
-      spacing: 4,
+      axisSize: START_POSITION,
+      scrollbarSize: SCROLL,
+      spacing: PADDING,
     },
     theme: LIGHT_THEME,
     colorRules,
-    initialCellSize: 14,
-    minCellSize: 2,
-    maxCellSize: 50,
+    initialCellSize: DEFAULT_CELL_SIZE,
+    minCellSize: DEFAULT_CELL_SIZE,
+    maxCellSize: MAX_CELL_SIZE,
   }), [colorRules]);
 
   // 处理数据加载
@@ -49,10 +49,11 @@ export function BitmapTestPage() {
       } else {
         // 追加模式：合并数据
         const mergedData = DataParser.mergeData(data, newData);
+        console.log('Merged data:', mergedData);
         setData(mergedData);
       }
     },
-    [data]
+    [data, setData]
   );
 
   // 处理解析
@@ -91,7 +92,7 @@ export function BitmapTestPage() {
         <FileUpload onDataLoad={handleDataLoad} />
 
         {/* 解析按钮 */}
-        {data && !parsedData && (
+        {/* {data && !parsedData && ( */}
           <button
             onClick={handleParse}
             style={{
@@ -106,14 +107,14 @@ export function BitmapTestPage() {
           >
             解析数据
           </button>
-        )}
+        {/* )} */}
 
         {/* 数据统计 */}
         {data && (
           <div style={{ fontSize: '12px', color: '#666' }}>
             <span>总行数: {data.rows}</span>
             <span style={{ marginLeft: '8px' }}>总列数: {data.cols}</span>
-            <span style={{ marginLeft: '8px' }}>总单元数: {data.cells.length}</span>
+            {/* <span style={{ marginLeft: '8px' }}>总单元数: {data.cells && data.cells.length}</span> */}
           </div>
         )}
       </div>

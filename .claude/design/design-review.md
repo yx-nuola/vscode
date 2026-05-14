@@ -183,27 +183,27 @@ class VirtualScrollSync {
   // 计算滚动条滑块尺寸和位置
   getScrollbarState(scrollX: number, scrollY: number, trackWidth: number, trackHeight: number) {
     // 滑块大小：视口占总数据的比例
-    const thumbWidth = Math.max(20, (this.viewportWidth / this.totalWidth) * trackWidth);
-    const thumbHeight = Math.max(20, (this.viewportHeight / this.totalHeight) * trackHeight);
+    const sliderWidth = Math.max(20, (this.viewportWidth / this.totalWidth) * trackWidth);
+    const sliderHeight = Math.max(20, (this.viewportHeight / this.totalHeight) * trackHeight);
 
     // 滑块位置：当前滚动偏移占最大偏移的比例
-    const maxThumbX = trackWidth - thumbWidth;
-    const maxThumbY = trackHeight - thumbHeight;
-    const thumbX = this.maxScrollX > 0 ? (scrollX / this.maxScrollX) * maxThumbX : 0;
-    const thumbY = this.maxScrollY > 0 ? (scrollY / this.maxScrollY) * maxThumbY : 0;
+    const maxSliderX = trackWidth - sliderWidth;
+    const maxSliderY = trackHeight - sliderHeight;
+    const sliderX = this.maxScrollX > 0 ? (scrollX / this.maxScrollX) * maxSliderX : 0;
+    const sliderY = this.maxScrollY > 0 ? (scrollY / this.maxScrollY) * maxSliderY : 0;
 
-    return { thumbX, thumbY, thumbWidth, thumbHeight };
+    return { sliderX, sliderY, sliderWidth, sliderHeight };
   }
 
   // 滚动条拖拽：从滑块位置反算滚动偏移
-  getScrollFromThumb(thumbX: number, thumbY: number, trackWidth: number, trackHeight: number) {
-    const thumbWidth = Math.max(20, (this.viewportWidth / this.totalWidth) * trackWidth);
-    const thumbHeight = Math.max(20, (this.viewportHeight / this.totalHeight) * trackHeight);
-    const maxThumbX = trackWidth - thumbWidth;
-    const maxThumbY = trackHeight - thumbHeight;
+  getScrollFromSlider(sliderX: number, sliderY: number, trackWidth: number, trackHeight: number) {
+    const sliderWidth = Math.max(20, (this.viewportWidth / this.totalWidth) * trackWidth);
+    const sliderHeight = Math.max(20, (this.viewportHeight / this.totalHeight) * trackHeight);
+    const maxSliderX = trackWidth - sliderWidth;
+    const maxSliderY = trackHeight - sliderHeight;
 
-    const scrollX = maxThumbX > 0 ? (thumbX / maxThumbX) * this.maxScrollX : 0;
-    const scrollY = maxThumbY > 0 ? (thumbY / maxThumbY) * this.maxScrollY : 0;
+    const scrollX = maxSliderX > 0 ? (sliderX / maxSliderX) * this.maxScrollX : 0;
+    const scrollY = maxSliderY > 0 ? (sliderY / maxSliderY) * this.maxScrollY : 0;
     return { scrollX, scrollY };
   }
 }
@@ -227,7 +227,7 @@ ScrollManager.updateScroll(deltaX, deltaY)
     │
     ├──► YAxisManager.updateLabels(scrollY)
     │
-    └──► ScrollbarManager.updateThumb(scrollX, scrollY)
+    └──► ScrollbarManager.updateSlider(scrollX, scrollY)
             │
             ▼
          更新滑块位置（getScrollbarState 计算后绘制）
@@ -237,10 +237,10 @@ ScrollManager.updateScroll(deltaX, deltaY)
 滚动条拖拽
     │
     ▼
-ScrollbarManager.onDrag(thumbX, thumbY)
+ScrollbarManager.onDrag(sliderX, sliderY)
     │
     ▼
-VirtualScrollSync.getScrollFromThumb(thumbX, thumbY)
+VirtualScrollSync.getScrollFromSlider(sliderX, sliderY)
     │
     ▼
 ScrollManager.setScroll(scrollX, scrollY)  → 同上流程
@@ -498,7 +498,7 @@ interface BitmapTheme {
   axisColor: string;         // 坐标轴线条+标签颜色
   gridLineColor: string;     // 网格线颜色
   scrollbarTrackColor: string; // 滚动条轨道色
-  scrollbarThumbColor: string; // 滚动条滑块色
+  scrollbarSliderColor: string; // 滚动条滑块色
   highlightColor: string;    // 高亮框颜色
 }
 
@@ -508,7 +508,7 @@ const LIGHT_THEME: BitmapTheme = {
   axisColor: '#333333',
   gridLineColor: '#e0e0e0',
   scrollbarTrackColor: '#f0f0f0',
-  scrollbarThumbColor: '#c0c0c0',
+  scrollbarSliderColor: '#c0c0c0',
   highlightColor: '#1890ff',
 };
 
@@ -517,7 +517,7 @@ const DARK_THEME: BitmapTheme = {
   axisColor: '#cccccc',
   gridLineColor: '#333333',
   scrollbarTrackColor: '#2d2d2d',
-  scrollbarThumbColor: '#555555',
+  scrollbarSliderColor: '#555555',
   highlightColor: '#177ddc',
 };
 

@@ -38,6 +38,7 @@ export class BitmapGridEngine {
   private highlightLayer: HighlightLayer;
 
   constructor(config: BitmapGridConfig) {
+    // debugger;
     this.stage = null;
     this.layers = new Map();
     this.eventBus = new EventBus();
@@ -120,13 +121,14 @@ export class BitmapGridEngine {
     });
 
     this.eventBus.on('cell:click', (cell) => {
+      console.log('cell:click', cell);
       this.selectCell(cell.col, cell.row);
       this.config.callbacks?.onCellClick?.(cell);
     });
 
     this.eventBus.on('cell:hover', (cell) => {
       if(cell){
-        console.log('cell:hover', cell);
+        // console.log('cell:hover', cell);
         this.config.callbacks?.onCellHover?.(cell);
       }
     });
