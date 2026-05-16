@@ -62,6 +62,10 @@ export class AxisLayer {
       this.update();
     });
 
+    eventBus.on('theme:change', () => {
+      this.update();
+    });
+
     this.update();
   }
 

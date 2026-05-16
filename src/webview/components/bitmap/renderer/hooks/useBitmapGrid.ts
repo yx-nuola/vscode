@@ -99,17 +99,19 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
 
   // 更新主题
   useEffect(() => {
-    if (theme && engineRef.current) {
-      engineRef.current.setTheme(theme);
+    const nextTheme = theme ?? config.theme;
+    if (nextTheme && engineRef.current) {
+      engineRef.current.setTheme(nextTheme);
     }
-  }, [theme]);
+  }, [theme, config.theme]);
 
   // 更新颜色规则
   useEffect(() => {
-    if (colorRules && engineRef.current) {
-      engineRef.current.setColorRules(colorRules);
+    const nextColorRules = colorRules ?? config.colorRules;
+    if (nextColorRules && engineRef.current) {
+      engineRef.current.setColorRules(nextColorRules);
     }
-  }, [colorRules]);
+  }, [colorRules, config.colorRules]);
 
   // 监听容器尺寸变化
   useEffect(() => {

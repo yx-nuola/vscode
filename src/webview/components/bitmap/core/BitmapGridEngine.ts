@@ -193,6 +193,7 @@ export class BitmapGridEngine {
    */
   setTheme(theme: BitmapTheme): void {
     this.config.theme = theme;
+    this.eventBus.emit('theme:change', undefined);
   }
 
   /**
@@ -216,6 +217,7 @@ export class BitmapGridEngine {
    */
   setColorRules(rules: ColorRule[]): void {
     this.config.colorRules = rules;
+    this.eventBus.emit('color-rules:change', undefined);
   }
 
   /**

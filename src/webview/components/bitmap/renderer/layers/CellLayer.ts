@@ -62,6 +62,14 @@ export class CellLayer {
       this.renderVisibleCells();
     });
 
+    eventBus.on('theme:change', () => {
+      this.renderVisibleCells();
+    });
+
+    eventBus.on('color-rules:change', () => {
+      this.renderVisibleCells();
+    });
+
     // 初始渲染
     this.renderVisibleCells();
   }

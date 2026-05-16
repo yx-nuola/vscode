@@ -74,6 +74,10 @@ export class HighlightLayer {
     eventBus.on('data:change', () => {
       this.redrawSelectedCell();
     });
+
+    eventBus.on('theme:change', () => {
+      this.redrawSelectedCell();
+    });
   }
 
   private redrawSelectedCell(): void {

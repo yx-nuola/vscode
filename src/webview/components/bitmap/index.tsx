@@ -13,20 +13,25 @@ import type {
   MatrixData,
   BitmapGridConfig,
   ColorRule,
+  BitmapTheme,
   ImportMode, 
 } from './types';
 import { MAX_CELL_SIZE, DEFAULT_CELL_SIZE, START_POSITION, PADDING, SCROLL } from './constants';
 
-import { LIGHT_THEME } from './theme/presets';
+import { DARK_THEME, LIGHT_THEME } from './theme/presets';
+
+type ThemeMode = 'light' | 'dark';
 
 export function BitmapTestPage() {
   const [data, setData] = useState<MatrixData | null>(null);
   const [parsedData, setParsedData] = useState<MatrixData | null>(null);
+  const [themeMode, setThemeMode] = useState<ThemeMode>('light');
   const [colorRules, setColorRules] = useState<ColorRule[]>([
     { min: 0, max: 5, color: '#ff9800' },   // 橙色
     { min: 5, max: 10, color: '#4caf50' },  // 绿色
     { min: 10, max: 100, color: '#ec4646' }, // 红色
   ]);
+  const theme: BitmapTheme = themeMode === 'light' ? LIGHT_THEME : DARK_THEME;
 
   const config: BitmapGridConfig = useMemo(() => ({
     layout: {
@@ -34,12 +39,12 @@ export function BitmapTestPage() {
       scrollbarSize: SCROLL,
       spacing: PADDING,
     },
-    theme: LIGHT_THEME,
+    theme,
     colorRules,
     initialCellSize: DEFAULT_CELL_SIZE,
     minCellSize: DEFAULT_CELL_SIZE,
     maxCellSize: MAX_CELL_SIZE,
-  }), [colorRules]);
+  }), [colorRules, theme]);
 
   // 处理数据加载
   const handleDataLoad = useCallback(
@@ -64,6 +69,18 @@ export function BitmapTestPage() {
   }, [data]);
 
   // 处理格子点击
+  const handleThemeToggle = useCallback(() => {
+    setThemeMode((mode) => mode === 'light' ? 'dark' : 'light');
+  }, []);
+
+  const handleColorRuleChange = useCallback((index: number, color: string) => {
+    setColorRules((rules) =>
+      rules.map((rule, ruleIndex) =>
+        ruleIndex === index ? { ...rule, color } : rule
+      )
+    );
+  }, []);
+
   const handleCellClick = useCallback((col: number, row: number) => {
     console.log('Cell clicked:', { col, row });
   }, []);
@@ -83,6 +100,7 @@ export function BitmapTestPage() {
           backgroundColor: '#f5f5f5',
           display: 'flex',
           alignItems: 'center',
+          flexWrap: 'wrap',
           gap: '16px',
         }}
       >
@@ -110,6 +128,63 @@ export function BitmapTestPage() {
         {/* )} */}
 
         {/* 数据统计 */}
+        <button
+          onClick={handleThemeToggle}
+          style={{
+            padding: '6px 12px',
+            backgroundColor: themeMode === 'light' ? '#ffffff' : '#2b2f36',
+            color: themeMode === 'light' ? '#1f2329' : '#f5f7fa',
+            border: '1px solid #d9d9d9',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px',
+          }}
+        >
+          {themeMode === 'light' ? '暗色主题' : '亮色主题'}
+        </button>
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            flexWrap: 'wrap',
+            fontSize: '12px',
+          }}
+        >
+          <span style={{ color: '#666' }}>Color Rules</span>
+          {colorRules.map((rule, index) => (
+            <label
+              key={`${rule.min}-${rule.max}`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '2px 6px',
+                border: '1px solid #d9d9d9',
+                borderRadius: '4px',
+                backgroundColor: '#fff',
+              }}
+            >
+              <span>{rule.min}-{rule.max}</span>
+              <input
+                type="color"
+                value={rule.color}
+                onChange={(event) => handleColorRuleChange(index, event.target.value)}
+                style={{
+                  width: '22px',
+                  height: '22px',
+                  padding: 0,
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                }}
+              />
+              <span style={{ color: '#666', minWidth: '56px' }}>{rule.color}</span>
+            </label>
+          ))}
+        </div>
+
         {data && (
           <div style={{ fontSize: '12px', color: '#666' }}>
             <span>总行数: {data.rows}</span>
