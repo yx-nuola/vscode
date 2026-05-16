@@ -14,12 +14,12 @@ export class DataParser {
    */
   static parseRRAMData(data: DataType): MatrixData {
     const cellsData: CellData[] = [];
-    let rows = 0;
-    let cols = 0;
+    let rows = typeof data.rows === 'number' ? Math.max(0, data.rows) : 0;
+    let cols = typeof data.cols === 'number' ? Math.max(0, data.cols) : 0;
 
     for (const cell of data.cells) {
-      rows = Math.max(cell.bl, rows);
-      cols = Math.max(cell.wl, cols);
+      rows = Math.max(cell.bl + 1, rows);
+      cols = Math.max(cell.wl + 1, cols);
       cellsData.push({
         row: cell.bl,
         col: cell.wl,
@@ -36,8 +36,8 @@ export class DataParser {
     }
 
     return {
-      rows: rows + 1,
-      cols: cols + 1,
+      rows,
+      cols,
       cells: cellsData,
     };
   }
@@ -99,6 +99,7 @@ export class DataParser {
 
     return (
       typeof rramData.metadata === 'object' &&
+      rramData.metadata !== null &&
       Array.isArray(rramData.cells) &&
       rramData.cells.every(
         (cell) =>

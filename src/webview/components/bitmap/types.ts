@@ -239,12 +239,8 @@ export interface CellType {
  * RRAM 测试数据原始格式
  */
 export interface DataType {
-  rows: number;
-  cols: number;
-  metadata: {
-    total: number;
-    date: string;
-    mode: string;
-  };
+  rows?: number;
+  cols?: number;
+  metadata: Record<string, unknown>;
   cells: Array<CellType>;
 }

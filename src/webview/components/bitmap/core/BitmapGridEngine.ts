@@ -31,6 +31,9 @@ export class BitmapGridEngine {
   private cellSize: number;
   private selectedCell: CellData | null;
   private locationManager: LocationManager;
+  private wheelHandler: ((event: WheelEvent) => void) | null;
+  private keyDownHandler: ((event: KeyboardEvent) => void) | null;
+  private pointerDownHandler: (() => void) | null;
 
   // 图层实例
   private axisLayer: AxisLayer;
@@ -51,6 +54,9 @@ export class BitmapGridEngine {
     this.cellSize = DEFAULT_CELL_SIZE;
     this.selectedCell = null;
     this.locationManager = new LocationManager(this);
+    this.wheelHandler = null;
+    this.keyDownHandler = null;
+    this.pointerDownHandler = null;
 
     // 初始化图层
     this.axisLayer = new AxisLayer(this);
@@ -84,6 +90,8 @@ export class BitmapGridEngine {
 
     // 添加鼠标滚轮支持
     this.setupWheelEvents();
+    this.setupKeyboardEvents();
+    this.setupFocusEvents();
   }
 
   /**
@@ -138,10 +146,21 @@ export class BitmapGridEngine {
    * 设置鼠标滚轮事件
    */
   private setupWheelEvents(): void {
-    if (!this.container) return;
+    if (!this.container) {
+      return;
+    }
 
-    this.container.addEventListener('wheel', (e) => {
+    this.wheelHandler = (e: WheelEvent) => {
       e.preventDefault();
+
+      if (e.ctrlKey) {
+        if (e.deltaY < 0) {
+          this.zoomIn();
+        } else if (e.deltaY > 0) {
+          this.zoomOut();
+        }
+        return;
+      }
 
       const deltaX = e.deltaX;
       const deltaY = e.deltaY;
@@ -152,13 +171,71 @@ export class BitmapGridEngine {
       const newScrollY = this.scrollState.scrollY + deltaY * scrollSpeed;
 
       this.scrollTo(newScrollX, newScrollY);
-    }, { passive: false });
+    };
+
+    this.container.addEventListener('wheel', this.wheelHandler, { passive: false });
+  }
+
+  private setupKeyboardEvents(): void {
+    if (!this.container) {
+      return;
+    }
+
+    this.container.tabIndex = 0;
+    this.keyDownHandler = (e: KeyboardEvent) => {
+      if (!e.ctrlKey) {
+        return;
+      }
+
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        this.zoomIn();
+        return;
+      }
+
+      if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        this.zoomOut();
+        return;
+      }
+
+      if (e.key === '0') {
+        e.preventDefault();
+        this.resetZoom();
+      }
+    };
+
+    this.container.addEventListener('keydown', this.keyDownHandler);
+  }
+
+  private setupFocusEvents(): void {
+    if (!this.container) {
+      return;
+    }
+
+    this.pointerDownHandler = () => {
+      this.container?.focus();
+    };
+    this.container.addEventListener('pointerdown', this.pointerDownHandler);
   }
 
   /**
    * 销毁引擎
    */
   destroy(): void {
+    if (this.container && this.wheelHandler) {
+      this.container.removeEventListener('wheel', this.wheelHandler);
+    }
+    if (this.container && this.keyDownHandler) {
+      this.container.removeEventListener('keydown', this.keyDownHandler);
+    }
+    if (this.container && this.pointerDownHandler) {
+      this.container.removeEventListener('pointerdown', this.pointerDownHandler);
+    }
+    this.wheelHandler = null;
+    this.keyDownHandler = null;
+    this.pointerDownHandler = null;
+
     this.eventBus.clear();
     this.dataManager.clear();
 
@@ -178,7 +255,9 @@ export class BitmapGridEngine {
    * 调整尺寸
    */
   resize(width: number, height: number): void {
-    if (!this.stage) return;
+    if (!this.stage) {
+      return;
+    }
 
     this.stage.width(width);
     this.stage.height(height);
@@ -210,6 +289,52 @@ export class BitmapGridEngine {
 
     // 触发数据更新事件，通知图层重新渲染
     this.eventBus.emit('data:change', data);
+    this.revealNearestCellToOrigin(data.cells);
+  }
+
+  /**
+   * 数据可能落在默认 64x64 视口外，加载后定位到离 (0,0) 最近的真实数据点。
+   */
+  private revealNearestCellToOrigin(cells: CellData[]): void {
+    const nearestCell = cells.reduce<CellData | null>((nearest, cell) => {
+      if (!nearest) {
+        return cell;
+      }
+
+      const currentDistance = cell.row * cell.row + cell.col * cell.col;
+      const nearestDistance = nearest.row * nearest.row + nearest.col * nearest.col;
+
+      if (currentDistance !== nearestDistance) {
+        return currentDistance < nearestDistance ? cell : nearest;
+      }
+
+      if (cell.row !== nearest.row) {
+        return cell.row < nearest.row ? cell : nearest;
+      }
+
+      return cell.col < nearest.col ? cell : nearest;
+    }, null);
+
+    if (!nearestCell) {
+      this.scrollTo(0, 0);
+      return;
+    }
+
+    const topLeftRange = this.virtualScrollSync.getVisibleRange(0, 0);
+    const isVisibleFromDefaultOrigin =
+      nearestCell.row >= topLeftRange.startRow &&
+      nearestCell.row <= topLeftRange.endRow &&
+      nearestCell.col >= topLeftRange.startCol &&
+      nearestCell.col <= topLeftRange.endCol;
+
+    if (isVisibleFromDefaultOrigin) {
+      this.scrollTo(0, 0);
+    } else {
+      this.locationManager.locateToCell(nearestCell.col, nearestCell.row);
+      this.eventBus.emit('locate', { col: nearestCell.col, row: nearestCell.row });
+    }
+
+    this.selectCell(nearestCell.col, nearestCell.row);
   }
 
   /**
