@@ -166,6 +166,9 @@ export function VirtualTable({
 
   useEffect(() => {
     highlightedRowRef.current = highlightedRow;
+    if (highlightedRow === undefined) {
+      tableRef.current?.clearSelected();
+    }
     tableRef.current?.renderWithRecreateCells();
   }, [highlightedRow]);
 

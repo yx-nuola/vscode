@@ -44,7 +44,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
       // 查找对应的表格行索引
       if (data) {
         const rowIndex = data.cells.findIndex(
-          (c: any) => c.row === row && c.col === col
+          (c: CellData) => c.row === row && c.col === col
         );
         if (rowIndex >= 0) {
           setHighlightedRow(rowIndex);
@@ -53,6 +53,9 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
             row: rowIndex,
             nonce: scrollRequestNonceRef.current,
           });
+        } else {
+          setHighlightedRow(undefined);
+          setScrollToRow(undefined);
         }
       }
     },
