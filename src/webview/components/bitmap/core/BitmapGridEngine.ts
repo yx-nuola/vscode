@@ -200,6 +200,7 @@ export class BitmapGridEngine {
    */
   setData(data: MatrixData): void {
 
+    this.clearSelection();
     this.dataManager.setData(data);
     const rows = Math.max(DEFAULT_ROWS, data.rows);
     const cols = Math.max(DEFAULT_COLS, data.cols);

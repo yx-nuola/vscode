@@ -60,7 +60,6 @@ export class HighlightLayer {
     });
 
     eventBus.on('selection:change', (data) => {
-      console.log('selection:change', data);
       this.handle(data);
     });
 

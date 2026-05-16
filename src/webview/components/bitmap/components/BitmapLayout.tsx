@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 import { Button, Space } from '@arco-design/web-react';
 import { BitmapGrid, BitmapGridRef, BitmapGridProps } from './BitmapGrid';
 import { ScrollToRowRequest, VirtualTable } from './VirtualTable';
@@ -24,6 +24,12 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
   const scrollRequestNonceRef = useRef(0);
   const [highlightedRow, setHighlightedRow] = useState<number | undefined>();
   const [scrollToRow, setScrollToRow] = useState<ScrollToRowRequest | undefined>();
+
+  useEffect(() => {
+    setHighlightedRow(undefined);
+    setScrollToRow(undefined);
+    bitmapRef.current?.clearSelection();
+  }, [data]);
 
   // 处理表格行点击
   const handleTableRowClick = useCallback(
