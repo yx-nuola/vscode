@@ -23,6 +23,9 @@ export class HorizontalAxisDraw extends BaseAxisDraw {
       }
 
       const x = col * state.cellSize - state.scrollX;
+      if (x < 0 || x > state.area.width) {
+        continue;
+      }
 
       if(col % step === 0){
         this.addLine([x, state.area.height - 10, x, state.area.height - 1]);

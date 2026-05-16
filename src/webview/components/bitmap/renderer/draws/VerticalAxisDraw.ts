@@ -21,6 +21,9 @@ export class VerticalAxisDraw extends BaseAxisDraw {
         continue;
       }
       const y = row * state.cellSize - state.scrollY;
+      if (y < 0 || y > state.area.height) {
+        continue;
+      }
       if(row % step === 0){
         this.addLabel({
           x: state.area.width - 30,

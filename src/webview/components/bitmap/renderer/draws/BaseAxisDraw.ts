@@ -37,7 +37,6 @@ export abstract class BaseAxisDraw {
     this.group.destroyChildren();
     this.renderAxisLine(state);
     this.renderTicks(state);
-    console.log('render-----', state)
    }
 
   destroy(): void {
