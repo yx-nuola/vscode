@@ -112,7 +112,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
           />
         </div>
       </div>
-      {/* <div
+      <div
         style={{
           flex: 1,
           height: '100%',
@@ -130,7 +130,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
             scrollToRow={scrollToRow}
           />
         )}
-      </div> */}
+      </div>
     </div>
   );
 }

@@ -91,6 +91,7 @@ export const BitmapGrid = forwardRef<BitmapGridRef, BitmapGridProps>((props, ref
       style={{
         width: '100%',
         height: '100%',
+        background: '#efeff3',
         ...style,
       }}
     />
