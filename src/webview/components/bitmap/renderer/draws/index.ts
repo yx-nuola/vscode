@@ -1,8 +1,8 @@
-export { BaseAxisDraw } from './BaseAxisDraw';
-export { BaseScrollbarDraw } from './BaseScrollbarDraw';
-export { CellDraw } from './CellDraw';
-export { HighlightDraw } from './HighlightDraw';
-export { HorizontalAxisDraw } from './HorizontalAxisDraw';
-export { HorizontalScrollbarDraw } from './HorizontalScrollbarDraw';
-export { VerticalAxisDraw } from './VerticalAxisDraw';
-export { VerticalScrollbarDraw } from './VerticalScrollbarDraw';
+export { BaseAxisDraw } from './base-axis-draw';
+export { BaseScrollbarDraw } from './base-scrollbar-draw';
+export { CellDraw } from './cell-draw';
+export { HighlightDraw } from './highlight-draw';
+export { HorizontalAxisDraw } from './horizontal-axis-draw';
+export { HorizontalScrollbarDraw } from './horizontal-scrollbar-draw';
+export { VerticalAxisDraw } from './vertical-axis-draw';
+export { VerticalScrollbarDraw } from './vertical-scrollbar-draw';

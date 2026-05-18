@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { DataParser } from './DataParser';
+import { DataParser } from './data-parser';
 import type { DataType, MatrixData } from '../types';
 
 describe('DataParser.parseRRAMData', () => {

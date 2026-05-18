@@ -1,5 +1,5 @@
-import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
-import { BaseAxisDraw, type AxisRenderState } from './BaseAxisDraw';
+import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
+import { BaseAxisDraw, type AxisRenderState } from './base-axis-draw';
 
 export class VerticalAxisDraw extends BaseAxisDraw {
   constructor(engine: BitmapGridEngine) {

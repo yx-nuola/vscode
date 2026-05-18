@@ -4,7 +4,7 @@
  */
 
 import React, { useRef, useCallback } from 'react';
-import { DataParser} from '../core/DataParser';
+import { DataParser} from '../utils/data-parser';
 import { MatrixData, ImportMode } from '../types';
 
 /**

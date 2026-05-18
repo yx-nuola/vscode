@@ -3,9 +3,9 @@
  */
 
 import Konva from 'konva';
-import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 import type { CellData } from '../../types';
-import { CellDraw } from '../draws/CellDraw';
+import { CellDraw } from '../draws/cell-draw';
 
 const { Layer } = Konva;
 type LayerType = InstanceType<typeof Layer>;

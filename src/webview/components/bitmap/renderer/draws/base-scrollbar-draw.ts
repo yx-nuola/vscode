@@ -1,5 +1,5 @@
 import Konva from 'konva';
-import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 import type { Area, LayoutResult, ScrollbarState, ScrollState } from '../../types';
 
 const { Group, Rect } = Konva;

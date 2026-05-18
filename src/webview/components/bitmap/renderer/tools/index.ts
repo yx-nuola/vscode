@@ -1,5 +1,5 @@
-export { EventOptimizer } from './EventOptimizer';
-export { LocationManager } from './LocationManager';
-export { ScrollManager } from './ScrollManager';
-export { SelectionManager } from './SelectionManager';
-export { ZoomManager } from './ZoomManager';
+export { EventOptimizer } from './event-optimizer';
+export { LocationManager } from './location-manager';
+export { ScrollManager } from './scroll-manager';
+export { SelectionManager } from './selection-manager';
+export { ZoomManager } from './zoom-manager';

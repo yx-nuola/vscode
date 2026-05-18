@@ -2,7 +2,7 @@
  * 坐标定位选择
  */
 
-import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 import type { CellData } from '../../types';
 
 /**

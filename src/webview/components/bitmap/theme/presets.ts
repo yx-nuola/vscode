@@ -1,6 +1,3 @@
-/**
- * LIGHT_THEME、DARK_THEME 预设
- */
 
 import type { BitmapTheme } from '../types';
 

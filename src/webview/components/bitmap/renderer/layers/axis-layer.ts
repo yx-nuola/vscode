@@ -3,7 +3,7 @@
  */
 
 import Konva from 'konva';
-import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 import type { LayoutResult } from '../../types';
 import { HorizontalAxisDraw, VerticalAxisDraw, HorizontalScrollbarDraw, VerticalScrollbarDraw } from '../draws';
 

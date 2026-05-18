@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData } from '../../types';
 
 export interface UseBitmapGridParams {
@@ -61,28 +61,28 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
 
     engine.initialize(containerRef.current);
 
-    // 初始化时设置数据
-    if (data) {
-      engine.setData(data);
-    }
+    // // 初始化时设置数据
+    // if (data) {
+    //   engine.setData(data);
+    // }
 
-    // 初始化时设置主题
-    if (theme) {
-      engine.setTheme(theme);
-    }
+    // // 初始化时设置主题
+    // if (theme) {
+    //   engine.setTheme(theme);
+    // }
 
-    // 初始化时设置颜色规则
-    if (colorRules) {
-      engine.setColorRules(colorRules);
-    }
+    // // 初始化时设置颜色规则
+    // if (colorRules) {
+    //   engine.setColorRules(colorRules);
+    // }
 
     // 强制触发一次重绘，确保坐标轴刻度线正确渲染
-    requestAnimationFrame(() => {
-      const { width, height } = containerRef.current?.getBoundingClientRect() || { width: 0, height: 0 };
-      if (width > 0 && height > 0) {
-        engine.resize(width, height);
-      }
-    });
+    // requestAnimationFrame(() => {
+    //   const { width, height } = containerRef.current?.getBoundingClientRect() || { width: 0, height: 0 };
+    //   if (width > 0 && height > 0) {
+    //     engine.resize(width, height);
+    //   }
+    // });
 
     return () => {
       engine.destroy();

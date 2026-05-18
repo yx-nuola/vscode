@@ -2,7 +2,7 @@
  * 缩放管理，边界 2-50px
  */
 
-import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 
 /**
  * 缩放管理器类

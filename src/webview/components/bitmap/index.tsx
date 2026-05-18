@@ -3,11 +3,11 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import { BitmapLayout } from './components/BitmapLayout';
-import { FileUpload } from './components/FileUpload';
+import { BitmapLayout } from './components/bitmap-layout';
+import { FileUpload } from './components/file-upload';
 import {
   DataParser,
-} from './core';
+} from './utils';
 
 import type {
   MatrixData,
@@ -180,6 +180,7 @@ export function BitmapTestPage() {
                   cursor: 'pointer',
                 }}
               />
+              {/* <ColorPicker className="color-picker" defaultValue={rule.color} value={rule.color} onChange={(value: any) => handleColorRuleChange(index, value)}/> */}
               <span style={{ color: '#666', minWidth: '56px' }}>{rule.color}</span>
             </label>
           ))}

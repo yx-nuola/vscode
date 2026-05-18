@@ -1,12 +1,9 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 import { Button, Space } from '@arco-design/web-react';
-import { BitmapGrid, BitmapGridRef, BitmapGridProps } from './BitmapGrid';
-import { ScrollToRowRequest, VirtualTable } from './VirtualTable';
+import { BitmapGrid, BitmapGridRef, BitmapGridProps } from './bitmap-grid';
+import { ScrollToRowRequest, VirtualTable } from './virtual-table';
 import type { CellData } from '../types';
 
-/**
- * BitmapLayout 组件 Props
- */
 export interface BitmapTableLayoutProps extends Omit<BitmapGridProps, 'style'> {
   /** 表格行点击回调 */
   onTableRowClick?: (row: number, cell: CellData) => void;
@@ -26,6 +23,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
   const [scrollToRow, setScrollToRow] = useState<ScrollToRowRequest | undefined>();
 
   useEffect(() => {
+    // 数据更新清除之前的高亮和选中
     setHighlightedRow(undefined);
     setScrollToRow(undefined);
     bitmapRef.current?.clearSelection();

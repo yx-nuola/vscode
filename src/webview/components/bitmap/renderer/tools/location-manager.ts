@@ -1,4 +1,4 @@
-import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 
 export class LocationManager {
   private engine: BitmapGridEngine;

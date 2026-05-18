@@ -1,6 +1,6 @@
-import type { BitmapGridEngine } from '../../core/BitmapGridEngine';
+import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 import type { Area, LayoutResult, ScrollState } from '../../types';
-import { BaseScrollbarDraw, type ScrollbarRenderState } from './BaseScrollbarDraw';
+import { BaseScrollbarDraw, type ScrollbarRenderState } from './base-scrollbar-draw';
 
 export class HorizontalScrollbarDraw extends BaseScrollbarDraw {
   constructor(engine: BitmapGridEngine) {
