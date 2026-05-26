@@ -8,7 +8,7 @@ export class HorizontalAxisDraw extends BaseAxisDraw {
 
   protected renderAxisLine(state: AxisRenderState): void {
     this.renderTitle({ x: -23, y: state.area.height -25, text: 'WL', align: 'center', verticalAlign: 'middle' });
-    this.addLine([-30, state.area.height - 22, -4, state.area.height - 1], 2);
+    this.addLine([-34, state.area.height - 26, -4, state.area.height - 1], 1);
     this.addLine([0, state.area.height - 1, state.area.width, state.area.height - 1]);
   }
 

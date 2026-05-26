@@ -73,6 +73,7 @@ export class AxisLayer {
    * 更新坐标轴和滚动条
    */
   private update(): void {
+    debugger
     this.updatePositions();
 
     const virtualScrollSync = this.engine.getVirtualScrollSync();
@@ -103,7 +104,7 @@ export class AxisLayer {
     });
 
     // 渲染横向滚动条
-    this.horizontalScrollbarDraw.render({
+    const horizontalData = {
       area: layout.horizontalScrollbar,
       scrollbar: virtualScrollSync.getScrollbarState(
         scrollState.scrollX,
@@ -111,9 +112,11 @@ export class AxisLayer {
         layout.horizontalScrollbar.width,
         layout.horizontalScrollbar.height
       ),
-    });
+    }
+    console.log('horizontalData', horizontalData);
+    if(horizontalData.area.width !== horizontalData.scrollbar.sliderWidth) this.horizontalScrollbarDraw.render(horizontalData);
     // 渲染纵向滚动条
-    this.verticalScrollbarDraw.render({
+    const verticalData = {
       area: layout.verticalScrollbar,
       scrollbar: virtualScrollSync.getScrollbarState(
         scrollState.scrollX,
@@ -121,7 +124,9 @@ export class AxisLayer {
         layout.verticalScrollbar.width,
         layout.verticalScrollbar.height
       ),
-    });
+    }
+    console.log('verticalData', verticalData);
+    if(horizontalData.area.height !== horizontalData.scrollbar.sliderHeight) this.verticalScrollbarDraw.render(verticalData);
   }
 
   private updatePositions(): void {

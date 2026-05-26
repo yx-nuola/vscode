@@ -90,7 +90,7 @@ export class BitmapGridEngine {
 
     // 添加鼠标滚轮支持
     this.setupWheelEvents();
-    this.setupKeyboardEvents();
+    // this.setupKeyboardEvents();
     this.setupFocusEvents();
   }
 
@@ -176,37 +176,37 @@ export class BitmapGridEngine {
     this.container.addEventListener('wheel', this.wheelHandler, { passive: false });
   }
 
-  private setupKeyboardEvents(): void {
-    if (!this.container) {
-      return;
-    }
+  // private setupKeyboardEvents(): void {
+  //   if (!this.container) {
+  //     return;
+  //   }
 
-    this.container.tabIndex = 0;
-    this.keyDownHandler = (e: KeyboardEvent) => {
-      if (!e.ctrlKey) {
-        return;
-      }
+  //   this.container.tabIndex = 0;
+  //   this.keyDownHandler = (e: KeyboardEvent) => {
+  //     if (!e.ctrlKey) {
+  //       return;
+  //     }
 
-      if (e.key === '+' || e.key === '=') {
-        e.preventDefault();
-        this.zoomIn();
-        return;
-      }
+  //     if (e.key === '+' || e.key === '=') {
+  //       e.preventDefault();
+  //       this.zoomIn();
+  //       return;
+  //     }
 
-      if (e.key === '-' || e.key === '_') {
-        e.preventDefault();
-        this.zoomOut();
-        return;
-      }
+  //     if (e.key === '-' || e.key === '_') {
+  //       e.preventDefault();
+  //       this.zoomOut();
+  //       return;
+  //     }
 
-      if (e.key === '0') {
-        e.preventDefault();
-        this.resetZoom();
-      }
-    };
+  //     if (e.key === '0') {
+  //       e.preventDefault();
+  //       this.resetZoom();
+  //     }
+  //   };
 
-    this.container.addEventListener('keydown', this.keyDownHandler);
-  }
+  //   this.container.addEventListener('keydown', this.keyDownHandler);
+  // }
 
   private setupFocusEvents(): void {
     if (!this.container) {
@@ -225,9 +225,6 @@ export class BitmapGridEngine {
   destroy(): void {
     if (this.container && this.wheelHandler) {
       this.container.removeEventListener('wheel', this.wheelHandler);
-    }
-    if (this.container && this.keyDownHandler) {
-      this.container.removeEventListener('keydown', this.keyDownHandler);
     }
     if (this.container && this.pointerDownHandler) {
       this.container.removeEventListener('pointerdown', this.pointerDownHandler);
