@@ -3,6 +3,7 @@
   "displayName": "my-extension",
   "description": "A simple validation helper extension for VS Code.",
   "version": "0.0.1",
+  "publisher": "local",
   "engines": {
     "vscode": "^1.103.1"
   },
@@ -11,6 +12,7 @@
   ],
   "activationEvents": [
     "onCommand:my-extension.helloWorld",
+    "onCommand:my-extension.openBitmapEditor",
     "onView:my-extension.dataPanel"
   ],
   "main": "./dist/extension.js",
@@ -25,6 +27,10 @@
         "title": "打开数据面板"
       },
       {
+        "command": "my-extension.openBitmapEditor",
+        "title": "Open RRAM Bitmap Editor"
+      },
+      {
         "command": "my-extension.openElectronWorkbench",
         "title": "打开 Electron 工作台"
       },
@@ -37,7 +43,8 @@
       "panel": [
         {
           "id": "my-extension-panel",
-          "title": "数据面板"
+          "title": "数据面板",
+          "icon": "resources/table.svg"
         }
       ]
     },
@@ -122,6 +129,8 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-grid-layout": "^1.5.0",
+    "react-router-dom": "^7.15.1",
+    "vscode-messenger": "^0.6.0",
     "vscode-messenger-common": "^0.6.0",
     "vscode-messenger-webview": "^0.6.0"
   }

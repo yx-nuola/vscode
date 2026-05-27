@@ -1,4 +1,4 @@
-import { DataItem } from '../types';
+import { DataItem } from '../../shared/messages';
 
 export class DataServer {
   private apiUrl: string;

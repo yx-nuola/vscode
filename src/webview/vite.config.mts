@@ -14,6 +14,9 @@ export default defineConfig({
     port: 5173,
     host: true,
     open: true,
+    fs: {
+      allow: [projectRoot],
+    },
   },
   build: {
     outDir: path.resolve(projectRoot, 'dist-webview'),

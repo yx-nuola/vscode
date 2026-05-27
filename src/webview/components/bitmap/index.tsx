@@ -19,6 +19,7 @@ import type {
 import { MAX_CELL_SIZE, DEFAULT_CELL_SIZE, START_POSITION, PADDING, SCROLL } from './constants';
 
 import { DARK_THEME, LIGHT_THEME } from './theme/presets';
+import { requestData, requestOpenElectron } from '../../messenger/webviewMessenger';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -26,6 +27,7 @@ export function BitmapTestPage() {
   const [data, setData] = useState<MatrixData | null>(null);
   const [parsedData, setParsedData] = useState<MatrixData | null>(null);
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
+  const [extensionStatus, setExtensionStatus] = useState<string>('VS Code messenger ready');
   const [colorRules, setColorRules] = useState<ColorRule[]>([
     { min: 0, max: 5, color: '#ff9800' },   // 橙色
     { min: 5, max: 10, color: '#4caf50' },  // 绿色
@@ -85,6 +87,24 @@ export function BitmapTestPage() {
     console.log('Cell clicked:', { col, row });
   }, []);
 
+  const handleLoadExtensionData = useCallback(async () => {
+    try {
+      const items = await requestData();
+      setExtensionStatus(`Loaded ${items.length} items from extension`);
+    } catch (error) {
+      setExtensionStatus(error instanceof Error ? error.message : String(error));
+    }
+  }, []);
+
+  const handleOpenElectron = useCallback(async () => {
+    try {
+      const result = await requestOpenElectron();
+      setExtensionStatus(result.ok ? 'Electron launch requested' : result.message ?? 'Electron launch failed');
+    } catch (error) {
+      setExtensionStatus(error instanceof Error ? error.message : String(error));
+    }
+  }, []);
+
   // 处理表格行点击
   const handleTableRowClick = useCallback((row: number, cell: any) => {
     console.log('Table row clicked:', { row, cell });
@@ -142,6 +162,38 @@ export function BitmapTestPage() {
         >
           {themeMode === 'light' ? '暗色主题' : '亮色主题'}
         </button>
+
+        <button
+          onClick={handleLoadExtensionData}
+          style={{
+            padding: '6px 12px',
+            backgroundColor: '#ffffff',
+            color: '#1f2329',
+            border: '1px solid #d9d9d9',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px',
+          }}
+        >
+          Load Extension Data
+        </button>
+
+        <button
+          onClick={handleOpenElectron}
+          style={{
+            padding: '6px 12px',
+            backgroundColor: '#ffffff',
+            color: '#1f2329',
+            border: '1px solid #d9d9d9',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px',
+          }}
+        >
+          Open Electron
+        </button>
+
+        <span style={{ color: '#666', fontSize: '12px' }}>{extensionStatus}</span>
 
         <div
           style={{

@@ -43,8 +43,11 @@ export abstract class BaseScrollbarDraw {
       return;
     }
 
+    const theme = this.engine.getConfig().theme;
     this.track.width(state.area.width);
     this.track.height(state.area.height);
+    this.track.fill(theme.scrollbarTrackColor);
+    this.slider.fill(theme.scrollbarSliderColor);
     this.slider.dragBoundFunc((pos) => this.getDragBound(pos, state));
 
     if (!this.slider.isDragging()) {
@@ -114,14 +117,14 @@ export abstract class BaseScrollbarDraw {
       return;
     }
 
-    const eventBus = this.engine.getEventBus();
-
     this.slider.on('dragmove', () => {
-      eventBus.emit('scroll:change', this.getScrollStateFromCurrentSlider());
+      const scrollState = this.getScrollStateFromCurrentSlider();
+      this.engine.scrollTo(scrollState.scrollX, scrollState.scrollY);
     });
 
     this.slider.on('dragend', () => {
-      eventBus.emit('scroll:change', this.getScrollStateFromCurrentSlider());
+      const scrollState = this.getScrollStateFromCurrentSlider();
+      this.engine.scrollTo(scrollState.scrollX, scrollState.scrollY);
     });
 
     this.group.on('click', (event) => {
@@ -135,7 +138,8 @@ export abstract class BaseScrollbarDraw {
         return;
       }
 
-      eventBus.emit('scroll:change', this.getScrollStateFromTrackClick(state, pointer));
+      const scrollState = this.getScrollStateFromTrackClick(state, pointer);
+      this.engine.scrollTo(scrollState.scrollX, scrollState.scrollY);
     });
   }
 

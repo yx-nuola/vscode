@@ -103,6 +103,7 @@ export class CellDraw {
       rect.y(y);
       rect.width(cellSize);
       rect.height(cellSize);
+      rect.stroke(theme.borderColor);
 
       // 根据颜色规则映射颜色
       if (cell.value === -1) {

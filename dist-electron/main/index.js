@@ -58,6 +58,8 @@ class ElectronMain {
     }
     createWindow() {
         const preloadPath = path.join(__dirname, 'preload.js');
+        console.log('[Electron Main] Creating window...');
+        console.log('[Electron Main] Preload path:', preloadPath);
         process.on('message', (message) => {
             console.log('[Electron Main] Received from VSCode:', message);
             if (this.mainWindow && !this.mainWindow.isDestroyed()) {
@@ -94,13 +96,16 @@ class ElectronMain {
             },
             show: false
         });
+        console.log('[Electron Main] Window created, loading URL...');
         window.once('ready-to-show', () => {
+            console.log('[Electron Main] Window ready to show');
             window.show();
             if (this.vscodeExtProcess && this.vscodeExtProcess.connected) {
                 this.vscodeExtProcess.send({ type: 'WINDOW_READY_ACK' });
             }
         });
         window.on('closed', () => {
+            console.log('[Electron Main] Window closed');
             this.windows.delete(window.id);
             this.store.delete(window.id);
             if (this.mainWindow === window) {
@@ -108,12 +113,18 @@ class ElectronMain {
             }
         });
         const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+        console.log('[Electron Main] Is dev mode:', isDev);
+        console.log('[Electron Main] NODE_ENV:', process.env.NODE_ENV);
+        console.log('[Electron Main] app.isPackaged:', app.isPackaged);
         if (isDev) {
+            console.log('[Electron Main] Loading dev URL: http://localhost:5173');
             window.loadURL('http://localhost:5173');
             window.webContents.openDevTools();
         }
         else {
-            window.loadFile(path.join(__dirname, '../renderer/index.html'));
+            const htmlPath = path.join(__dirname, '../renderer/index.html');
+            console.log('[Electron Main] Loading production file:', htmlPath);
+            window.loadFile(htmlPath);
         }
         this.windows.set(window.id, window);
         this.mainWindow = window;

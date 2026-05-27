@@ -36,6 +36,7 @@ export interface BitmapGridRef {
  */
 export const BitmapGrid = forwardRef<BitmapGridRef, BitmapGridProps>((props, ref) => {
   const { className, style, ...hookParams } = props;
+  const theme = hookParams.theme ?? hookParams.config.theme;
 
   const containerIdRef = useRef(`bitmap-grid-${Math.random().toString(36).substr(2, 9)}`);
   const containerId = containerIdRef.current;
@@ -91,7 +92,7 @@ export const BitmapGrid = forwardRef<BitmapGridRef, BitmapGridProps>((props, ref
       style={{
         width: '100%',
         height: '100%',
-        background: '#efeff3',
+        background: theme.backgroundColor,
         ...style,
       }}
     />

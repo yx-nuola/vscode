@@ -138,9 +138,16 @@ export class VirtualScrollSync {
       scrollY = (sliderY / maxSliderY) * (totalHeight - this.viewportHeight);
     }
 
+    return this.clampScrollState({ scrollX, scrollY });
+  }
+
+  /**
+   * 灏嗘粴鍔ㄤ綅缃害鏉熷埌褰撳墠缂╂斁/瑙嗗彛涓嬪彲鐢ㄧ殑鑼冨洿鍐?
+   */
+  clampScrollState(state: ScrollState): ScrollState {
     return {
-      scrollX: Math.max(0, Math.min(scrollX, this.maxScrollX)),
-      scrollY: Math.max(0, Math.min(scrollY, this.maxScrollY)),
+      scrollX: Math.max(0, Math.min(state.scrollX, this.maxScrollX)),
+      scrollY: Math.max(0, Math.min(state.scrollY, this.maxScrollY)),
     };
   }
 

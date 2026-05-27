@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { DataPanelProvider } from '../providers/DataPanelProvider';
+import { registerMessengerHandlers } from '../messenger/registerHandlers';
 import { registerCommands } from './commands';
 
 export function registerAll(context: vscode.ExtensionContext, extensionUri: vscode.Uri): void {
@@ -12,6 +13,7 @@ export function registerAll(context: vscode.ExtensionContext, extensionUri: vsco
     )
   );
 
+  registerMessengerHandlers(context);
   registerCommands(context);
 
   console.log('[Extension] DataPanel registered');

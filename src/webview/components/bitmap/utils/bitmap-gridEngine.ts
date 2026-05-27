@@ -82,6 +82,7 @@ export class BitmapGridEngine {
     const layout = this.layoutCalculator.calculate(width, height);
     // 只更新视口高度，宽度固定为 BITMAP_WIDTH
     this.virtualScrollSync.updateViewport(BITMAP_WIDTH, layout.cellArea.height);
+    this.clampCurrentScroll();
 
     // 初始化并添加图层
     this.setupLayers();
@@ -262,6 +263,7 @@ export class BitmapGridEngine {
     const layout = this.layoutCalculator.calculate(width, height);
     // 只更新视口高度，宽度固定为 BITMAP_WIDTH
     this.virtualScrollSync.updateViewport(BITMAP_WIDTH, layout.cellArea.height);
+    this.clampCurrentScroll();
   }
 
   /**
@@ -371,6 +373,7 @@ export class BitmapGridEngine {
   private setCellSize(size: number): void {
     this.cellSize = size;
     this.virtualScrollSync.updateCellSize(size);
+    this.clampCurrentScroll();
     this.eventBus.emit('zoom:change', size);
   }
 
@@ -378,15 +381,22 @@ export class BitmapGridEngine {
    * 滚动到指定位置
    */
   scrollTo(scrollX: number, scrollY: number): void {
-    const maxScrollX = this.virtualScrollSync.maxScrollX;
-    const maxScrollY = this.virtualScrollSync.maxScrollY;
-
-    this.scrollState = {
-      scrollX: Math.max(0, Math.min(scrollX, maxScrollX)),
-      scrollY: Math.max(0, Math.min(scrollY, maxScrollY)),
-    };
+    this.scrollState = this.virtualScrollSync.clampScrollState({ scrollX, scrollY });
 
     this.eventBus.emit('scroll:change', this.scrollState);
+  }
+
+  private clampCurrentScroll(): void {
+    const nextScrollState = this.virtualScrollSync.clampScrollState(this.scrollState);
+    const changed =
+      nextScrollState.scrollX !== this.scrollState.scrollX ||
+      nextScrollState.scrollY !== this.scrollState.scrollY;
+
+    this.scrollState = nextScrollState;
+
+    if (changed) {
+      this.eventBus.emit('scroll:change', this.scrollState);
+    }
   }
 
   /**
