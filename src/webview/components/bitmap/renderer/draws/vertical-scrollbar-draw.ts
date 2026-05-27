@@ -39,12 +39,16 @@ export class VerticalScrollbarDraw extends BaseScrollbarDraw {
   }
 
   protected getScrollStateFromSlider(state: ScrollbarRenderState): ScrollState {
-    return this.engine.getVirtualScrollSync().getScrollFromSlider(
-      0,
+    const currentScrollState = this.engine.getScrollState();
+    const scrollY = this.engine.getVirtualScrollSync().getScrollYFromSlider(
       this.slider?.y() ?? 0,
-      state.area.width,
       state.area.height
     );
+
+    return {
+      scrollX: currentScrollState.scrollX,
+      scrollY,
+    };
   }
 
   protected getScrollStateFromTrackClick(state: ScrollbarRenderState, pointer: { x: number; y: number }): ScrollState {
@@ -53,11 +57,15 @@ export class VerticalScrollbarDraw extends BaseScrollbarDraw {
       Math.min(pointer.y, state.area.height - state.scrollbar.sliderHeight / 2)
     );
 
-    return this.engine.getVirtualScrollSync().getScrollFromSlider(
-      0,
+    const currentScrollState = this.engine.getScrollState();
+    const scrollY = this.engine.getVirtualScrollSync().getScrollYFromSlider(
       sliderCenterY - state.scrollbar.sliderHeight / 2,
-      state.area.width,
       state.area.height
     );
+
+    return {
+      scrollX: currentScrollState.scrollX,
+      scrollY,
+    };
   }
 }

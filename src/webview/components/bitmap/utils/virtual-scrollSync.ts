@@ -141,6 +141,42 @@ export class VirtualScrollSync {
     return this.clampScrollState({ scrollX, scrollY });
   }
 
+  getScrollXFromSlider(sliderX: number, trackWidth: number): number {
+    const totalWidth = this.totalCols * this.cellSize;
+    const sliderWidth = Math.max(
+      (this.viewportWidth / totalWidth) * trackWidth,
+      20
+    );
+    const maxSliderX = trackWidth - sliderWidth;
+
+    if (totalWidth <= this.viewportWidth || maxSliderX <= 0) {
+      return 0;
+    }
+
+    return this.clampScrollState({
+      scrollX: (sliderX / maxSliderX) * (totalWidth - this.viewportWidth),
+      scrollY: 0,
+    }).scrollX;
+  }
+
+  getScrollYFromSlider(sliderY: number, trackHeight: number): number {
+    const totalHeight = this.totalRows * this.cellSize;
+    const sliderHeight = Math.max(
+      (this.viewportHeight / totalHeight) * trackHeight,
+      20
+    );
+    const maxSliderY = trackHeight - sliderHeight;
+
+    if (totalHeight <= this.viewportHeight || maxSliderY <= 0) {
+      return 0;
+    }
+
+    return this.clampScrollState({
+      scrollX: 0,
+      scrollY: (sliderY / maxSliderY) * (totalHeight - this.viewportHeight),
+    }).scrollY;
+  }
+
   /**
    * 灏嗘粴鍔ㄤ綅缃害鏉熷埌褰撳墠缂╂斁/瑙嗗彛涓嬪彲鐢ㄧ殑鑼冨洿鍐?
    */
