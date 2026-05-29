@@ -24,16 +24,29 @@ export class LayoutCalculator {
    */
   calculate(containerWidth: number, containerHeight: number): LayoutResult {
     const { axisSize, scrollbarSize, spacing } = this.config;
-    const maxCellWidth = Math.max(
+    const baseMaxCellWidth = Math.max(
       0,
-      Math.min(BITMAP_WIDTH, containerWidth - axisSize - spacing - scrollbarSize - spacing)
+      Math.min(BITMAP_WIDTH, containerWidth - axisSize - spacing)
     );
-    const maxCellHeight = Math.max(
+    const baseMaxCellHeight = Math.max(
       0,
-      containerHeight - axisSize - spacing - scrollbarSize - spacing
+      containerHeight - axisSize - spacing
     );
     const contentWidth = this.cols * this.cellSize;
     const contentHeight = this.rows * this.cellSize;
+    const hasHorizontalScrollbar = contentWidth > baseMaxCellWidth;
+    const hasVerticalScrollbar = contentHeight > baseMaxCellHeight;
+    const maxCellWidth = Math.max(
+      0,
+      Math.min(
+        BITMAP_WIDTH,
+        containerWidth - axisSize - spacing - (hasVerticalScrollbar ? scrollbarSize + spacing : 0)
+      )
+    );
+    const maxCellHeight = Math.max(
+      0,
+      containerHeight - axisSize - spacing - (hasHorizontalScrollbar ? scrollbarSize + spacing : 0)
+    );
 
     // 工具栏区域（顶部，全宽）- 现在外层处理，这里保留占位
     // const toolbar: Area = {
@@ -55,7 +68,7 @@ export class LayoutCalculator {
     const xAxis: Area = {
       x: axisSize + spacing,
       y: 0,
-      width: BITMAP_WIDTH,
+      width: cellArea.width,
       height: axisSize,
     };
 
@@ -70,16 +83,16 @@ export class LayoutCalculator {
     // 横向滚动条区域（格子区域下方）
     const horizontalScrollbar: Area = {
       x: axisSize + spacing,
-      y: axisSize + spacing + cellArea.height + spacing,
-      width: BITMAP_WIDTH,
-      height: scrollbarSize,
+      y: axisSize + spacing + cellArea.height + (hasHorizontalScrollbar ? spacing : 0),
+      width: cellArea.width,
+      height: hasHorizontalScrollbar ? scrollbarSize : 0,
     };
 
     // 纵向滚动条区域（格子区域右侧）
     const verticalScrollbar: Area = {
-      x: axisSize + spacing + BITMAP_WIDTH + spacing,
+      x: axisSize + spacing + cellArea.width + (hasVerticalScrollbar ? spacing : 0),
       y: axisSize + spacing,
-      width: scrollbarSize,
+      width: hasVerticalScrollbar ? scrollbarSize : 0,
       height: cellArea.height,
     };
 

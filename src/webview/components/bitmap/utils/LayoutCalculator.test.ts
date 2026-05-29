@@ -17,6 +17,9 @@ describe('LayoutCalculator', () => {
 
     expect(layout.cellArea.width).toBe(896);
     expect(layout.cellArea.height).toBe(896);
+    expect(layout.horizontalScrollbar.height).toBe(0);
+    expect(layout.verticalScrollbar.width).toBe(0);
+    expect(layout.horizontalScrollbar.y).toBe(940);
   });
 
   test('uses available viewport height for tall data', () => {
@@ -27,5 +30,7 @@ describe('LayoutCalculator', () => {
 
     expect(layout.cellArea.width).toBe(896);
     expect(layout.cellArea.height).toBe(1140);
+    expect(layout.horizontalScrollbar.height).toBe(SCROLL);
+    expect(layout.verticalScrollbar.width).toBe(SCROLL);
   });
 });

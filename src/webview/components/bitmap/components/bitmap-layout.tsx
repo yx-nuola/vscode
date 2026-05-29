@@ -3,6 +3,7 @@ import { Button, Space } from '@arco-design/web-react';
 import { BitmapGrid, BitmapGridRef, BitmapGridProps } from './bitmap-grid';
 import { ScrollToRowRequest, VirtualTable } from './virtual-table';
 import type { CellData } from '../types';
+import { DEFAULT_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
 
 export interface BitmapTableLayoutProps extends Omit<BitmapGridProps, 'style'> {
   /** 表格行点击回调 */
@@ -21,6 +22,13 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
   const scrollRequestNonceRef = useRef(0);
   const [highlightedRow, setHighlightedRow] = useState<number | undefined>();
   const [scrollToRow, setScrollToRow] = useState<ScrollToRowRequest | undefined>();
+  const dataRows = data?.rows ?? DEFAULT_ROWS;
+  const dataCols = data?.cols ?? DEFAULT_COLS;
+  const shrinkBitmapHeight =
+    config.layout.axisSize +
+    config.layout.spacing +
+    Math.min(dataRows, DEFAULT_ROWS) * (config.initialCellSize ?? DEFAULT_CELL_SIZE);
+  const shouldShrinkBitmap = dataRows <= DEFAULT_ROWS && dataCols <= DEFAULT_COLS;
 
   useEffect(() => {
     // 数据更新清除之前的高亮和选中
@@ -105,7 +113,13 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
             </Button>
           </Space>
         </div>
-        <div style={{ flex: 1, overflow: 'hidden' }}>
+        <div
+          style={{
+            flex: shouldShrinkBitmap ? '0 0 auto' : 1,
+            height: shouldShrinkBitmap ? `${shrinkBitmapHeight}px` : '100%',
+            overflow: 'hidden',
+          }}
+        >
           <BitmapGrid
             ref={bitmapRef}
             data={data}
