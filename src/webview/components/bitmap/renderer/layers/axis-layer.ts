@@ -62,6 +62,10 @@ export class AxisLayer {
       this.update();
     });
 
+    eventBus.on('layout:change', () => {
+      this.update();
+    });
+
     eventBus.on('theme:change', () => {
       this.update();
     });
@@ -73,7 +77,6 @@ export class AxisLayer {
    * 更新坐标轴和滚动条
    */
   private update(): void {
-    debugger
     this.updatePositions();
 
     const virtualScrollSync = this.engine.getVirtualScrollSync();
@@ -112,9 +115,10 @@ export class AxisLayer {
         layout.horizontalScrollbar.width,
         layout.horizontalScrollbar.height
       ),
+    };
+    if (horizontalData.area.width !== horizontalData.scrollbar.sliderWidth) {
+      this.horizontalScrollbarDraw.render(horizontalData);
     }
-    console.log('horizontalData', horizontalData);
-    if(horizontalData.area.width !== horizontalData.scrollbar.sliderWidth) this.horizontalScrollbarDraw.render(horizontalData);
     // 渲染纵向滚动条
     const verticalData = {
       area: layout.verticalScrollbar,
@@ -124,9 +128,10 @@ export class AxisLayer {
         layout.verticalScrollbar.width,
         layout.verticalScrollbar.height
       ),
+    };
+    if (verticalData.area.height !== verticalData.scrollbar.sliderHeight) {
+      this.verticalScrollbarDraw.render(verticalData);
     }
-    console.log('verticalData', verticalData);
-    if(horizontalData.area.height !== horizontalData.scrollbar.sliderHeight) this.verticalScrollbarDraw.render(verticalData);
   }
 
   private updatePositions(): void {
@@ -139,10 +144,7 @@ export class AxisLayer {
   }
 
   private getLayout(): LayoutResult {
-    return this.engine.getLayoutCalculator().calculate(
-      this.engine.getStage()?.width() || 0,
-      this.engine.getStage()?.height() || 0
-    );
+    return this.engine.getLayout();
   }
 
   /**

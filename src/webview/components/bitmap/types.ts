@@ -217,6 +217,7 @@ export interface BitmapEvents {
   'reset': void;
   /** 数据变化事件 */
   'data:change': MatrixData;
+  'layout:change': void;
   'theme:change': void;
   'color-rules:change': void;
 }

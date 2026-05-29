@@ -3,11 +3,11 @@
  */
 
 import Konva from 'konva';
-import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData } from '../types';
+import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData, LayoutResult } from '../types';
 import { VirtualScrollSync, DataManager, LayoutCalculator, EventBus } from './index';
 import { AxisLayer, CellLayer, HighlightLayer } from '../renderer/layers';
 import { LocationManager } from '../renderer/tools';
-import { BITMAP_WIDTH, DEFAULT_CELL_SIZE, MAX_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
+import { DEFAULT_CELL_SIZE, MAX_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
 
 
 const { Stage, Layer } = Konva;
@@ -52,6 +52,7 @@ export class BitmapGridEngine {
     this.container = null;
     this.scrollState = { scrollX: 0, scrollY: 0 };
     this.cellSize = DEFAULT_CELL_SIZE;
+    this.layoutCalculator.updateContentSize(DEFAULT_ROWS, DEFAULT_COLS, DEFAULT_CELL_SIZE);
     this.selectedCell = null;
     this.locationManager = new LocationManager(this);
     this.wheelHandler = null;
@@ -72,16 +73,18 @@ export class BitmapGridEngine {
 
     const { width, height } = container.getBoundingClientRect();
 
+    const initialLayout = this.layoutCalculator.calculate(width, height);
+
     this.stage = new Stage({
       container: container.id,
-      width,
-      height,
+      width: this.getStageWidth(initialLayout),
+      height: this.getStageHeight(initialLayout),
     });
 
     // 计算布局，获取格子区域尺寸
     const layout = this.layoutCalculator.calculate(width, height);
     // 只更新视口高度，宽度固定为 BITMAP_WIDTH
-    this.virtualScrollSync.updateViewport(BITMAP_WIDTH, layout.cellArea.height);
+    this.virtualScrollSync.updateViewport(layout.cellArea.width, layout.cellArea.height);
     this.clampCurrentScroll();
 
     // 初始化并添加图层
@@ -257,12 +260,44 @@ export class BitmapGridEngine {
       return;
     }
 
-    this.stage.width(width);
-    this.stage.height(height);
+    const nextLayout = this.layoutCalculator.calculate(width, height);
+    this.stage.width(this.getStageWidth(nextLayout));
+    this.stage.height(this.getStageHeight(nextLayout));
 
     const layout = this.layoutCalculator.calculate(width, height);
     // 只更新视口高度，宽度固定为 BITMAP_WIDTH
-    this.virtualScrollSync.updateViewport(BITMAP_WIDTH, layout.cellArea.height);
+    this.virtualScrollSync.updateViewport(layout.cellArea.width, layout.cellArea.height);
+    this.clampCurrentScroll();
+    this.eventBus.emit('layout:change', undefined);
+  }
+
+  getLayout(): LayoutResult {
+    const { width, height } = this.container?.getBoundingClientRect() || { width: 0, height: 0 };
+    return this.layoutCalculator.calculate(width, height);
+  }
+
+  private getStageWidth(layout: LayoutResult): number {
+    return layout.verticalScrollbar.x + layout.verticalScrollbar.width;
+  }
+
+  private getStageHeight(layout: LayoutResult): number {
+    return layout.horizontalScrollbar.y + layout.horizontalScrollbar.height;
+  }
+
+  private syncLayout(): void {
+    if (!this.stage) {
+      return;
+    }
+
+    const layout = this.getLayout();
+    this.stage.width(this.getStageWidth(layout));
+    this.stage.height(this.getStageHeight(layout));
+    this.syncViewportWithLayout(layout);
+    this.eventBus.emit('layout:change', undefined);
+  }
+
+  private syncViewportWithLayout(layout: LayoutResult): void {
+    this.virtualScrollSync.updateViewport(layout.cellArea.width, layout.cellArea.height);
     this.clampCurrentScroll();
   }
 
@@ -284,7 +319,9 @@ export class BitmapGridEngine {
     const rows = Math.max(DEFAULT_ROWS, data.rows);
     const cols = Math.max(DEFAULT_COLS, data.cols);
 
+    this.layoutCalculator.updateContentSize(rows, cols, this.cellSize);
     this.virtualScrollSync.updateDataSize(rows, cols);
+    this.syncLayout();
 
     // 触发数据更新事件，通知图层重新渲染
     this.eventBus.emit('data:change', data);
@@ -372,8 +409,13 @@ export class BitmapGridEngine {
    */
   private setCellSize(size: number): void {
     this.cellSize = size;
+    this.layoutCalculator.updateContentSize(
+      this.virtualScrollSync.getTotalRows(),
+      this.virtualScrollSync.getTotalCols(),
+      size
+    );
     this.virtualScrollSync.updateCellSize(size);
-    this.clampCurrentScroll();
+    this.syncLayout();
     this.eventBus.emit('zoom:change', size);
   }
 

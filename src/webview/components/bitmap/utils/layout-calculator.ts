@@ -4,13 +4,19 @@
 
 import type { LayoutConfig, LayoutResult, Area } from '../types';
 
-import { BITMAP_WIDTH} from '../constants';
+import { BITMAP_WIDTH, DEFAULT_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
 
 export class LayoutCalculator {
   private config: LayoutConfig;
+  private rows: number;
+  private cols: number;
+  private cellSize: number;
 
   constructor(config: LayoutConfig) {
     this.config = config;
+    this.rows = DEFAULT_ROWS;
+    this.cols = DEFAULT_COLS;
+    this.cellSize = DEFAULT_CELL_SIZE;
   }
 
   /**
@@ -18,6 +24,16 @@ export class LayoutCalculator {
    */
   calculate(containerWidth: number, containerHeight: number): LayoutResult {
     const { axisSize, scrollbarSize, spacing } = this.config;
+    const maxCellWidth = Math.max(
+      0,
+      Math.min(BITMAP_WIDTH, containerWidth - axisSize - spacing - scrollbarSize - spacing)
+    );
+    const maxCellHeight = Math.max(
+      0,
+      containerHeight - axisSize - spacing - scrollbarSize - spacing
+    );
+    const contentWidth = this.cols * this.cellSize;
+    const contentHeight = this.rows * this.cellSize;
 
     // 工具栏区域（顶部，全宽）- 现在外层处理，这里保留占位
     // const toolbar: Area = {
@@ -31,8 +47,8 @@ export class LayoutCalculator {
     const cellArea: Area = {
       x: axisSize + spacing,
       y: axisSize + spacing,
-      width: BITMAP_WIDTH,
-      height: containerHeight - axisSize - spacing - scrollbarSize - spacing,
+      width: Math.min(contentWidth, maxCellWidth),
+      height: Math.min(contentHeight, maxCellHeight),
     };
 
     // X 轴区域（工具栏下方，Y 轴右侧）
@@ -82,6 +98,12 @@ export class LayoutCalculator {
    */
   updateConfig(config: Partial<LayoutConfig>): void {
     this.config = { ...this.config, ...config };
+  }
+
+  updateContentSize(rows: number, cols: number, cellSize: number): void {
+    this.rows = rows;
+    this.cols = cols;
+    this.cellSize = cellSize;
   }
 
   /**

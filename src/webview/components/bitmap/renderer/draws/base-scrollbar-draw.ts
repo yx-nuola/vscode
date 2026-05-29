@@ -144,13 +144,9 @@ export abstract class BaseScrollbarDraw {
   }
 
   protected getCurrentRenderState(): ScrollbarRenderState {
-    const layoutCalculator = this.engine.getLayoutCalculator();
     const virtualScrollSync = this.engine.getVirtualScrollSync();
     const scrollState = this.engine.getScrollState();
-    const layout = layoutCalculator.calculate(
-      this.engine.getStage()?.width() || 0,
-      this.engine.getStage()?.height() || 0
-    );
+    const layout = this.engine.getLayout();
     const area = this.getArea(layout);
 
     return {

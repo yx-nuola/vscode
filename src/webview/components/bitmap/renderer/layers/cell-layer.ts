@@ -36,15 +36,9 @@ export class CellLayer {
    */
   initialize(): void {
     const eventBus = this.engine.getEventBus();
-    const layoutCalculator = this.engine.getLayoutCalculator();
+    this.updateLayout();
 
     // 设置格子位置
-    const layout = layoutCalculator.calculate(
-      this.engine.getStage()?.width() || 0,
-      this.engine.getStage()?.height() || 0
-    );
-    this.cellDraw.setPosition(layout.cellArea.x, layout.cellArea.y);
-    this.cellDraw.setClip(layout.cellArea.width, layout.cellArea.height);
 
     eventBus.on('scroll:change', () => {
       this.renderVisibleCells();
@@ -59,6 +53,10 @@ export class CellLayer {
     });
 
     eventBus.on('data:change', () => {
+      this.renderVisibleCells();
+    });
+
+    eventBus.on('layout:change', () => {
       this.renderVisibleCells();
     });
 
@@ -78,6 +76,8 @@ export class CellLayer {
    * 渲染可见格子
    */
   private renderVisibleCells(): void {
+    this.updateLayout();
+
     const virtualScrollSync = this.engine.getVirtualScrollSync();
     const dataManager = this.engine.getDataManager();
     const scrollState = this.engine.getScrollState();
@@ -107,6 +107,12 @@ export class CellLayer {
 
     // 渲染格子（传递滚动偏移）
     this.cellDraw.renderCells(visibleCells, scrollState.scrollX, scrollState.scrollY);
+  }
+
+  private updateLayout(): void {
+    const layout = this.engine.getLayout();
+    this.cellDraw.setPosition(layout.cellArea.x, layout.cellArea.y);
+    this.cellDraw.setClip(layout.cellArea.width, layout.cellArea.height);
   }
 
   /**
