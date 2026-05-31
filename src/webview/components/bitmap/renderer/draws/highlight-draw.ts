@@ -5,7 +5,8 @@
 import Konva from 'konva';
 import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 
-const { Group, Rect } = Konva;
+const { Animation, Group, Rect } = Konva;
+type AnimationType = InstanceType<typeof Animation>;
 type GroupType = InstanceType<typeof Group>;
 type RectType = InstanceType<typeof Rect>;
 
@@ -16,11 +17,13 @@ export class HighlightDraw {
   private engine: BitmapGridEngine;
   private group: GroupType;
   private highlightRect: RectType | null;
+  private pulseAnimation: AnimationType | null;
 
   constructor(engine: BitmapGridEngine) {
     this.engine = engine;
     this.group = new Group({ name: 'highlight' });
     this.highlightRect = null;
+    this.pulseAnimation = null;
   }
 
   /**
@@ -54,9 +57,7 @@ export class HighlightDraw {
     const cellSize = this.engine.getZoomLevel();
     const scrollState = this.engine.getScrollState();
 
-    if (this.highlightRect) {
-      this.highlightRect.destroy();
-    }
+    this.clear();
 
     this.highlightRect = new Rect({
       x: col * cellSize - scrollState.scrollX,
@@ -65,17 +66,52 @@ export class HighlightDraw {
       height: cellSize,
       stroke: theme.highlightColor,
       strokeWidth: 2,
+      opacity: 1,
+      shadowColor: theme.highlightColor,
+      shadowBlur: Math.max(4, cellSize * 0.18),
+      shadowOpacity: 0.35,
       listening: false,
     });
 
     this.group.add(this.highlightRect);
+    this.startPulse();
     this.group.getLayer()?.batchDraw();
+  }
+
+  private startPulse(): void {
+    const layer = this.group.getLayer();
+
+    if (!this.highlightRect || !layer) {
+      return;
+    }
+
+    const rect = this.highlightRect;
+
+    this.pulseAnimation = new Animation((frame) => {
+      const time = frame?.time ?? 0;
+      const wave = (Math.sin(time / 180) + 1) / 2;
+
+      rect.opacity(0.45 + wave * 0.55);
+      rect.strokeWidth(2 + wave * 1.5);
+      rect.shadowOpacity(0.15 + wave * 0.35);
+    }, layer);
+
+    this.pulseAnimation.start();
+  }
+
+  private stopPulse(): void {
+    if (this.pulseAnimation) {
+      this.pulseAnimation.stop();
+      this.pulseAnimation = null;
+    }
   }
 
   /**
    * 清除高亮
    */
   clear(): void {
+    this.stopPulse();
+
     if (this.highlightRect) {
       this.highlightRect.destroy();
       this.highlightRect = null;

@@ -88,6 +88,27 @@ function stringifyCellValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
+function getTableRowByRecordIndex(table: ListTable, recordIndex: number): number | undefined {
+  const tableRow = table.getTableIndexByRecordIndex(recordIndex);
+
+  if (typeof tableRow !== 'number' || !Number.isFinite(tableRow)) {
+    return undefined;
+  }
+
+  return tableRow;
+}
+
+function selectRecordRow(table: ListTable, recordIndex: number, makeVisible: boolean): void {
+  const tableRow = getTableRowByRecordIndex(table, recordIndex);
+
+  if (tableRow === undefined) {
+    return;
+  }
+
+  table.clearSelected();
+  table.selectCell(0, tableRow, false, false, makeVisible);
+}
+
 /**
  * 虚拟滚动表格组件
  */
@@ -168,6 +189,8 @@ export function VirtualTable({
     highlightedRowRef.current = highlightedRow;
     if (highlightedRow === undefined) {
       tableRef.current?.clearSelected();
+    } else if (tableRef.current) {
+      selectRecordRow(tableRef.current, highlightedRow, false);
     }
     tableRef.current?.renderWithRecreateCells();
   }, [highlightedRow]);
@@ -225,6 +248,11 @@ export function VirtualTable({
 
     table.on(TABLE_EVENT_TYPE.CLICK_CELL, (event: MousePointerCellEvent) => {
       const recordIndex = table.getRecordShowIndexByCell(event.col, event.row);
+
+      if (!Number.isInteger(recordIndex) || recordIndex < 0) {
+        return;
+      }
+
       const record = recordsRef.current[recordIndex];
 
       if (!record) {
@@ -248,15 +276,28 @@ export function VirtualTable({
     }
 
     const tableRow = tableRef.current.getTableIndexByRecordIndex(scrollToRow.row);
-    const targetTableRow = typeof tableRow === 'number' ? tableRow : scrollToRow.row + 1;
+
+    if (typeof tableRow !== 'number' || !Number.isFinite(tableRow)) {
+      return;
+    }
+
     const visibleRows = containerRef.current
       ? Math.max(1, Math.floor((containerRef.current.clientHeight - rowHeight) / rowHeight))
       : 1;
-    const centeredTableRow = Math.max(1, targetTableRow - Math.floor(visibleRows / 2));
+    const centeredTableRow = Math.max(0, tableRow - Math.floor(visibleRows / 2));
 
     tableRef.current.scrollToRow(centeredTableRow);
-    tableRef.current.selectCell(0, targetTableRow, false, false, false);
-  }, [scrollToRow]);
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      if (tableRef.current) {
+        selectRecordRow(tableRef.current, scrollToRow.row, false);
+      }
+    });
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [scrollToRow, rowHeight]);
 
   useEffect(() => {
     if (!containerRef.current || !tableRef.current) {
