@@ -64,12 +64,14 @@ export abstract class BaseAxisDraw {
     text: string;
     align: 'center' | 'right';
     verticalAlign: 'top' | 'middle';
+    width?: number;
   }): void {
     const theme = this.engine.getConfig().theme;
     this.group.add(
       new Text({
         x: options.x,
         y: options.y,
+        width: options.width,
         text: options.text,
         fontSize: 10,
         fontFamily: 'Arial',

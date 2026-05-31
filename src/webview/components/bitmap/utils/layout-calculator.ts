@@ -6,6 +6,8 @@ import type { LayoutConfig, LayoutResult, Area } from '../types';
 
 import { BITMAP_WIDTH, DEFAULT_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
 
+const AXIS_LABEL_OVERFLOW = 16;
+
 export class LayoutCalculator {
   private config: LayoutConfig;
   private rows: number;
@@ -36,6 +38,7 @@ export class LayoutCalculator {
     const contentHeight = this.rows * this.cellSize;
     const hasHorizontalScrollbar = contentWidth > baseMaxCellWidth;
     const hasVerticalScrollbar = contentHeight > baseMaxCellHeight;
+    const reserveHorizontalScrollbar = !hasVerticalScrollbar || hasHorizontalScrollbar;
     const maxCellWidth = Math.max(
       0,
       Math.min(
@@ -45,7 +48,7 @@ export class LayoutCalculator {
     );
     const maxCellHeight = Math.max(
       0,
-      containerHeight - axisSize - spacing - (hasHorizontalScrollbar ? scrollbarSize + spacing : 0)
+      containerHeight - axisSize - spacing - (reserveHorizontalScrollbar ? scrollbarSize + spacing : 0)
     );
 
     // 工具栏区域（顶部，全宽）- 现在外层处理，这里保留占位
@@ -83,14 +86,14 @@ export class LayoutCalculator {
     // 横向滚动条区域（格子区域下方）
     const horizontalScrollbar: Area = {
       x: axisSize + spacing,
-      y: axisSize + spacing + cellArea.height + (hasHorizontalScrollbar ? spacing : 0),
+      y: axisSize + spacing + cellArea.height + (reserveHorizontalScrollbar ? spacing : 0),
       width: cellArea.width,
-      height: hasHorizontalScrollbar ? scrollbarSize : 0,
+      height: reserveHorizontalScrollbar ? scrollbarSize : 0,
     };
 
     // 纵向滚动条区域（格子区域右侧）
     const verticalScrollbar: Area = {
-      x: axisSize + spacing + cellArea.width + (hasVerticalScrollbar ? spacing : 0),
+      x: axisSize + spacing + cellArea.width + (hasVerticalScrollbar ? spacing : AXIS_LABEL_OVERFLOW),
       y: axisSize + spacing,
       width: hasVerticalScrollbar ? scrollbarSize : 0,
       height: cellArea.height,
@@ -114,8 +117,8 @@ export class LayoutCalculator {
   }
 
   updateContentSize(rows: number, cols: number, cellSize: number): void {
-    this.rows = rows;
-    this.cols = cols;
+    this.rows = Math.max(rows, DEFAULT_ROWS);
+    this.cols = Math.max(cols, DEFAULT_COLS);
     this.cellSize = cellSize;
   }
 

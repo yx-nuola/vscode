@@ -24,10 +24,13 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
   const [scrollToRow, setScrollToRow] = useState<ScrollToRowRequest | undefined>();
   const dataRows = data?.rows ?? DEFAULT_ROWS;
   const dataCols = data?.cols ?? DEFAULT_COLS;
+  const effectiveRows = Math.max(dataRows, DEFAULT_ROWS);
   const shrinkBitmapHeight =
     config.layout.axisSize +
     config.layout.spacing +
-    Math.min(dataRows, DEFAULT_ROWS) * (config.initialCellSize ?? DEFAULT_CELL_SIZE);
+    effectiveRows * (config.initialCellSize ?? DEFAULT_CELL_SIZE) +
+    config.layout.spacing +
+    config.layout.scrollbarSize;
   const shouldShrinkBitmap = dataRows <= DEFAULT_ROWS && dataCols <= DEFAULT_COLS;
 
   useEffect(() => {
@@ -116,7 +119,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
         <div
           style={{
             flex: shouldShrinkBitmap ? '0 0 auto' : 1,
-            height: shouldShrinkBitmap ? `${shrinkBitmapHeight}px` : '100%',
+            height: shouldShrinkBitmap ? `min(100%, ${shrinkBitmapHeight}px)` : '100%',
             overflow: 'hidden',
           }}
         >

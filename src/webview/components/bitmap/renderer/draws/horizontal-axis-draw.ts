@@ -30,8 +30,9 @@ export class HorizontalAxisDraw extends BaseAxisDraw {
       if(col % step === 0){
         this.addLine([x, state.area.height - 10, x, state.area.height - 1]);
         this.addLabel({
-          x: x - 2,
+          x: x - 14,
           y: state.area.height - 28,
+          width: 28,
           text: col.toString(),
           align: 'center',
           verticalAlign: 'top',

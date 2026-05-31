@@ -17,9 +17,23 @@ describe('LayoutCalculator', () => {
 
     expect(layout.cellArea.width).toBe(896);
     expect(layout.cellArea.height).toBe(896);
-    expect(layout.horizontalScrollbar.height).toBe(0);
+    expect(layout.horizontalScrollbar.height).toBe(SCROLL);
     expect(layout.verticalScrollbar.width).toBe(0);
-    expect(layout.horizontalScrollbar.y).toBe(940);
+    expect(layout.horizontalScrollbar.y).toBe(944);
+    expect(layout.verticalScrollbar.x).toBe(956);
+  });
+
+  test('uses the 64x64 default viewport for smaller data', () => {
+    const calculator = new LayoutCalculator(layoutConfig);
+
+    calculator.updateContentSize(5, 5, DEFAULT_CELL_SIZE);
+    const layout = calculator.calculate(956, 1200);
+
+    expect(layout.cellArea.width).toBe(896);
+    expect(layout.cellArea.height).toBe(896);
+    expect(layout.horizontalScrollbar.height).toBe(SCROLL);
+    expect(layout.verticalScrollbar.width).toBe(0);
+    expect(layout.verticalScrollbar.x).toBe(956);
   });
 
   test('uses available viewport height for tall data', () => {
