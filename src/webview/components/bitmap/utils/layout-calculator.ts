@@ -4,9 +4,15 @@
 
 import type { LayoutConfig, LayoutResult, Area } from '../types';
 
-import { BITMAP_WIDTH, DEFAULT_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
+import {
+  BITMAP_HEIGHT,
+  BITMAP_WIDTH,
+  DEFAULT_CELL_SIZE,
+  DEFAULT_COLS,
+  DEFAULT_ROWS,
+} from '../constants';
 
-const AXIS_LABEL_OVERFLOW = 16;
+const LAYOUT_EPSILON = 0.5;
 
 export class LayoutCalculator {
   private config: LayoutConfig;
@@ -26,30 +32,21 @@ export class LayoutCalculator {
    */
   calculate(containerWidth: number, containerHeight: number): LayoutResult {
     const { axisSize, scrollbarSize, spacing } = this.config;
-    const baseMaxCellWidth = Math.max(
+    const availableCellWidth = Math.max(
       0,
-      Math.min(BITMAP_WIDTH, containerWidth - axisSize - spacing)
+      containerWidth - axisSize - spacing * 2 - scrollbarSize
     );
-    const baseMaxCellHeight = Math.max(
+    const availableCellHeight = Math.max(
       0,
-      containerHeight - axisSize - spacing
+      containerHeight - axisSize - spacing * 2 - scrollbarSize
     );
-    const contentWidth = this.cols * this.cellSize;
-    const contentHeight = this.rows * this.cellSize;
-    const hasHorizontalScrollbar = contentWidth > baseMaxCellWidth;
-    const hasVerticalScrollbar = contentHeight > baseMaxCellHeight;
-    const reserveHorizontalScrollbar = !hasVerticalScrollbar || hasHorizontalScrollbar;
-    const maxCellWidth = Math.max(
-      0,
-      Math.min(
-        BITMAP_WIDTH,
-        containerWidth - axisSize - spacing - (hasVerticalScrollbar ? scrollbarSize + spacing : 0)
-      )
-    );
-    const maxCellHeight = Math.max(
-      0,
-      containerHeight - axisSize - spacing - (reserveHorizontalScrollbar ? scrollbarSize + spacing : 0)
-    );
+    const useIdealViewport = this.rows <= DEFAULT_ROWS && this.cols <= DEFAULT_COLS;
+    const cellWidth = useIdealViewport
+      ? this.getIdealViewportSize(availableCellWidth, BITMAP_WIDTH)
+      : availableCellWidth;
+    const cellHeight = useIdealViewport
+      ? this.getIdealViewportSize(availableCellHeight, BITMAP_HEIGHT)
+      : availableCellHeight;
 
     // 工具栏区域（顶部，全宽）- 现在外层处理，这里保留占位
     // const toolbar: Area = {
@@ -59,12 +56,12 @@ export class LayoutCalculator {
     //   height: 0,
     // };
 
-    // 格子区域（固定宽度 896px，高度根据容器计算）
+    // 小数据以 896x896 为理想视口，大数据使用容器中的全部可用空间。
     const cellArea: Area = {
       x: axisSize + spacing,
       y: axisSize + spacing,
-      width: Math.min(contentWidth, maxCellWidth),
-      height: Math.min(contentHeight, maxCellHeight),
+      width: cellWidth,
+      height: cellHeight,
     };
 
     // X 轴区域（工具栏下方，Y 轴右侧）
@@ -86,16 +83,16 @@ export class LayoutCalculator {
     // 横向滚动条区域（格子区域下方）
     const horizontalScrollbar: Area = {
       x: axisSize + spacing,
-      y: axisSize + spacing + cellArea.height + (reserveHorizontalScrollbar ? spacing : 0),
+      y: axisSize + spacing + cellArea.height + spacing,
       width: cellArea.width,
-      height: reserveHorizontalScrollbar ? scrollbarSize : 0,
+      height: scrollbarSize,
     };
 
     // 纵向滚动条区域（格子区域右侧）
     const verticalScrollbar: Area = {
-      x: axisSize + spacing + cellArea.width + (hasVerticalScrollbar ? spacing : AXIS_LABEL_OVERFLOW),
+      x: axisSize + spacing + cellArea.width + spacing,
       y: axisSize + spacing,
-      width: hasVerticalScrollbar ? scrollbarSize : 0,
+      width: scrollbarSize,
       height: cellArea.height,
     };
 
@@ -127,5 +124,16 @@ export class LayoutCalculator {
    */
   getConfig(): LayoutConfig {
     return { ...this.config };
+  }
+
+  private getIdealViewportSize(
+    availableSize: number,
+    idealSize: number
+  ): number {
+    if (availableSize >= idealSize - LAYOUT_EPSILON) {
+      return idealSize;
+    }
+
+    return availableSize;
   }
 }

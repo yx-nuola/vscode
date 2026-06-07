@@ -3,7 +3,11 @@ import { Button, Space } from '@arco-design/web-react';
 import { BitmapGrid, BitmapGridRef, BitmapGridProps } from './bitmap-grid';
 import { ScrollToRowRequest, VirtualTable } from './virtual-table';
 import type { CellData } from '../types';
-import { DEFAULT_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
+import {
+  BITMAP_WIDTH,
+  DEFAULT_COLS,
+  DEFAULT_ROWS,
+} from '../constants';
 
 export interface BitmapTableLayoutProps extends Omit<BitmapGridProps, 'style'> {
   /** 表格行点击回调 */
@@ -24,11 +28,10 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
   const [scrollToRow, setScrollToRow] = useState<ScrollToRowRequest | undefined>();
   const dataRows = data?.rows ?? DEFAULT_ROWS;
   const dataCols = data?.cols ?? DEFAULT_COLS;
-  const effectiveRows = Math.max(dataRows, DEFAULT_ROWS);
-  const shrinkBitmapHeight =
+  const idealBitmapSize =
     config.layout.axisSize +
     config.layout.spacing +
-    effectiveRows * (config.initialCellSize ?? DEFAULT_CELL_SIZE) +
+    BITMAP_WIDTH +
     config.layout.spacing +
     config.layout.scrollbarSize;
   const shouldShrinkBitmap = dataRows <= DEFAULT_ROWS && dataCols <= DEFAULT_COLS;
@@ -85,13 +88,16 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
         height: '100%',
       }}
     >
-      {/* 左侧固定宽度 956px (896px 格子区域 + 40px Y轴 + 12px 滚动条 + 8px 间距) */}
+      {/* 小数据保持理想尺寸，大数据与右侧表格共同使用可视区宽度 */}
       <div
         style={{
-          width: '956px',
+          width: shouldShrinkBitmap ? `min(${idealBitmapSize}px, 100%)` : undefined,
           height: '100%',
-          borderRight: '1px solid #e0e0e0',
-          flexShrink: 0,
+          boxShadow: 'inset -1px 0 #e0e0e0',
+          flex: shouldShrinkBitmap
+            ? `0 0 min(${idealBitmapSize}px, 100%)`
+            : '1 1 0',
+          minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -118,8 +124,10 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
         </div>
         <div
           style={{
-            flex: shouldShrinkBitmap ? '0 0 auto' : 1,
-            height: shouldShrinkBitmap ? `min(100%, ${shrinkBitmapHeight}px)` : '100%',
+            flex: '1 1 auto',
+            minHeight: 0,
+            width: '100%',
+            maxHeight: shouldShrinkBitmap ? `${idealBitmapSize}px` : undefined,
             overflow: 'hidden',
           }}
         >
@@ -138,7 +146,8 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
       </div>
       <div
         style={{
-          flex: 1,
+          flex: '1 1 0',
+          minWidth: 0,
           height: '100%',
           padding: '8px',
           boxSizing: 'border-box',

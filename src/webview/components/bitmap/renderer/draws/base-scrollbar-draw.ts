@@ -37,7 +37,13 @@ export abstract class BaseScrollbarDraw {
     return this.slider?.isDragging() ?? false;
   }
 
+  setVisible(visible: boolean): void {
+    this.group.visible(visible);
+  }
+
   render(state: ScrollbarRenderState): void {
+    this.setVisible(true);
+
     if (!this.track || !this.slider) {
       this.createScrollbar(state);
       return;

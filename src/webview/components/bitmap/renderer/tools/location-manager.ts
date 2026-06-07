@@ -22,9 +22,7 @@ export class LocationManager {
     const targetX = col * cellSize;
     const targetY = row * cellSize;
 
-    const layoutCalculator = this.engine.getLayoutCalculator();
-    const stage = this.engine.getStage();
-    const layout = layoutCalculator.calculate(stage?.width() || 0, stage?.height() || 0);
+    const layout = this.engine.getLayout();
     const viewportWidth = layout.cellArea.width;
     const viewportHeight = layout.cellArea.height;
 

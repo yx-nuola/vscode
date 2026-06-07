@@ -45,4 +45,28 @@ describe('VirtualScrollSync scrollbar conversion', () => {
 
     expect(nextScrollY).toBeGreaterThan(3200);
   });
+
+  test('never creates a slider larger than a very small track', () => {
+    const sync = new VirtualScrollSync(1024, 1024, 14);
+    sync.updateViewport(10, 10);
+
+    const scrollbar = sync.getScrollbarState(0, 0, 8, 6);
+
+    expect(scrollbar.sliderWidth).toBe(8);
+    expect(scrollbar.sliderHeight).toBe(6);
+    expect(scrollbar.sliderX).toBe(0);
+    expect(scrollbar.sliderY).toBe(0);
+  });
+
+  test('does not enable scrolling for subpixel viewport differences', () => {
+    const sync = new VirtualScrollSync(64, 64, 14);
+    sync.updateViewport(895.75, 895.75);
+
+    const scrollbar = sync.getScrollbarState(0, 0, 895.75, 895.75);
+
+    expect(sync.maxScrollX).toBe(0);
+    expect(sync.maxScrollY).toBe(0);
+    expect(scrollbar.sliderWidth).toBe(895.75);
+    expect(scrollbar.sliderHeight).toBe(895.75);
+  });
 });

@@ -116,7 +116,12 @@ export class AxisLayer {
         layout.horizontalScrollbar.height
       ),
     };
-    if (horizontalData.area.width !== horizontalData.scrollbar.sliderWidth) {
+    const showHorizontalScrollbar =
+      horizontalData.area.width > 0 &&
+      horizontalData.area.height > 0 &&
+      virtualScrollSync.maxScrollX > 0;
+    this.horizontalScrollbarDraw.setVisible(showHorizontalScrollbar);
+    if (showHorizontalScrollbar) {
       this.horizontalScrollbarDraw.render(horizontalData);
     }
     // 渲染纵向滚动条
@@ -129,7 +134,12 @@ export class AxisLayer {
         layout.verticalScrollbar.height
       ),
     };
-    if (verticalData.area.height !== verticalData.scrollbar.sliderHeight) {
+    const showVerticalScrollbar =
+      verticalData.area.width > 0 &&
+      verticalData.area.height > 0 &&
+      virtualScrollSync.maxScrollY > 0;
+    this.verticalScrollbarDraw.setVisible(showVerticalScrollbar);
+    if (showVerticalScrollbar) {
       this.verticalScrollbarDraw.render(verticalData);
     }
   }
