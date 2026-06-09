@@ -182,12 +182,11 @@ export function ColorRulesModal({
               fontSize: '12px',
             }}
           >
-            <span>#</span>
-            <span>标题</span>
-            <span>最小值</span>
-            <span>最大值</span>
-            <span>颜色</span>
-            <span>操作</span>
+            <span>title</span>
+            <span>min</span>
+            <span>max</span>
+            <span>color</span>
+            <span>operation</span>
           </div>
 
           {draftRules.map((rule, index) => (
@@ -201,7 +200,6 @@ export function ColorRulesModal({
                 marginBottom: '10px',
               }}
             >
-              <span style={{ color: '#4e5969', fontSize: '12px' }}>{index + 1}</span>
               <input
                 aria-label={`规则 ${index + 1} 标题`}
                 value={rule.title}
@@ -259,8 +257,8 @@ export function ColorRulesModal({
                   alignItems: 'center',
                   justifyContent: 'center',
                   padding: 0,
-                  border: '1px solid',
-                  borderColor: index < DEFAULT_COLOR_RULE_COUNT ? '#e5e6eb' : '#ffccc7',
+                  // border: '1px solid',
+                  // borderColor: index < DEFAULT_COLOR_RULE_COUNT ? '#e5e6eb' : '#ffccc7',
                   borderRadius: '4px',
                   backgroundColor: '#fff',
                   color: index < DEFAULT_COLOR_RULE_COUNT ? '#c9cdd4' : '#f53f3f',
@@ -288,7 +286,7 @@ export function ColorRulesModal({
               fontSize: '13px',
             }}
           >
-            + 增加区间
+            + add rule
           </button>
 
           {error && (
@@ -318,7 +316,7 @@ export function ColorRulesModal({
               cursor: 'pointer',
             }}
           >
-            取消
+            cancel
           </button>
           <button
             type="button"
@@ -332,7 +330,7 @@ export function ColorRulesModal({
               cursor: 'pointer',
             }}
           >
-            保存
+            save
           </button>
         </div>
       </div>

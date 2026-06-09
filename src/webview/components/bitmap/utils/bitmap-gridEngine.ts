@@ -32,7 +32,6 @@ export class BitmapGridEngine {
   private selectedCell: CellData | null;
   private locationManager: LocationManager;
   private wheelHandler: ((event: WheelEvent) => void) | null;
-  private keyDownHandler: ((event: KeyboardEvent) => void) | null;
   private pointerDownHandler: (() => void) | null;
 
   // 图层实例
@@ -41,7 +40,6 @@ export class BitmapGridEngine {
   private highlightLayer: HighlightLayer;
 
   constructor(config: BitmapGridConfig) {
-    // debugger;
     this.stage = null;
     this.layers = new Map();
     this.eventBus = new EventBus();
@@ -56,7 +54,6 @@ export class BitmapGridEngine {
     this.selectedCell = null;
     this.locationManager = new LocationManager(this);
     this.wheelHandler = null;
-    this.keyDownHandler = null;
     this.pointerDownHandler = null;
 
     // 初始化图层
@@ -180,38 +177,6 @@ export class BitmapGridEngine {
     this.container.addEventListener('wheel', this.wheelHandler, { passive: false });
   }
 
-  // private setupKeyboardEvents(): void {
-  //   if (!this.container) {
-  //     return;
-  //   }
-
-  //   this.container.tabIndex = 0;
-  //   this.keyDownHandler = (e: KeyboardEvent) => {
-  //     if (!e.ctrlKey) {
-  //       return;
-  //     }
-
-  //     if (e.key === '+' || e.key === '=') {
-  //       e.preventDefault();
-  //       this.zoomIn();
-  //       return;
-  //     }
-
-  //     if (e.key === '-' || e.key === '_') {
-  //       e.preventDefault();
-  //       this.zoomOut();
-  //       return;
-  //     }
-
-  //     if (e.key === '0') {
-  //       e.preventDefault();
-  //       this.resetZoom();
-  //     }
-  //   };
-
-  //   this.container.addEventListener('keydown', this.keyDownHandler);
-  // }
-
   private setupFocusEvents(): void {
     if (!this.container) {
       return;
@@ -234,7 +199,6 @@ export class BitmapGridEngine {
       this.container.removeEventListener('pointerdown', this.pointerDownHandler);
     }
     this.wheelHandler = null;
-    this.keyDownHandler = null;
     this.pointerDownHandler = null;
 
     this.eventBus.clear();

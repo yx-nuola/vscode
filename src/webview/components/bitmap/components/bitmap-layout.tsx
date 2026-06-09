@@ -34,6 +34,8 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
     BITMAP_WIDTH +
     config.layout.spacing +
     config.layout.scrollbarSize;
+
+    console.log('idealBitmapSize', config,BITMAP_WIDTH, idealBitmapSize);  
   const shouldShrinkBitmap = dataRows <= DEFAULT_ROWS && dataCols <= DEFAULT_COLS;
 
   useEffect(() => {
@@ -91,9 +93,10 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
       {/* 小数据保持理想尺寸，大数据与右侧表格共同使用可视区宽度 */}
       <div
         style={{
-          width: shouldShrinkBitmap ? `min(${idealBitmapSize}px, 100%)` : undefined,
+          width: shouldShrinkBitmap ? `${idealBitmapSize}px` : undefined,
           height: '100%',
-          boxShadow: 'inset -1px 0 #e0e0e0',
+          // width: '956px',
+          // boxShadow: 'inset -1px 0 #e0e0e0',
           flex: shouldShrinkBitmap
             ? `0 0 min(${idealBitmapSize}px, 100%)`
             : '1 1 0',
@@ -106,8 +109,6 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
         <div
           style={{
             padding: '0 8px',
-            // borderBottom: '1px solid #e0e0e0',
-            // backgroundColor: '#f5f5f5',
           }}
         >
           <Space style={{ display: 'flex' }}>
@@ -147,6 +148,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
       <div
         style={{
           flex: '1 1 0',
+          // width: `calc(100% - ${idealBitmapSize}px)`,
           minWidth: 0,
           height: '100%',
           padding: '8px',

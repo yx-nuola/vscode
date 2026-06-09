@@ -185,9 +185,6 @@ export class VirtualScrollSync {
     }).scrollY;
   }
 
-  /**
-   * 灏嗘粴鍔ㄤ綅缃害鏉熷埌褰撳墠缂╂斁/瑙嗗彛涓嬪彲鐢ㄧ殑鑼冨洿鍐?
-   */
   clampScrollState(state: ScrollState): ScrollState {
     return {
       scrollX: Math.max(0, Math.min(state.scrollX, this.maxScrollX)),
