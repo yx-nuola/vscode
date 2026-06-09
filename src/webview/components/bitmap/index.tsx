@@ -3,6 +3,8 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
+import { Button } from '@arco-design/web-react';
+import { IconSettings } from '@arco-design/web-react/icon';
 import { BitmapLayout } from './components/bitmap-layout';
 import { ColorRulesModal } from './components/color-rules-modal';
 import { FileUpload } from './components/file-upload';
@@ -201,24 +203,14 @@ export function BitmapTestPage() {
           }}
         >
           <span style={{ color: '#666' }}>Color Rules:</span>
-          <button
-            type="button"
+          <Button
             aria-label="配置颜色规则"
             title="配置颜色规则"
+            type="secondary"
+            size="small"
+            icon={<IconSettings />}
             onClick={() => setIsColorRulesModalOpen(true)}
-            style={{
-              width: '28px',
-              height: '28px',
-              padding: 0,
-              border: '1px solid #d9d9d9',
-              borderRadius: '4px',
-              backgroundColor: '#fff',
-              cursor: 'pointer',
-              fontSize: '15px',
-            }}
-          >
-            ⚙
-          </button>
+          />
           {colorRules.map((rule, index) => (
             <div
               key={`${index}-${rule.title}`}

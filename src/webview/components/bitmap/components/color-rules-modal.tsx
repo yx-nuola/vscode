@@ -1,4 +1,12 @@
 import { useEffect, useState } from 'react';
+import {
+  Button,
+  ColorPicker,
+  Input,
+  InputNumber,
+  Modal,
+  Typography,
+} from '@arco-design/web-react';
 import { IconDelete } from '@arco-design/web-react/icon';
 import {
   createAdditionalColorRule,
@@ -15,14 +23,6 @@ interface ColorRulesModalProps {
   onSave: (rules: ColorRule[]) => void;
 }
 
-const inputStyle = {
-  height: '30px',
-  padding: '4px 8px',
-  border: '1px solid #d9d9d9',
-  borderRadius: '4px',
-  fontSize: '12px',
-} as const;
-
 export function ColorRulesModal({
   open,
   rules,
@@ -38,25 +38,6 @@ export function ColorRulesModal({
       setError(null);
     }
   }, [open, rules]);
-
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onCancel();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onCancel, open]);
-
-  if (!open) {
-    return null;
-  }
 
   const updateRule = <Key extends keyof ColorRule>(
     index: number,
@@ -104,84 +85,60 @@ export function ColorRulesModal({
   };
 
   return (
-    <div
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onCancel();
-        }
-      }}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px',
-        backgroundColor: 'rgba(0, 0, 0, 0.45)',
-      }}
+    <Modal
+      title="Color Rules"
+      visible={open}
+      onCancel={onCancel}
+      onOk={handleSave}
+      okText="保存"
+      cancelText="取消"
+      maskClosable
+      escToExit
+      unmountOnExit
+      style={{ width: 760 }}
     >
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="color-rules-modal-title"
         style={{
-          width: 'min(760px, 100%)',
-          maxHeight: 'min(720px, calc(100vh - 48px))',
-          display: 'flex',
-          flexDirection: 'column',
-          borderRadius: '8px',
-          backgroundColor: '#fff',
-          boxShadow: '0 12px 36px rgba(0, 0, 0, 0.24)',
+          marginBottom: '16px',
+          color: '#86909c',
+          fontSize: '12px',
         }}
       >
+        默认三项不可删除，最多支持 {MAX_COLOR_RULE_COUNT} 项
+      </div>
+
+      <div style={{ maxHeight: 'calc(100vh - 260px)', overflowY: 'auto' }}>
         <div
           style={{
-            display: 'flex',
+            display: 'grid',
+            gridTemplateColumns: '32px minmax(120px, 1fr) 100px 100px 170px 48px',
+            gap: '8px',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px 20px',
-            borderBottom: '1px solid #e5e6eb',
+            marginBottom: '8px',
+            color: '#86909c',
+            fontSize: '12px',
           }}
         >
-          <div>
-            <h3 id="color-rules-modal-title" style={{ margin: 0, fontSize: '16px' }}>
-              Color Rules
-            </h3>
-            <div style={{ marginTop: '4px', color: '#86909c', fontSize: '12px' }}>
-              默认三项不可删除，最多支持 {MAX_COLOR_RULE_COUNT} 项
-            </div>
-          </div>
-          <button
-            type="button"
-            aria-label="关闭"
-            onClick={onCancel}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              color: '#4e5969',
-              cursor: 'pointer',
-              fontSize: '22px',
-              lineHeight: 1,
-            }}
-          >
-            ×
-          </button>
+          <span>#</span>
+          <span>标题</span>
+          <span>最小值</span>
+          <span>最大值</span>
+          <span>颜色</span>
+          <span>操作</span>
         </div>
 
-        <div style={{ padding: '16px 20px', overflowY: 'auto' }}>
+        {draftRules.map((rule, index) => (
           <div
+            key={index}
             style={{
               display: 'grid',
-              gridTemplateColumns: '32px minmax(120px, 1fr) 100px 100px 150px 64px',
+              gridTemplateColumns: '32px minmax(120px, 1fr) 100px 100px 170px 48px',
               gap: '8px',
               alignItems: 'center',
-              marginBottom: '8px',
-              color: '#86909c',
-              fontSize: '12px',
+              marginBottom: '10px',
             }}
           >
+<<<<<<< Updated upstream
             <span>title</span>
             <span>min</span>
             <span>max</span>
@@ -304,18 +261,74 @@ export function ColorRulesModal({
             padding: '12px 20px',
             borderTop: '1px solid #e5e6eb',
           }}
+=======
+            <span style={{ color: '#4e5969', fontSize: '12px' }}>{index + 1}</span>
+            <Input
+              aria-label={`规则 ${index + 1} 标题`}
+              value={rule.title}
+              maxLength={40}
+              size="small"
+              onChange={(value) => updateRule(index, 'title', value)}
+            />
+            <InputNumber
+              aria-label={`规则 ${index + 1} 最小值`}
+              value={rule.min}
+              size="small"
+              hideControl
+              onChange={(value) => updateRule(index, 'min', value)}
+            />
+            <InputNumber
+              aria-label={`规则 ${index + 1} 最大值`}
+              value={rule.max}
+              size="small"
+              hideControl
+              onChange={(value) => updateRule(index, 'max', value)}
+            />
+            <ColorPicker
+              value={rule.color}
+              size="small"
+              format="hex"
+              mode="single"
+              showText
+              disabledAlpha
+              onChange={(value) => {
+                if (typeof value === 'string') {
+                  updateRule(index, 'color', value);
+                }
+              }}
+              style={{ width: '100%' }}
+            />
+            <Button
+              aria-label={`删除规则 ${index + 1}`}
+              title={index < DEFAULT_COLOR_RULE_COUNT ? '默认规则不可删除' : '删除规则'}
+              type="text"
+              status="danger"
+              size="small"
+              icon={<IconDelete />}
+              disabled={index < DEFAULT_COLOR_RULE_COUNT}
+              onClick={() => handleDelete(index)}
+            />
+          </div>
+        ))}
+
+        <Button
+          type="dashed"
+          long
+          size="small"
+          disabled={draftRules.length >= MAX_COLOR_RULE_COUNT}
+          onClick={handleAdd}
+>>>>>>> Stashed changes
         >
-          <button
-            type="button"
-            onClick={onCancel}
-            style={{
-              padding: '6px 14px',
-              border: '1px solid #d9d9d9',
-              borderRadius: '4px',
-              backgroundColor: '#fff',
-              cursor: 'pointer',
-            }}
+          + 增加区间
+        </Button>
+
+        {error && (
+          <Typography.Text
+            type="error"
+            role="alert"
+            style={{ display: 'block', marginTop: '10px', fontSize: '12px' }}
           >
+<<<<<<< Updated upstream
             cancel
           </button>
           <button
@@ -333,7 +346,12 @@ export function ColorRulesModal({
             save
           </button>
         </div>
+=======
+            {error}
+          </Typography.Text>
+        )}
+>>>>>>> Stashed changes
       </div>
-    </div>
+    </Modal>
   );
 }
