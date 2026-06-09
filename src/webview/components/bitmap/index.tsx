@@ -4,6 +4,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { BitmapLayout } from './components/bitmap-layout';
+import { ColorRulesModal } from './components/color-rules-modal';
 import { FileUpload } from './components/file-upload';
 import {
   DataParser,
@@ -20,6 +21,7 @@ import { MAX_CELL_SIZE, DEFAULT_CELL_SIZE, START_POSITION, PADDING, SCROLL } fro
 
 import { DARK_THEME, LIGHT_THEME } from './theme/presets';
 import { requestData, requestOpenElectron } from '../../messenger/webviewMessenger';
+import { createDefaultColorRules } from './color-rules';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -28,11 +30,8 @@ export function BitmapTestPage() {
   const [parsedData, setParsedData] = useState<MatrixData | null>(null);
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
   const [extensionStatus, setExtensionStatus] = useState<string>('VS Code messenger ready');
-  const [colorRules, setColorRules] = useState<ColorRule[]>([
-    { min: 0, max: 5, color: '#ff9800' },   // 橙色
-    { min: 5, max: 10, color: '#4caf50' },  // 绿色
-    { min: 10, max: 100, color: '#ec4646' }, // 红色
-  ]);
+  const [colorRules, setColorRules] = useState<ColorRule[]>(createDefaultColorRules);
+  const [isColorRulesModalOpen, setIsColorRulesModalOpen] = useState(false);
   const theme: BitmapTheme = themeMode === 'light' ? LIGHT_THEME : DARK_THEME;
 
   const config: BitmapGridConfig = useMemo(() => ({
@@ -75,12 +74,9 @@ export function BitmapTestPage() {
     setThemeMode((mode) => mode === 'light' ? 'dark' : 'light');
   }, []);
 
-  const handleColorRuleChange = useCallback((index: number, color: string) => {
-    setColorRules((rules) =>
-      rules.map((rule, ruleIndex) =>
-        ruleIndex === index ? { ...rule, color } : rule
-      )
-    );
+  const handleColorRulesSave = useCallback((rules: ColorRule[]) => {
+    setColorRules(rules);
+    setIsColorRulesModalOpen(false);
   }, []);
 
   const handleCellClick = useCallback((col: number, row: number) => {
@@ -204,10 +200,28 @@ export function BitmapTestPage() {
             fontSize: '12px',
           }}
         >
-          <span style={{ color: '#666' }}>Color Rules</span>
+          <span style={{ color: '#666' }}>Color Rules:</span>
+          <button
+            type="button"
+            aria-label="配置颜色规则"
+            title="配置颜色规则"
+            onClick={() => setIsColorRulesModalOpen(true)}
+            style={{
+              width: '28px',
+              height: '28px',
+              padding: 0,
+              border: '1px solid #d9d9d9',
+              borderRadius: '4px',
+              backgroundColor: '#fff',
+              cursor: 'pointer',
+              fontSize: '15px',
+            }}
+          >
+            ⚙
+          </button>
           {colorRules.map((rule, index) => (
-            <label
-              key={`${rule.min}-${rule.max}`}
+            <div
+              key={`${index}-${rule.title}`}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -218,23 +232,17 @@ export function BitmapTestPage() {
                 backgroundColor: '#fff',
               }}
             >
-              <span>{rule.min}-{rule.max}</span>
-              <input
-                type="color"
-                value={rule.color}
-                onChange={(event) => handleColorRuleChange(index, event.target.value)}
+              <span
                 style={{
-                  width: '22px',
-                  height: '22px',
-                  padding: 0,
-                  border: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '2px',
+                  backgroundColor: rule.color,
                 }}
               />
-              {/* <ColorPicker className="color-picker" defaultValue={rule.color} value={rule.color} onChange={(value: any) => handleColorRuleChange(index, value)}/> */}
-              <span style={{ color: '#666', minWidth: '56px' }}>{rule.color}</span>
-            </label>
+              <span>{rule.title}</span>
+              <span style={{ color: '#666' }}>{rule.min}-{rule.max}</span>
+            </div>
           ))}
         </div>
 
@@ -271,6 +279,13 @@ export function BitmapTestPage() {
           </div>
         )}
       </div>
+
+      <ColorRulesModal
+        open={isColorRulesModalOpen}
+        rules={colorRules}
+        onCancel={() => setIsColorRulesModalOpen(false)}
+        onSave={handleColorRulesSave}
+      />
     </div>
   );
 }

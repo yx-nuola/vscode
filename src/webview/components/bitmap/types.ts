@@ -77,6 +77,8 @@ export interface LayoutResult {
  * 颜色映射规则
  */
 export interface ColorRule {
+  /** 展示标题 */
+  title: string;
   /** 最小值 */
   min: number;
   /** 最大值 */
