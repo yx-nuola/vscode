@@ -17,7 +17,7 @@ import type {
   BitmapGridConfig,
   ColorRule,
   BitmapTheme,
-  ImportMode, 
+  ImportMode,
 } from './types';
 import { MAX_CELL_SIZE, DEFAULT_CELL_SIZE, START_POSITION, PADDING, SCROLL, defaultColorRule } from './constants';
 
@@ -125,20 +125,20 @@ export function BitmapTestPage() {
         <FileUpload onDataLoad={handleDataLoad} />
 
         {/* 解析按钮 */}
-          <button
-            onClick={handleParse}
-            style={{
-              padding: '6px 12px',
-              backgroundColor: '#1890ff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '12px',
-            }}
-          >
-            解析数据
-          </button>
+        <button
+          onClick={handleParse}
+          style={{
+            padding: '6px 12px',
+            backgroundColor: '#1890ff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px',
+          }}
+        >
+          解析数据
+        </button>
 
         <button
           onClick={handleThemeToggle}
@@ -226,7 +226,6 @@ export function BitmapTestPage() {
                 }}
               />
               <span>{rule.title}</span>
-              <span style={{ color: '#666' }}>{rule.min}-{rule.max}</span>
             </div>
           ))}
         </div>

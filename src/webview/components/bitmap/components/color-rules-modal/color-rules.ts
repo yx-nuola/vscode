@@ -34,7 +34,7 @@ export function validateColorRules(rules: ColorRule[]): string | null {
   }
 
   for (const [index, rule] of rules.entries()) {
-    console.log('---------validateColorRules', rule);  
+    console.log('---------validateColorRules', rule);
     if (!rule.title || !rule.title.trim()) {
       return `The title of item ${index + 1} cannot be empty`;
     }
@@ -44,8 +44,12 @@ export function validateColorRules(rules: ColorRule[]): string | null {
     }
 
     if (rule.min && rule.max && rule.min > rule.max) {
-      return `The minimum value of item ${index+1} cannot be greater than the maximum value`;
+      return `The minimum value of item ${index + 1} cannot be greater than the maximum value`;
     }
+
+    // if (!rule.min && !rule.max) {
+    //   return `The minimum value of item ${index + 1} cannot be greater than the maximum value`;
+    // }
 
     if (!/^#[0-9a-f]{6}$/i.test(rule.color)) {
       return `The color of item ${index + 1} must be a six digit hexadecimal color value`;

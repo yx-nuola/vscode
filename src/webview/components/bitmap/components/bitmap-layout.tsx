@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
-import { Button,   } from '@arco-design/web-react';
+import { Button, } from '@arco-design/web-react';
 import { IconFullscreenExit, IconPlusCircle, IconMinusCircle } from '@arco-design/web-react/icon';
 import { BitmapGrid, BitmapGridRef, BitmapGridProps } from './bitmap-grid';
 import { ScrollToRowRequest, VirtualTable } from './virtual-table';
@@ -10,7 +10,7 @@ import {
   DEFAULT_ROWS,
 } from '../constants';
 
-const { Group: ButtonGroup} = Button
+const { Group: ButtonGroup } = Button
 export interface BitmapTableLayoutProps extends Omit<BitmapGridProps, 'style'> {
   /** 表格行点击回调 */
   onTableRowClick?: (row: number, cell: CellData) => void;
@@ -37,7 +37,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
     config.layout.spacing +
     config.layout.scrollbarSize;
 
-    console.log('bitmapWidth', config,BITMAP_WIDTH, bitmapWidth);  
+  console.log('bitmapWidth', config, BITMAP_WIDTH, bitmapWidth);
   const shrinkBitmap = dataRows <= DEFAULT_ROWS && dataCols <= DEFAULT_COLS;
 
   useEffect(() => {
@@ -95,13 +95,16 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
       {/* 小数据保持理想尺寸，大数据与右侧表格共同使用可视区宽度 */}
       <div
         style={{
-          width: shrinkBitmap ? `${bitmapWidth}px` : undefined,
           height: '100%',
           // width: '956px',
           // boxShadow: 'inset -1px 0 #e0e0e0',
-          flex: shrinkBitmap
-            ? `0 0 min(${bitmapWidth}px, 100%)`
-            : '1 1 0',
+          // width: shrinkBitmap ? `${bitmapWidth}px` : undefined,
+          // flex: shrinkBitmap
+          //   ? `0 0 min(${bitmapWidth}px, 100%)`
+          //   : '1 1 0',
+
+          width: `min(${bitmapWidth}px, 100%)`,
+          flex: `0 0 min(${bitmapWidth}px, 100%)`,
           minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
@@ -113,11 +116,11 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
             padding: '0 8px',
           }}
         >
-          <ButtonGroup>
+          {/* <ButtonGroup>
             <Button  onClick={() => bitmapRef.current?.zoomIn()}icon={<IconMinusCircle  style={{ fontSize: '16px' }}/>} />
             <Button  onClick={() => bitmapRef.current?.zoomOut()}icon={<IconPlusCircle  style={{ fontSize: '16px' }}/>} />
           <Button  onClick={() => bitmapRef.current?.resetZoom()}icon={<IconFullscreenExit  style={{ fontSize: '16px' }}/>} />
-        </ButtonGroup>
+        </ButtonGroup> */}
         </div>
         <div
           style={{
@@ -149,7 +152,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
           height: '100%',
           padding: '8px',
           boxSizing: 'border-box',
-          overflow: 'auto',
+          // overflow: 'auto',
         }}
       >
         {data && (
