@@ -57,25 +57,8 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
 
     const engine = new BitmapGridEngine(config);
     engineRef.current = engine;
-    // debugger
 
     engine.initialize(containerRef.current);
-
-    // // 初始化时设置数据
-    // if (data) {
-    //   engine.setData(data);
-    // }
-
-    // // 初始化时设置主题
-    // if (theme) {
-    //   engine.setTheme(theme);
-    // }
-
-    // // 初始化时设置颜色规则
-    // if (colorRules) {
-    //   engine.setColorRules(colorRules);
-    // }
-
     // 强制触发一次重绘，确保坐标轴刻度线正确渲染
     // requestAnimationFrame(() => {
     //   const { width, height } = containerRef.current?.getBoundingClientRect() || { width: 0, height: 0 };
@@ -118,6 +101,7 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
     if (!containerRef.current) return;
 
     const resizeObserver = new ResizeObserver((entries) => {
+      console.log('容器尺寸变化', entries);
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
         engineRef.current?.resize(width, height);

@@ -10,7 +10,7 @@ import type {
   ListTableConstructorOptions,
   MousePointerCellEvent,
 } from '@visactor/vtable';
-import type { CellData } from '../types';
+import type { CellData } from '../../types';
 
 /**
  * 表格列配置

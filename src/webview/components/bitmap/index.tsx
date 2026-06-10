@@ -19,11 +19,10 @@ import type {
   BitmapTheme,
   ImportMode, 
 } from './types';
-import { MAX_CELL_SIZE, DEFAULT_CELL_SIZE, START_POSITION, PADDING, SCROLL } from './constants';
+import { MAX_CELL_SIZE, DEFAULT_CELL_SIZE, START_POSITION, PADDING, SCROLL, defaultColorRule } from './constants';
 
 import { DARK_THEME, LIGHT_THEME } from './theme/presets';
 import { requestData, requestOpenElectron } from '../../messenger/webviewMessenger';
-import { createDefaultColorRules } from './color-rules';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -32,7 +31,7 @@ export function BitmapTestPage() {
   const [parsedData, setParsedData] = useState<MatrixData | null>(null);
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
   const [extensionStatus, setExtensionStatus] = useState<string>('VS Code messenger ready');
-  const [colorRules, setColorRules] = useState<ColorRule[]>(createDefaultColorRules);
+  const [colorRules, setColorRules] = useState<ColorRule[]>(defaultColorRule);
   const [isColorRulesModalOpen, setIsColorRulesModalOpen] = useState(false);
   const theme: BitmapTheme = themeMode === 'light' ? LIGHT_THEME : DARK_THEME;
 
@@ -122,13 +121,10 @@ export function BitmapTestPage() {
           gap: '16px',
         }}
       >
-        <h2 style={{ margin: 0, fontSize: '16px' }}>RRAM 测试结果可视化</h2>
-
         {/* 文件上传 */}
         <FileUpload onDataLoad={handleDataLoad} />
 
         {/* 解析按钮 */}
-        {/* {data && !parsedData && ( */}
           <button
             onClick={handleParse}
             style={{
@@ -143,9 +139,7 @@ export function BitmapTestPage() {
           >
             解析数据
           </button>
-        {/* )} */}
 
-        {/* 数据统计 */}
         <button
           onClick={handleThemeToggle}
           style={{
@@ -161,7 +155,7 @@ export function BitmapTestPage() {
           {themeMode === 'light' ? '暗色主题' : '亮色主题'}
         </button>
 
-        <button
+        {/* <button
           onClick={handleLoadExtensionData}
           style={{
             padding: '6px 12px',
@@ -189,9 +183,9 @@ export function BitmapTestPage() {
           }}
         >
           Open Electron
-        </button>
+        </button> */}
 
-        <span style={{ color: '#666', fontSize: '12px' }}>{extensionStatus}</span>
+        {/* <span style={{ color: '#666', fontSize: '12px' }}>{extensionStatus}</span> */}
 
         <div
           style={{
@@ -202,7 +196,6 @@ export function BitmapTestPage() {
             fontSize: '12px',
           }}
         >
-          <span style={{ color: '#666' }}>Color Rules:</span>
           <Button
             aria-label="配置颜色规则"
             title="配置颜色规则"

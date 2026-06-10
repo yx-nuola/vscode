@@ -80,9 +80,9 @@ export interface ColorRule {
   /** 展示标题 */
   title: string;
   /** 最小值 */
-  min: number;
+  min?: number;
   /** 最大值 */
-  max: number;
+  max?: number;
   /** 颜色值 */
   color: string;
 }

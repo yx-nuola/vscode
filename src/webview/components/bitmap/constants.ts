@@ -38,3 +38,10 @@ export const PADDING = 4;
  */
 export const SCROLL = 12;
 
+export const defaultColorRule = [
+  { min: 0, max: 0.2, color: '#D8D8D8', title: '0~0.2(Unformed)' },
+  { min: 0.2, max: 2, color: '#3377DD', title: '0.2~2(Reset)' }, // 蓝色
+  { min: 2, max: 4, color: '#FFAA33', title: '2~4(Unstable)' }, // 黄
+  { min: 4, max: 6, color: '#33AA55', title: '4~6(Set)' }, // 绿色
+  { min: 6, color: '#DD3333', title: '>6(Strong Set)' }, // 红色
+]

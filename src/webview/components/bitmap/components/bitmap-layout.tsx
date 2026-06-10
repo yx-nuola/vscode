@@ -1,5 +1,6 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
-import { Button, Space } from '@arco-design/web-react';
+import { Button,   } from '@arco-design/web-react';
+import { IconFullscreenExit, IconPlusCircle, IconMinusCircle } from '@arco-design/web-react/icon';
 import { BitmapGrid, BitmapGridRef, BitmapGridProps } from './bitmap-grid';
 import { ScrollToRowRequest, VirtualTable } from './virtual-table';
 import type { CellData } from '../types';
@@ -9,6 +10,7 @@ import {
   DEFAULT_ROWS,
 } from '../constants';
 
+const { Group: ButtonGroup} = Button
 export interface BitmapTableLayoutProps extends Omit<BitmapGridProps, 'style'> {
   /** 表格行点击回调 */
   onTableRowClick?: (row: number, cell: CellData) => void;
@@ -28,15 +30,15 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
   const [scrollToRow, setScrollToRow] = useState<ScrollToRowRequest | undefined>();
   const dataRows = data?.rows ?? DEFAULT_ROWS;
   const dataCols = data?.cols ?? DEFAULT_COLS;
-  const idealBitmapSize =
+  const bitmapWidth =
     config.layout.axisSize +
     config.layout.spacing +
     BITMAP_WIDTH +
     config.layout.spacing +
     config.layout.scrollbarSize;
 
-    console.log('idealBitmapSize', config,BITMAP_WIDTH, idealBitmapSize);  
-  const shouldShrinkBitmap = dataRows <= DEFAULT_ROWS && dataCols <= DEFAULT_COLS;
+    console.log('bitmapWidth', config,BITMAP_WIDTH, bitmapWidth);  
+  const shrinkBitmap = dataRows <= DEFAULT_ROWS && dataCols <= DEFAULT_COLS;
 
   useEffect(() => {
     // 数据更新清除之前的高亮和选中
@@ -93,12 +95,12 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
       {/* 小数据保持理想尺寸，大数据与右侧表格共同使用可视区宽度 */}
       <div
         style={{
-          width: shouldShrinkBitmap ? `${idealBitmapSize}px` : undefined,
+          width: shrinkBitmap ? `${bitmapWidth}px` : undefined,
           height: '100%',
           // width: '956px',
           // boxShadow: 'inset -1px 0 #e0e0e0',
-          flex: shouldShrinkBitmap
-            ? `0 0 min(${idealBitmapSize}px, 100%)`
+          flex: shrinkBitmap
+            ? `0 0 min(${bitmapWidth}px, 100%)`
             : '1 1 0',
           minWidth: 0,
           display: 'flex',
@@ -111,24 +113,18 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
             padding: '0 8px',
           }}
         >
-          <Space style={{ display: 'flex' }}>
-            <Button size="small" onClick={() => bitmapRef.current?.zoomIn()}>
-              放大
-            </Button>
-            <Button size="small" onClick={() => bitmapRef.current?.zoomOut()}>
-              缩小
-            </Button>
-            <Button size="small" onClick={() => bitmapRef.current?.resetZoom()}>
-              还原
-            </Button>
-          </Space>
+          <ButtonGroup>
+            <Button  onClick={() => bitmapRef.current?.zoomIn()}icon={<IconMinusCircle  style={{ fontSize: '16px' }}/>} />
+            <Button  onClick={() => bitmapRef.current?.zoomOut()}icon={<IconPlusCircle  style={{ fontSize: '16px' }}/>} />
+          <Button  onClick={() => bitmapRef.current?.resetZoom()}icon={<IconFullscreenExit  style={{ fontSize: '16px' }}/>} />
+        </ButtonGroup>
         </div>
         <div
           style={{
             flex: '1 1 auto',
             minHeight: 0,
             width: '100%',
-            maxHeight: shouldShrinkBitmap ? `${idealBitmapSize}px` : undefined,
+            maxHeight: shrinkBitmap ? `${bitmapWidth}px` : undefined,
             overflow: 'hidden',
           }}
         >
@@ -148,7 +144,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
       <div
         style={{
           flex: '1 1 0',
-          // width: `calc(100% - ${idealBitmapSize}px)`,
+          // width: `calc(100% - ${bitmapWidth}px)`,
           minWidth: 0,
           height: '100%',
           padding: '8px',
