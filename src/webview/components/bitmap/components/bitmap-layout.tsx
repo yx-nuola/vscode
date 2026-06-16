@@ -2,7 +2,8 @@ import { useRef, useCallback, useEffect, useState } from 'react';
 import { Button, } from '@arco-design/web-react';
 import { IconFullscreenExit, IconPlusCircle, IconMinusCircle } from '@arco-design/web-react/icon';
 import { BitmapGrid, BitmapGridRef, BitmapGridProps } from './bitmap-grid';
-import { ScrollToRowRequest, VirtualTable } from './virtual-table';
+import {  VirtualTable } from './virtual-table';
+import type { ScrollToRowRequest } from './virtual-table/types';
 import type { CellData } from '../types';
 import {
   BITMAP_WIDTH,
@@ -37,8 +38,9 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
     config.layout.spacing +
     config.layout.scrollbarSize;
 
-  console.log('bitmapWidth', config, BITMAP_WIDTH, bitmapWidth);
-  const shrinkBitmap = dataRows <= DEFAULT_ROWS && dataCols <= DEFAULT_COLS;
+    console.log('bitmapWidth', config,BITMAP_WIDTH, bitmapWidth);  
+  const axisW =  dataCols <= DEFAULT_COLS;
+  const axisH = dataRows <= DEFAULT_ROWS;
 
   useEffect(() => {
     // 数据更新清除之前的高亮和选中
@@ -95,16 +97,13 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
       {/* 小数据保持理想尺寸，大数据与右侧表格共同使用可视区宽度 */}
       <div
         style={{
+          width: axisW ? `${bitmapWidth}px` : undefined,
           height: '100%',
           // width: '956px',
           // boxShadow: 'inset -1px 0 #e0e0e0',
-          // width: shrinkBitmap ? `${bitmapWidth}px` : undefined,
-          // flex: shrinkBitmap
-          //   ? `0 0 min(${bitmapWidth}px, 100%)`
-          //   : '1 1 0',
-
-          width: `min(${bitmapWidth}px, 100%)`,
-          flex: `0 0 min(${bitmapWidth}px, 100%)`,
+          flex: axisW
+            ? `0 0 min(${bitmapWidth}px, 100%)`
+            : '1 1 0',
           minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
@@ -127,7 +126,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
             flex: '1 1 auto',
             minHeight: 0,
             width: '100%',
-            maxHeight: shrinkBitmap ? `${bitmapWidth}px` : undefined,
+            maxHeight: axisH ? `${bitmapWidth}px` : undefined,
             overflow: 'hidden',
           }}
         >

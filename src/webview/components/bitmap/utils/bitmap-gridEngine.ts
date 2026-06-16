@@ -8,6 +8,7 @@ import { VirtualScrollSync, DataManager, LayoutCalculator, EventBus } from './in
 import { AxisLayer, CellLayer, HighlightLayer } from '../renderer/layers';
 import { LocationManager } from '../renderer/tools';
 import { DEFAULT_CELL_SIZE, MAX_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
+import { EMPTY_CELL_VAL } from '../constants';
 
 
 const { Stage, Layer } = Konva;
@@ -414,7 +415,7 @@ export class BitmapGridEngine {
     const selectedCell = cell || {
       row,
       col,
-      value: -1, // 特殊值表示无数据
+      value: EMPTY_CELL_VAL, // 特殊值表示无数据
     };
     this.selectedCell = selectedCell;
     this.eventBus.emit('selection:change', selectedCell);

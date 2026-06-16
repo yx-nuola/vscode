@@ -5,6 +5,7 @@
 import Konva from 'konva';
 import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 import type { CellData, ColorRule } from '../../types';
+import { EMPTY_CELL_VAL } from '../../constants';
 
 const { Group, Rect } = Konva;
 type GroupType = InstanceType<typeof Group>;
@@ -106,7 +107,7 @@ export class CellDraw {
       rect.stroke(theme.borderColor);
 
       // 根据颜色规则映射颜色
-      if (cell.value === -1) {
+      if (cell.value === EMPTY_CELL_VAL) {
         // 无数据的格子显示灰色
         rect.fill(theme.defaultCellColor);
       } else {
@@ -144,8 +145,18 @@ export class CellDraw {
    * 映射颜色
    */
   private mapColor(value: number, rules: ColorRule[]): string | undefined {
+    if(!rules || !rules.length) return undefined;
     for (const rule of rules) {
-      if (value >= rule.min && value <= rule.max) {
+      const { max, min} = rule || {};
+      if (max && min && value >= min && value < max) {
+        return rule.color;
+      }
+
+      if (min === undefined && max !== undefined &&  value < max) {
+        return rule.color;
+      }
+
+      if (max === undefined && min !== undefined &&  min < value) {
         return rule.color;
       }
     }

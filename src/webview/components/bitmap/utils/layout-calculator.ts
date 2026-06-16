@@ -48,13 +48,6 @@ export class LayoutCalculator {
       ? this.getIdealViewportSize(availableCellHeight, BITMAP_HEIGHT)
       : availableCellHeight;
 
-    // 工具栏区域（顶部，全宽）- 现在外层处理，这里保留占位
-    // const toolbar: Area = {
-    //   x: 0,
-    //   y: 0,
-    //   width: containerWidth,
-    //   height: 0,
-    // };
 
     // 小数据以 896x896 为理想视口，大数据使用容器中的全部可用空间。
     const cellArea: Area = {

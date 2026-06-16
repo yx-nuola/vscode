@@ -44,4 +44,6 @@ export const defaultColorRule = [
   { min: 2, max: 4, color: '#FFAA33', title: '2~4(Unstable)' }, // 黄
   { min: 4, max: 6, color: '#33AA55', title: '4~6(Set)' }, // 绿色
   { min: 6, color: '#DD3333', title: '>6(Strong Set)' }, // 红色
-]
+];
+
+export const EMPTY_CELL_VAL = -999999;

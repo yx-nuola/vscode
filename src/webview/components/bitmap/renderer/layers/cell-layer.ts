@@ -6,6 +6,7 @@ import Konva from 'konva';
 import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 import type { CellData } from '../../types';
 import { CellDraw } from '../draws/cell-draw';
+import { EMPTY_CELL_VAL } from '../../constants';
 
 const { Layer } = Konva;
 type LayerType = InstanceType<typeof Layer>;
@@ -99,7 +100,7 @@ export class CellLayer {
           visibleCells.push({
             row,
             col,
-            value: -1, // 特殊值表示无数据
+            value: EMPTY_CELL_VAL, // 特殊值表示无数据
           });
         }
       }

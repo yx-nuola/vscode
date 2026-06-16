@@ -59,13 +59,6 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
     engineRef.current = engine;
 
     engine.initialize(containerRef.current);
-    // 强制触发一次重绘，确保坐标轴刻度线正确渲染
-    // requestAnimationFrame(() => {
-    //   const { width, height } = containerRef.current?.getBoundingClientRect() || { width: 0, height: 0 };
-    //   if (width > 0 && height > 0) {
-    //     engine.resize(width, height);
-    //   }
-    // });
 
     return () => {
       engine.destroy();
