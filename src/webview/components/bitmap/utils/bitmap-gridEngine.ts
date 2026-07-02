@@ -1,27 +1,17 @@
-/**
- * 主引擎，编排所有模块
- */
 
 import Konva from 'konva';
 import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData, LayoutResult } from '../types';
 import { VirtualScrollSync, DataManager, LayoutCalculator, EventBus } from './index';
 import { AxisLayer, CellLayer, HighlightLayer } from '../renderer/layers';
 import { LocationManager } from '../renderer/tools';
-import { DEFAULT_CELL_SIZE, MAX_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
-import { EMPTY_CELL_VAL } from '../constants';
+import { DEFAULT_CELL_SIZE, MAX_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS, EMPTY_CELL_VAL } from '../constants';
 
 
-const { Stage, Layer } = Konva;
+const { Stage } = Konva;
 type StageType = InstanceType<typeof Stage>;
-type LayerType = InstanceType<typeof Layer>;
 
-
-/**
- * Bitmap Grid 引擎类
- */
 export class BitmapGridEngine {
   private stage: StageType | null;
-  private layers: Map<string, LayerType>;
   private eventBus: EventBus;
   private layoutCalculator: LayoutCalculator;
   private dataManager: DataManager;
@@ -33,6 +23,7 @@ export class BitmapGridEngine {
   private selectedCell: CellData | null;
   private locationManager: LocationManager;
   private wheelHandler: ((event: WheelEvent) => void) | null;
+  private keydownHandler: ((event: KeyboardEvent) => void) | null;
   private pointerDownHandler: (() => void) | null;
 
   // 图层实例
@@ -42,7 +33,6 @@ export class BitmapGridEngine {
 
   constructor(config: BitmapGridConfig) {
     this.stage = null;
-    this.layers = new Map();
     this.eventBus = new EventBus();
     this.layoutCalculator = new LayoutCalculator(config.layout);
     this.dataManager = new DataManager();
@@ -55,6 +45,7 @@ export class BitmapGridEngine {
     this.selectedCell = null;
     this.locationManager = new LocationManager(this);
     this.wheelHandler = null;
+    this.keydownHandler = null;
     this.pointerDownHandler = null;
 
     // 初始化图层
@@ -68,21 +59,17 @@ export class BitmapGridEngine {
    */
   initialize(container: HTMLElement): void {
     this.container = container;
-
-    const { width, height } = container.getBoundingClientRect();
-
-    const initialLayout = this.layoutCalculator.calculate(width, height);
+    const initialLayout = this.getLayout();
 
     this.stage = new Stage({
       container: container.id,
       width: this.getStageWidth(initialLayout),
       height: this.getStageHeight(initialLayout),
+      offset: { x: -0.5, y: -0.5 },
     });
 
-    // 计算布局，获取格子区域尺寸
-    const layout = this.layoutCalculator.calculate(width, height);
     // 只更新视口高度，宽度固定为 BITMAP_WIDTH
-    this.virtualScrollSync.updateViewport(layout.cellArea.width, layout.cellArea.height);
+    this.virtualScrollSync.updateViewport(initialLayout.cellArea.width, initialLayout.cellArea.height);
     this.clampCurrentScroll();
 
     // 初始化并添加图层
@@ -90,9 +77,10 @@ export class BitmapGridEngine {
 
     this.setupEventListeners();
 
-    // 添加鼠标滚轮支持
+    // 添加鼠标滚轮
     this.setupWheelEvents();
-    // this.setupKeyboardEvents();
+    // 支持键盘快捷键选中
+    this.setupKeydownEvents();
     this.setupFocusEvents();
   }
 
@@ -101,9 +89,9 @@ export class BitmapGridEngine {
    */
   private setupLayers(): void {
     // 滚动条必须在最顶层，否则会被其他图层覆盖
-    this.addLayer('axis', this.axisLayer.getLayer());
-    this.addLayer('cell', this.cellLayer.getLayer());
-    this.addLayer('highlight', this.highlightLayer.getLayer());
+    this.stage?.add(this.axisLayer.getLayer());
+    this.stage?.add(this.cellLayer.getLayer());
+    this.stage?.add(this.highlightLayer.getLayer());
 
     // 初始化图层
     this.axisLayer.initialize();
@@ -131,7 +119,6 @@ export class BitmapGridEngine {
     });
 
     this.eventBus.on('cell:click', (cell) => {
-      console.log('cell:click', cell);
       this.selectCell(cell.col, cell.row);
       this.config.callbacks?.onCellClick?.(cell);
     });
@@ -178,6 +165,60 @@ export class BitmapGridEngine {
     this.container.addEventListener('wheel', this.wheelHandler, { passive: false });
   }
 
+
+    /**
+   * 设置键盘快捷键事件
+   */
+  private setupKeydownEvents(): void {
+    if (!this.container) {
+      return;
+    }
+
+    this.keydownHandler = (e: KeyboardEvent) => {
+      const dataManager = this.dataManager;
+      const totalRows = Math.max(dataManager.rows, DEFAULT_ROWS);
+      const totalCols = Math.max(dataManager.cols, DEFAULT_COLS);
+
+      const current = this.getSelectedCell();
+      if (!current) {
+        // 没有选中格子时不处理
+        return;
+      }
+
+      let nextCol = current.col;
+      let nextRow = current.row;
+
+      switch (e.key) {
+        case 'ArrowUp':
+          nextRow = current.row - 1;
+          break;
+        case 'ArrowDown':
+          nextRow = current.row + 1;
+          break;
+        case 'ArrowLeft':
+          nextCol = current.col - 1;
+          break;
+        case 'ArrowRight':
+          nextCol = current.col + 1;
+          break;
+        default:
+          return; // 不处理其他键
+      }
+      e.preventDefault();
+
+      // 边界 clamp，越界则不动
+      nextCol = Math.max(0, Math.min(nextCol, totalCols - 1));
+      nextRow = Math.max(0, Math.min(nextRow, totalRows - 1));
+      if (nextCol === current.col && nextRow === current.row) {
+        return;
+      }
+      // 移出视口时自动滚动带进视口
+      this.locateAndHighlight(nextCol, nextRow);
+    };
+
+    this.container.addEventListener('keydown', this.keydownHandler, { passive: false });
+  }
+
   private setupFocusEvents(): void {
     if (!this.container) {
       return;
@@ -196,22 +237,24 @@ export class BitmapGridEngine {
     if (this.container && this.wheelHandler) {
       this.container.removeEventListener('wheel', this.wheelHandler);
     }
+    if (this.container && this.keydownHandler) {
+      this.container.removeEventListener('keydown', this.keydownHandler);
+    }
     if (this.container && this.pointerDownHandler) {
       this.container.removeEventListener('pointerdown', this.pointerDownHandler);
     }
     this.wheelHandler = null;
+    this.keydownHandler = null;
     this.pointerDownHandler = null;
 
     this.eventBus.clear();
     this.dataManager.clear();
 
-    // 销毁所有图层
+    // 销毁所有图层（Layer 包装类负责销毁其内部 Konva.Layer）
     this.axisLayer.destroy();
     this.cellLayer.destroy();
     this.highlightLayer.destroy();
 
-    this.layers.forEach((layer) => layer.destroy());
-    this.layers.clear();
     this.stage?.destroy();
     this.stage = null;
     this.container = null;
@@ -225,11 +268,10 @@ export class BitmapGridEngine {
       return;
     }
 
-    const nextLayout = this.layoutCalculator.calculate(width, height);
-    this.stage.width(this.getStageWidth(nextLayout));
-    this.stage.height(this.getStageHeight(nextLayout));
-
     const layout = this.layoutCalculator.calculate(width, height);
+    this.stage.width(this.getStageWidth(layout));
+    this.stage.height(this.getStageHeight(layout));
+
     // 只更新视口高度，宽度固定为 BITMAP_WIDTH
     this.virtualScrollSync.updateViewport(layout.cellArea.width, layout.cellArea.height);
     this.clampCurrentScroll();
@@ -388,13 +430,16 @@ export class BitmapGridEngine {
    * 滚动到指定位置
    */
   scrollTo(scrollX: number, scrollY: number): void {
-    this.scrollState = this.virtualScrollSync.clampScrollState({ scrollX, scrollY });
-
-    this.eventBus.emit('scroll:change', this.scrollState);
+    const nextScrollState = this.virtualScrollSync.clampScrollState({ scrollX, scrollY });
+    this.applyScrollState(nextScrollState);
   }
 
   private clampCurrentScroll(): void {
     const nextScrollState = this.virtualScrollSync.clampScrollState(this.scrollState);
+    this.applyScrollState(nextScrollState);
+  }
+
+  private applyScrollState(nextScrollState: ScrollState): void {
     const changed =
       nextScrollState.scrollX !== this.scrollState.scrollX ||
       nextScrollState.scrollY !== this.scrollState.scrollY;
@@ -405,6 +450,7 @@ export class BitmapGridEngine {
       this.eventBus.emit('scroll:change', this.scrollState);
     }
   }
+  
 
   /**
    * 选择格子
@@ -499,20 +545,5 @@ export class BitmapGridEngine {
    */
   getStage(): StageType | null {
     return this.stage;
-  }
-
-  /**
-   * 添加图层
-   */
-  addLayer(name: string, layer: LayerType): void {
-    this.layers.set(name, layer);
-    this.stage?.add(layer);
-  }
-
-  /**
-   * 获取图层
-   */
-  getLayer(name: string): LayerType | undefined {
-    return this.layers.get(name);
   }
 }

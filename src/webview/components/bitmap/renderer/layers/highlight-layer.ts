@@ -63,15 +63,6 @@ export class HighlightLayer {
       this.handle(data);
     });
 
-    // eventBus.on('keydown:up', (data) => {
-    //   this.handle(data);
-    // });
-
-    // eventBus.on('keydown:down', (data) => {
-    //   this.handle(data);
-    // });
-
-
     eventBus.on('scroll:change', () => {
       this.redrawSelectedCell();
     });

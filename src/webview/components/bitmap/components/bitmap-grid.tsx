@@ -89,10 +89,12 @@ export const BitmapGrid = forwardRef<BitmapGridRef, BitmapGridProps>((props, ref
       id={containerId}
       ref={containerRef}
       className={className}
+      tabIndex={0}
       style={{
         width: '100%',
         height: '100%',
         background: theme.backgroundColor,
+        // outline: 'none',
         ...style,
       }}
     />

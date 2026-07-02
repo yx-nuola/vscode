@@ -73,6 +73,8 @@ export class HighlightDraw {
       listening: false,
     });
 
+
+    console.log('绘制高亮:');
     this.group.add(this.highlightRect);
     this.startPulse();
     this.group.getLayer()?.batchDraw();

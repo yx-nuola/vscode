@@ -49,6 +49,33 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
     bitmapRef.current?.clearSelection();
   }, [data]);
 
+  // 同步右侧表格的高亮行与滚动位置（点击格子和键盘移动共用）
+  const syncTableSelection = useCallback(
+    (cell: CellData | null) => {
+      if (!data || !cell) {
+        setHighlightedRow(undefined);
+        setScrollToRow(undefined);
+        return;
+      }
+
+      const rowIndex = data.cells.findIndex(
+        (c: CellData) => c.row === cell.row && c.col === cell.col
+      );
+      if (rowIndex >= 0) {
+        setHighlightedRow(rowIndex);
+        scrollRequestNonceRef.current += 1;
+        setScrollToRow({
+          row: rowIndex,
+          nonce: scrollRequestNonceRef.current,
+        });
+      } else {
+        setHighlightedRow(undefined);
+        setScrollToRow(undefined);
+      }
+    },
+    [data]
+  );
+
   // 处理表格行点击
   const handleTableRowClick = useCallback(
     (row: number, cell: CellData) => {
@@ -58,32 +85,6 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
       onTableRowClick?.(row, cell);
     },
     [onTableRowClick]
-  );
-
-  // 处理格子点击
-  const handleCellClick = useCallback(
-    (col: number, row: number) => {
-      onCellClick?.(col, row);
-
-      // 查找对应的表格行索引
-      if (data) {
-        const rowIndex = data.cells.findIndex(
-          (c: CellData) => c.row === row && c.col === col
-        );
-        if (rowIndex >= 0) {
-          setHighlightedRow(rowIndex);
-          scrollRequestNonceRef.current += 1;
-          setScrollToRow({
-            row: rowIndex,
-            nonce: scrollRequestNonceRef.current,
-          });
-        } else {
-          setHighlightedRow(undefined);
-          setScrollToRow(undefined);
-        }
-      }
-    },
-    [onCellClick, data]
   );
 
   return (
@@ -99,12 +100,8 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
         style={{
           width: axisW ? `${bitmapWidth}px` : undefined,
           height: '100%',
-          // width: '956px',
-          // boxShadow: 'inset -1px 0 #e0e0e0',
-          flex: axisW
-            ? `0 0 min(${bitmapWidth}px, 100%)`
-            : '1 1 0',
-          minWidth: 0,
+          flex: `0 7 min(${bitmapWidth}px, 100%)`,
+          minWidth: 400,
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -115,11 +112,11 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
             padding: '0 8px',
           }}
         >
-          {/* <ButtonGroup>
+          <ButtonGroup>
             <Button  onClick={() => bitmapRef.current?.zoomIn()}icon={<IconMinusCircle  style={{ fontSize: '16px' }}/>} />
             <Button  onClick={() => bitmapRef.current?.zoomOut()}icon={<IconPlusCircle  style={{ fontSize: '16px' }}/>} />
           <Button  onClick={() => bitmapRef.current?.resetZoom()}icon={<IconFullscreenExit  style={{ fontSize: '16px' }}/>} />
-        </ButtonGroup> */}
+        </ButtonGroup>
         </div>
         <div
           style={{
@@ -137,7 +134,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
               ...config,
               callbacks: {
                 ...config.callbacks,
-                onCellClick: (cell) => handleCellClick(cell.col, cell.row),
+                onSelectionChange: (cell) => syncTableSelection(cell),
               },
             }}
           />
@@ -145,9 +142,9 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
       </div>
       <div
         style={{
-          flex: '1 1 0',
+          flex: '1 3 0',
           // width: `calc(100% - ${bitmapWidth}px)`,
-          minWidth: 0,
+          minWidth: 200,
           height: '100%',
           padding: '8px',
           boxSizing: 'border-box',
