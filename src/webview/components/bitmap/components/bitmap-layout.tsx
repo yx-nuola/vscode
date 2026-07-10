@@ -113,8 +113,8 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
           }}
         >
           <ButtonGroup>
-            <Button  onClick={() => bitmapRef.current?.zoomIn()}icon={<IconMinusCircle  style={{ fontSize: '16px' }}/>} />
-            <Button  onClick={() => bitmapRef.current?.zoomOut()}icon={<IconPlusCircle  style={{ fontSize: '16px' }}/>} />
+            <Button  onClick={() => bitmapRef.current?.zoomIn()}icon={<IconPlusCircle  style={{ fontSize: '16px' }}/>} />
+            <Button  onClick={() => bitmapRef.current?.zoomOut()}icon={<IconMinusCircle   style={{ fontSize: '16px' }}/>} />
           <Button  onClick={() => bitmapRef.current?.resetZoom()}icon={<IconFullscreenExit  style={{ fontSize: '16px' }}/>} />
         </ButtonGroup>
         </div>
@@ -125,6 +125,7 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
             width: '100%',
             maxHeight: axisH ? `${bitmapWidth}px` : undefined,
             overflow: 'hidden',
+            cursor: 'pointer',
           }}
         >
           <BitmapGrid

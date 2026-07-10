@@ -12,7 +12,6 @@ import type {
 } from '@visactor/vtable';
 import type { CellData } from '../../types';
 import type { TableColumn, TableRecord, VirtualTableProps } from './types';
-import { useKeyPress } from 'ahooks';
 
 
 const TABLE_COLUMNS: TableColumn[] = [

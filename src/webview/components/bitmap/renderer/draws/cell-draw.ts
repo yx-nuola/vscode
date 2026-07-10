@@ -1,149 +1,183 @@
-/**
- * 格子渲染，含对象池
- */
-
 import Konva from 'konva';
 import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 import type { CellData, ColorRule } from '../../types';
 import { EMPTY_CELL_VAL } from '../../constants';
 
-const { Group, Rect } = Konva;
+const CELL_SHAPE_NAME = 'cell-shape';
+const HIT_RECT_NAME = 'hit-area';
+const { Group, Shape, Rect } = Konva;
 type GroupType = InstanceType<typeof Group>;
 type RectType = InstanceType<typeof Rect>;
 
-/**
- * 格子绘制类
- */
+interface RenderState {
+  cells: CellData[]
+  cellSize: number
+  scrollX: number
+  scrollY: number
+  theme: { borderColor: string; defaultCellColor: string }
+  colorRules: ColorRule[]
+}
+
 export class CellDraw {
   private engine: BitmapGridEngine;
   private group: GroupType;
-  // 缓存格子
-  private cellPool: Map<string, RectType>;
-  private hoveredCell: CellData | null;
+  private lastState: RenderState | null;
+  private lastHoveredCell: CellData | null;
+  private hitRect: RectType | null;
 
   constructor(engine: BitmapGridEngine) {
     this.engine = engine;
     this.group = new Group({ name: 'cells' });
-    this.cellPool = new Map();
-    this.hoveredCell = null;
+    this.lastState = null;
+    this.lastHoveredCell = null;
+    this.hitRect = null;
   }
 
-  /**
-   * 获取组
-   */
   getGroup(): GroupType {
     return this.group;
   }
 
-  /**
-   * 设置组位置
-   */
   setPosition(x: number, y: number): void {
     this.group.x(x);
     this.group.y(y);
   }
 
-  /**
-   * 设置裁剪区域
-   */
   setClip(width: number, height: number): void {
     this.group.clipX(0);
     this.group.clipY(0);
     this.group.clipWidth(width);
     this.group.clipHeight(height);
+    if (this.hitRect) {
+      this.hitRect.width(width);
+      this.hitRect.height(height);
+    }
   }
 
-  /**
-   * 渲染格子
-   */
   renderCells(cells: CellData[], scrollX: number, scrollY: number): void {
     const config = this.engine.getConfig();
     const theme = config.theme;
     const colorRules = config.colorRules;
     const cellSize = this.engine.getZoomLevel();
 
-    // 收集当前可见格子的 key
-    const visibleKeys = new Set(cells.map((cell) => `${cell.row},${cell.col}`));
+    const state: RenderState = { cells, cellSize, scrollX, scrollY, theme, colorRules };
+    this.lastState = state;
+    const shape = this.getOrCreateShape();
 
-    // 清理不可见的格子（从对象池中移除并销毁）
-    for (const [key, rect] of this.cellPool) {
-      if (!visibleKeys.has(key)) {
-        rect.destroy();
-        this.cellPool.delete(key);
+    shape.sceneFunc((context) => {
+      const { cells, cellSize, scrollX, scrollY, theme, colorRules } = state;
+
+      for (const cell of cells) {
+        const x = cell.col * cellSize - scrollX;
+        const y = cell.row * cellSize - scrollY;
+        const w = cellSize;
+        const h = cellSize;
+
+        let fill: string;
+        if (cell.value === EMPTY_CELL_VAL) {
+          fill = theme.defaultCellColor;
+        } else {
+          fill = this.mapColor(cell.value, colorRules) || theme.defaultCellColor;
+        }
+
+        context.beginPath();
+        context.rect(x, y, w, h);
+        context.closePath();
+
+        context.fillStyle = fill;
+        context.fill();
+
+        if (theme.borderColor) {
+          context.strokeStyle = theme.borderColor;
+          context.lineWidth = 1;
+          context.stroke();
+        }
       }
-    }
+    });
 
-    // 渲染可见格子
+    this.bindHitRectEvents();
+    shape.getLayer()?.batchDraw();
+  }
+
+  private bindHitRectEvents(): void {
+    if (this.hitRect) return;
+
+    const clipWidth = this.group.clipWidth() || 0;
+    const clipHeight = this.group.clipHeight() || 0;
+
+    this.hitRect = new Rect({
+      x: 0,
+      y: 0,
+      width: clipWidth,
+      height: clipHeight,
+      fill: 'transparent',
+      name: HIT_RECT_NAME,
+      listening: true,
+    });
+
+    this.hitRect.on('pointermove', () => {
+      const cell = this.getCellFromPointer();
+      if (cell !== this.lastHoveredCell) {
+        this.lastHoveredCell = cell;
+        this.engine.getEventBus().emit('cell:hover', cell);
+      }
+    });
+
+    this.hitRect.on('click', () => {
+      const cell = this.getCellFromPointer();
+      if (cell) {
+        this.engine.getEventBus().emit('cell:click', cell);
+      }
+    });
+
+    this.hitRect.on('pointerleave', () => {
+      if (this.lastHoveredCell) {
+        this.lastHoveredCell = null;
+        this.engine.getEventBus().emit('cell:hover', null);
+      }
+    });
+
+    this.group.add(this.hitRect);
+  }
+
+    private getOrCreateShape(): Konva.Shape {
+    let shape = this.group.findOne('.' + CELL_SHAPE_NAME) as Konva.Shape | undefined;
+    if (!shape) {
+      shape = new Shape({
+        name: CELL_SHAPE_NAME,
+        listening: false,
+        sceneFunc: () => {},
+      });
+      this.group.add(shape);
+    }
+    return shape;
+  }
+
+  private getCellFromPointer(): CellData | null {
+    const state = this.lastState;
+    if (!state) return null;
+
+    const stage = this.group.getStage();
+    if (!stage) return null;
+
+    const pointerPos = stage.getPointerPosition();
+    if (!pointerPos) return null;
+
+    const groupPos = this.group.getPosition();
+    const localX = pointerPos.x - groupPos.x;
+    const localY = pointerPos.y - groupPos.y;
+
+    const { cells, cellSize, scrollX, scrollY } = state;
+    const col = Math.floor((localX + scrollX) / cellSize);
+    const row = Math.floor((localY + scrollY) / cellSize);
+
     for (const cell of cells) {
-      const key = `${cell.row},${cell.col}`;
-      let rect = this.cellPool.get(key);
-
-      // 计算格子位置（考虑滚动偏移）
-      const x = cell.col * cellSize - scrollX;
-      const y = cell.row * cellSize - scrollY;
-
-      if (!rect) {
-        rect = new Rect({
-          x,
-          y,
-          width: cellSize,
-          height: cellSize,
-          stroke: theme.borderColor,
-          strokeWidth: 1,
-        });
-
-        // 添加鼠标事件
-        this.attachCellEvents(rect, cell);
-
-        this.group.add(rect);
-        this.cellPool.set(key, rect);
-      }
-
-      rect.visible(true);
-      rect.x(x);
-      rect.y(y);
-      rect.width(cellSize);
-      rect.height(cellSize);
-      rect.stroke(theme.borderColor);
-
-      // 根据颜色规则映射颜色
-      if (cell.value === EMPTY_CELL_VAL) {
-        // 无数据的格子显示灰色
-        rect.fill(theme.defaultCellColor);
-      } else {
-        // 有数据的格子根据 colorRules 映射颜色
-        const color = this.mapColor(cell.value, colorRules);
-        rect.fill(color || theme.defaultCellColor);
+      if (cell.col === col && cell.row === row) {
+        return cell;
       }
     }
+    return null;
   }
 
-  /**
-   * 附加格子事件
-   */
-  private attachCellEvents(rect: RectType, cell: CellData): void {
-    const eventBus = this.engine.getEventBus();
-
-    // 鼠标悬停
-    rect.on('mouseenter', () => {
-      this.hoveredCell = cell;
-      eventBus.emit('cell:hover', cell);
-    });
-
-    rect.on('mouseleave', () => {
-      this.hoveredCell = null;
-      eventBus.emit('cell:hover', null);
-    });
-
-    // 鼠标点击
-    rect.on('click', () => {
-      eventBus.emit('cell:click', cell);
-    });
-  }
-
-  /**
-   * 映射颜色
-   */
   private mapColor(value: number, rules: ColorRule[]): string | undefined {
     if(!rules || !rules.length) return undefined;
     for (const rule of rules) {
@@ -163,11 +197,10 @@ export class CellDraw {
     return undefined;
   }
 
-  /**
-   * 销毁绘制
-   */
   destroy(): void {
-    this.cellPool.clear();
     this.group.destroy();
+    this.lastState = null;
+    this.hitRect = null;
   }
 }
+

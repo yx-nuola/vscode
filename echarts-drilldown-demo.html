@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECharts 折线图分类钻取示例</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+.container { width: 900px; background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.1); padding: 24px; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.title { font-size: 18px; font-weight: 600; color: #333; }
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #666; }
+.breadcrumb-item { cursor: pointer; color: #1890ff; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
+.breadcrumb-item:hover { background: #e6f7ff; }
+.breadcrumb-item.active { color: #333; cursor: default; background: none; }
+.separator { color: #ccc; }
+#chart { width: 100%; height: 500px; }
+.info { margin-top: 12px; font-size: 13px; color: #999; text-align: center; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="title">分类折线钻取图</div>
+    <div class="breadcrumb" id="breadcrumb">
+      <span class="breadcrumb-item active" data-level="root">全部大分类</span>
+    </div>
+  </div>
+  <div id="chart"></div>
+  <div class="info">点击折线图上的数据点或图例下钻 | 双击空白区域返回上一级</div>
+</div>
+
+<script>
+const rawData = {
+  root: {
+    xAxis: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+    series: [
+      { name: 'A（制造业）', data: [120, 132, 101, 134, 190, 130, 110, 145, 160, 150, 140, 155] },
+      { name: 'B（服务业）', data: [220, 182, 191, 234, 290, 230, 210, 225, 240, 250, 260, 245] },
+      { name: 'C（农业）', data: [80, 92, 101, 84, 70, 90, 120, 95, 85, 80, 90, 88] },
+    ]
+  },
+  A: {
+    xAxis: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+    series: [
+      { name: 'a1（汽车制造）', data: [50, 60, 45, 58, 80, 55, 48, 62, 70, 65, 60, 68] },
+      { name: 'a2（电子制造）', data: [40, 38, 30, 42, 55, 40, 35, 48, 50, 48, 45, 50] },
+      { name: 'a3（机械制造）', data: [30, 34, 26, 34, 55, 35, 27, 35, 40, 37, 35, 37] },
+    ]
+  },
+  B: {
+    xAxis: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+    series: [
+      { name: 'b1（金融）', data: [80, 65, 70, 85, 100, 85, 75, 82, 88, 92, 95, 90] },
+      { name: 'b2（医疗）', data: [55, 50, 48, 58, 70, 55, 50, 55, 58, 60, 62, 58] },
+      { name: 'b3（教育）', data: [45, 40, 38, 48, 55, 45, 40, 45, 48, 50, 52, 48] },
+      { name: 'b4（餐饮）', data: [40, 27, 35, 43, 65, 45, 45, 43, 46, 48, 51, 49] },
+    ]
+  },
+  C: {
+    xAxis: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+    series: [
+      { name: 'c1（种植业）', data: [50, 58, 65, 52, 42, 55, 75, 60, 52, 48, 55, 52] },
+      { name: 'c2（畜牧业）', data: [30, 34, 36, 32, 28, 35, 45, 35, 33, 32, 35, 36] },
+    ]
+  }
+};
+
+const breadcrumbMap = {
+  root: { parent: null, label: '全部大分类' },
+  A: { parent: 'root', label: 'A（制造业）' },
+  B: { parent: 'root', label: 'B（服务业）' },
+  C: { parent: 'root', label: 'C（农业）' },
+};
+
+const chartDom = document.getElementById('chart');
+const myChart = echarts.init(chartDom);
+const breadcrumbEl = document.getElementById('breadcrumb');
+
+let currentLevel = 'root';
+
+function buildSeriesOption(name, data, color) {
+  return {
+    name,
+    type: 'line',
+    data,
+    smooth: true,
+    symbol: 'circle',
+    symbolSize: 6,
+    lineStyle: { width: 2 },
+    emphasis: { focus: 'series' },
+  };
+}
+
+function renderChart(level) {
+  const data = rawData[level];
+  if (!data) return;
+
+  const series = data.series.map(s => buildSeriesOption(s.name, s.data));
+  const colors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc'];
+
+  const option = {
+    color: colors,
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(255,255,255,0.95)',
+      borderColor: '#eee',
+      borderWidth: 1,
+      textStyle: { color: '#333', fontSize: 13 },
+      formatter(params) {
+        let tip = `<strong>${params[0].axisValue}</strong><br/>`;
+        params.forEach(p => {
+          tip += `${p.marker} ${p.seriesName}：<strong>${p.value}</strong><br/>`;
+        });
+        return tip;
+      }
+    },
+    legend: {
+      type: 'scroll',
+      top: 0,
+      textStyle: { fontSize: 13 },
+    },
+    grid: { left: 60, right: 40, top: 50, bottom: 40 },
+    xAxis: {
+      type: 'category',
+      data: data.xAxis,
+      boundaryGap: false,
+      axisLine: { lineStyle: { color: '#ccc' } },
+      axisLabel: { color: '#666' },
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: '#f0f0f0' } },
+      axisLabel: { color: '#666' },
+    },
+    series,
+    animationDuration: 500,
+    animationEasing: 'cubicOut',
+  };
+
+  myChart.setOption(option, { replaceMerge: ['series', 'xAxis'], notMerge: false });
+}
+
+function updateBreadcrumb(level) {
+  const path = [];
+  let cur = level;
+  while (cur) {
+    path.unshift(cur);
+    cur = breadcrumbMap[cur]?.parent;
+  }
+
+  breadcrumbEl.innerHTML = path.map((lvl, idx) => {
+    const info = breadcrumbMap[lvl];
+    const isLast = idx === path.length - 1;
+    const cls = isLast ? 'breadcrumb-item active' : 'breadcrumb-item';
+    return `<span class="${cls}" data-level="${lvl}">${info.label}</span>${!isLast ? `<span class="separator">›</span>` : ''}`;
+  }).join('');
+}
+
+function drillTo(level) {
+  if (level === currentLevel) return;
+  currentLevel = level;
+  renderChart(level);
+  updateBreadcrumb(level);
+}
+
+breadcrumbEl.addEventListener('click', (e) => {
+  const item = e.target.closest('.breadcrumb-item');
+  if (!item || item.classList.contains('active')) return;
+  drillTo(item.dataset.level);
+});
+
+myChart.on('click', (params) => {
+  if (!params.name || !params.seriesName) return;
+
+  const seriesName = params.seriesName;
+  const entry = Object.entries(breadcrumbMap).find(
+    ([key, val]) => val.label === seriesName && val.parent === currentLevel
+  );
+  if (entry && rawData[entry[0]]) {
+    drillTo(entry[0]);
+  }
+});
+
+myChart.on('dblclick', () => {
+  const parent = breadcrumbMap[currentLevel]?.parent;
+  if (parent && rawData[parent]) {
+    drillTo(parent);
+  }
+});
+
+window.addEventListener('resize', () => myChart.resize());
+
+renderChart('root');
+updateBreadcrumb('root');
+</script>
+</body>
+</html>
