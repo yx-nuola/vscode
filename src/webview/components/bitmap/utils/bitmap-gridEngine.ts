@@ -10,6 +10,17 @@ import { DEFAULT_CELL_SIZE, MAX_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS, EMPTY_CEL
 const { Stage } = Konva;
 type StageType = InstanceType<typeof Stage>;
 
+const DRAG_SCROLL_THRESHOLD = 4;
+
+interface DragScrollState {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  startScrollX: number;
+  startScrollY: number;
+  moved: boolean;
+}
+
 export class BitmapGridEngine {
   private stage: StageType | null;
   private eventBus: EventBus;
@@ -25,6 +36,13 @@ export class BitmapGridEngine {
   private wheelHandler: ((event: WheelEvent) => void) | null;
   private keydownHandler: ((event: KeyboardEvent) => void) | null;
   private pointerDownHandler: (() => void) | null;
+  private dragPointerDownHandler: ((event: PointerEvent) => void) | null;
+  private dragPointerMoveHandler: ((event: PointerEvent) => void) | null;
+  private dragPointerUpHandler: ((event: PointerEvent) => void) | null;
+  private dragClickHandler: ((event: MouseEvent) => void) | null;
+  private dragScrollState: DragScrollState | null;
+  private suppressNextClick: boolean;
+  private suppressClickTimer: ReturnType<typeof setTimeout> | null;
 
   // 图层实例
   private axisLayer: AxisLayer;
@@ -47,6 +65,13 @@ export class BitmapGridEngine {
     this.wheelHandler = null;
     this.keydownHandler = null;
     this.pointerDownHandler = null;
+    this.dragPointerDownHandler = null;
+    this.dragPointerMoveHandler = null;
+    this.dragPointerUpHandler = null;
+    this.dragClickHandler = null;
+    this.dragScrollState = null;
+    this.suppressNextClick = false;
+    this.suppressClickTimer = null;
 
     // 初始化图层
     this.axisLayer = new AxisLayer(this);
@@ -82,6 +107,7 @@ export class BitmapGridEngine {
     // 支持键盘快捷键选中
     this.setupKeydownEvents();
     this.setupFocusEvents();
+    this.setupDragScrollEvents();
   }
 
   /**
@@ -231,6 +257,106 @@ export class BitmapGridEngine {
   }
 
   /**
+   * 按住鼠标左键拖动画布，并同步更新滚动条。
+   */
+  private setupDragScrollEvents(): void {
+    if (!this.container) {
+      return;
+    }
+
+    this.dragPointerDownHandler = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse' || event.button !== 0 || !this.container) {
+        return;
+      }
+
+      const rect = this.container.getBoundingClientRect();
+      const pointerX = event.clientX - rect.left;
+      const pointerY = event.clientY - rect.top;
+      const { cellArea } = this.getLayout();
+      const isInCellArea =
+        pointerX >= cellArea.x &&
+        pointerX <= cellArea.x + cellArea.width &&
+        pointerY >= cellArea.y &&
+        pointerY <= cellArea.y + cellArea.height;
+
+      if (!isInCellArea) {
+        return;
+      }
+
+      this.dragScrollState = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        startScrollX: this.scrollState.scrollX,
+        startScrollY: this.scrollState.scrollY,
+        moved: false,
+      };
+    };
+
+    this.dragPointerMoveHandler = (event: PointerEvent) => {
+      const dragState = this.dragScrollState;
+      if (!dragState || event.pointerId !== dragState.pointerId) {
+        return;
+      }
+
+      const deltaX = event.clientX - dragState.startX;
+      const deltaY = event.clientY - dragState.startY;
+      if (!dragState.moved && Math.hypot(deltaX, deltaY) < DRAG_SCROLL_THRESHOLD) {
+        return;
+      }
+
+      if (!dragState.moved && this.container) {
+        this.container.setPointerCapture(event.pointerId);
+      }
+
+      dragState.moved = true;
+      event.preventDefault();
+      if (this.container) {
+        this.container.style.cursor = 'grabbing';
+      }
+      this.scrollTo(dragState.startScrollX - deltaX, dragState.startScrollY - deltaY);
+    };
+
+    this.dragPointerUpHandler = (event: PointerEvent) => {
+      const dragState = this.dragScrollState;
+      if (!dragState || event.pointerId !== dragState.pointerId) {
+        return;
+      }
+
+      this.suppressNextClick = dragState.moved && event.type === 'pointerup';
+      this.dragScrollState = null;
+      if (this.container) {
+        this.container.style.cursor = '';
+        if (this.container.hasPointerCapture(event.pointerId)) {
+          this.container.releasePointerCapture(event.pointerId);
+        }
+      }
+
+      if (this.suppressNextClick) {
+        this.suppressClickTimer = setTimeout(() => {
+          this.suppressNextClick = false;
+          this.suppressClickTimer = null;
+        }, 0);
+      }
+    };
+
+    this.dragClickHandler = (event: MouseEvent) => {
+      if (!this.suppressNextClick) {
+        return;
+      }
+      this.suppressNextClick = false;
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    this.container.addEventListener('pointerdown', this.dragPointerDownHandler);
+    this.container.addEventListener('pointermove', this.dragPointerMoveHandler);
+    this.container.addEventListener('pointerup', this.dragPointerUpHandler);
+    this.container.addEventListener('pointercancel', this.dragPointerUpHandler);
+    this.container.addEventListener('click', this.dragClickHandler, true);
+  }
+
+  /**
    * 销毁引擎
    */
   destroy(): void {
@@ -243,9 +369,32 @@ export class BitmapGridEngine {
     if (this.container && this.pointerDownHandler) {
       this.container.removeEventListener('pointerdown', this.pointerDownHandler);
     }
+    if (this.container && this.dragPointerDownHandler) {
+      this.container.removeEventListener('pointerdown', this.dragPointerDownHandler);
+    }
+    if (this.container && this.dragPointerMoveHandler) {
+      this.container.removeEventListener('pointermove', this.dragPointerMoveHandler);
+    }
+    if (this.container && this.dragPointerUpHandler) {
+      this.container.removeEventListener('pointerup', this.dragPointerUpHandler);
+      this.container.removeEventListener('pointercancel', this.dragPointerUpHandler);
+    }
+    if (this.container && this.dragClickHandler) {
+      this.container.removeEventListener('click', this.dragClickHandler, true);
+    }
+    if (this.suppressClickTimer) {
+      clearTimeout(this.suppressClickTimer);
+    }
     this.wheelHandler = null;
     this.keydownHandler = null;
     this.pointerDownHandler = null;
+    this.dragPointerDownHandler = null;
+    this.dragPointerMoveHandler = null;
+    this.dragPointerUpHandler = null;
+    this.dragClickHandler = null;
+    this.dragScrollState = null;
+    this.suppressNextClick = false;
+    this.suppressClickTimer = null;
 
     this.eventBus.clear();
     this.dataManager.clear();
@@ -423,6 +572,11 @@ export class BitmapGridEngine {
     );
     this.virtualScrollSync.updateCellSize(size);
     this.syncLayout();
+
+    if (this.selectedCell) {
+      this.locationManager.ensureCellVisible(this.selectedCell.col, this.selectedCell.row);
+    }
+
     this.eventBus.emit('zoom:change', size);
   }
 

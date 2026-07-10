@@ -43,15 +43,7 @@ export class HighlightLayer {
    */
   initialize(): void {
     const eventBus = this.engine.getEventBus();
-    const layoutCalculator = this.engine.getLayoutCalculator();
-
-    // 设置高亮位置
-    const layout = layoutCalculator.calculate(
-      this.engine.getStage()?.width() || 0,
-      this.engine.getStage()?.height() || 0
-    );
-    this.highlightDraw.setPosition(layout.cellArea.x, layout.cellArea.y);
-    this.highlightDraw.setClip(layout.cellArea.width, layout.cellArea.height);
+    this.updateLayout();
 
     eventBus.on('highlight', (data) => this.handle(data));
 
@@ -71,6 +63,11 @@ export class HighlightLayer {
       this.redrawSelectedCell();
     });
 
+    eventBus.on('layout:change', () => {
+      this.updateLayout();
+      this.redrawSelectedCell();
+    });
+
     eventBus.on('data:change', () => {
       this.redrawSelectedCell();
     });
@@ -83,6 +80,12 @@ export class HighlightLayer {
   private redrawSelectedCell(): void {
     const selectedCell = this.engine.getSelectedCell();
     this.handle(selectedCell);
+  }
+
+  private updateLayout(): void {
+    const layout = this.engine.getLayout();
+    this.highlightDraw.setPosition(layout.cellArea.x, layout.cellArea.y);
+    this.highlightDraw.setClip(layout.cellArea.width, layout.cellArea.height);
   }
 
   /**
