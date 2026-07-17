@@ -24,14 +24,12 @@ export class DataParser {
         row: cell.bl,
         col: cell.wl,
         value: parseFloat(String(cell.imeas)),
-        metadata: {
-          wl: cell.wl,
-          bl: cell.bl,
-          vset: String(cell.vset),
-          vreset: String(cell.vreset),
-          imeas: String(cell.imeas),
-          status: cell.status,
-        },
+        wl: cell.wl,
+        bl: cell.bl,
+        vset: String(cell.vset),
+        vreset: String(cell.vreset),
+        imeas: String(cell.imeas),
+        status: cell.status,
       });
     }
 
@@ -98,8 +96,6 @@ export class DataParser {
     const rramData = data as DataType;
 
     return (
-      typeof rramData.metadata === 'object' &&
-      rramData.metadata !== null &&
       Array.isArray(rramData.cells) &&
       rramData.cells.every(
         (cell) =>

@@ -5,6 +5,7 @@ import { EMPTY_CELL_VAL } from '../../constants';
 
 const CELL_SHAPE_NAME = 'cell-shape';
 const HIT_RECT_NAME = 'hit-area';
+const MIN_CELL_SIZE_FOR_TEXT = 16;
 const { Group, Shape, Rect } = Konva;
 type GroupType = InstanceType<typeof Group>;
 type RectType = InstanceType<typeof Rect>;
@@ -14,7 +15,7 @@ interface RenderState {
   cellSize: number
   scrollX: number
   scrollY: number
-  theme: { borderColor: string; defaultCellColor: string }
+  theme: { borderColor: string; defaultCellColor: string; axisTextColor: string }
   colorRules: ColorRule[]
 }
 
@@ -60,11 +61,14 @@ export class CellDraw {
     const cellSize = this.engine.getZoomLevel();
 
     const state: RenderState = { cells, cellSize, scrollX, scrollY, theme, colorRules };
+    console.log('[CellDraw] renderCells', state);
     this.lastState = state;
     const shape = this.getOrCreateShape();
 
     shape.sceneFunc((context) => {
       const { cells, cellSize, scrollX, scrollY, theme, colorRules } = state;
+      const showText = cellSize >= MIN_CELL_SIZE_FOR_TEXT;
+      const fontSize = Math.max(8, Math.min(cellSize * 0.45, 12));
 
       for (const cell of cells) {
         const x = cell.col * cellSize - scrollX;
@@ -73,10 +77,13 @@ export class CellDraw {
         const h = cellSize;
 
         let fill: string;
+        let cellValue;
         if (cell.value === EMPTY_CELL_VAL) {
           fill = theme.defaultCellColor;
         } else {
-          fill = this.mapColor(cell.value, colorRules) || theme.defaultCellColor;
+          const { color= theme.defaultCellColor, value=0 } = this.mapColor(cell.value, colorRules) || {};
+          fill = color;
+          cellValue = value
         }
 
         context.beginPath();
@@ -90,6 +97,14 @@ export class CellDraw {
           context.strokeStyle = theme.borderColor;
           context.lineWidth = 1;
           context.stroke();
+        }
+
+        if (showText && cell.value !== EMPTY_CELL_VAL) {
+          context.font = `bold ${fontSize}px monospace`;
+          context.textAlign = 'center';
+          context.textBaseline = 'middle';
+          context.fillStyle = theme.axisTextColor;
+          context.fillText(String(cellValue), x + w / 2, y + h / 2);
         }
       }
     });
@@ -178,20 +193,20 @@ export class CellDraw {
     return null;
   }
 
-  private mapColor(value: number, rules: ColorRule[]): string | undefined {
+  private mapColor(value: number, rules: ColorRule[]): ColorRule | undefined {
     if(!rules || !rules.length) return undefined;
     for (const rule of rules) {
       const { max, min} = rule || {};
       if (max && min && value >= min && value < max) {
-        return rule.color;
+        return rule;
       }
 
       if (min === undefined && max !== undefined &&  value < max) {
-        return rule.color;
+        return rule;
       }
 
       if (max === undefined && min !== undefined &&  min < value) {
-        return rule.color;
+        return rule;
       }
     }
     return undefined;

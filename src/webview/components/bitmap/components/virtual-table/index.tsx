@@ -33,7 +33,7 @@ const TABLE_COLUMNS: TableColumn[] = [
 ];
 
 function getColumnValue(cell: CellData, key: string): unknown {
-  return (cell.metadata?.[key] as unknown) ?? (cell as unknown as Record<string, unknown>)[key];
+  return (cell as unknown as Record<string, unknown>)[key];
 }
 
 function stringifyCellValue(value: unknown): string {

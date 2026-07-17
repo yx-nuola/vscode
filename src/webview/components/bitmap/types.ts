@@ -10,7 +10,12 @@ export interface CellData {
   /** 值（用于颜色映射） */
   value: number;
   /** 额外数据 */
-  metadata?: Record<string, unknown>;
+  wl?: number;
+  bl?: number;
+  vset?: string;
+  status?: string;
+  vreset?: number;
+  imeas?: number;
 }
 
 /**
@@ -85,6 +90,7 @@ export interface ColorRule {
   max?: number;
   /** 颜色值 */
   color: string;
+  value?: number;
 }
 
 /**
@@ -244,6 +250,5 @@ export interface CellType {
 export interface DataType {
   rows?: number;
   cols?: number;
-  metadata: Record<string, unknown>;
   cells: Array<CellType>;
 }

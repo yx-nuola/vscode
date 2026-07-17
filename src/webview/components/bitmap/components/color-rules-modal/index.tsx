@@ -96,13 +96,13 @@ export function ColorRulesModal({
       unmountOnExit
       maskClosable={false}
       closable={false}
-      style={{ width: 500 }}
+      style={{ width: 600 }}
     >
       <div style={{ maxHeight: 'calc(100vh - 260px)' }}>
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'minmax(100px, 1fr) 80px 80px 100px 50px',
+            gridTemplateColumns: 'minmax(100px, 1fr) 80px 80px 100px 80px 50px',
             gap: '8px',
             alignItems: 'center',
             marginBottom: '8px',
@@ -114,7 +114,8 @@ export function ColorRulesModal({
           <span>min</span>
           <span>max</span>
           <span>color</span>
-          <span>operation</span>
+          <span>value</span>
+          <span></span>
         </div>
 
         {draftRules.map((rule, index) => (
@@ -122,7 +123,7 @@ export function ColorRulesModal({
             key={index}
             style={{
               display: 'grid',
-              gridTemplateColumns: 'minmax(100px, 1fr) 80px 80px 100px 50px',
+              gridTemplateColumns: 'minmax(100px, 1fr) 80px 80px 100px 80px 50px',
               gap: '8px',
               alignItems: 'center',
               marginBottom: '10px',
@@ -163,6 +164,13 @@ export function ColorRulesModal({
                 }
               }}
               style={{ width: '100%' }}
+            />
+            <InputNumber
+              aria-label={`规则 ${index + 1} value`}
+              value={rule.value}
+              size="small"
+              hideControl
+              onChange={(value) => updateRule(index, 'value', value)}
             />
             <Button
               aria-label={`删除规则 ${index + 1}`}
