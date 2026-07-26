@@ -16,13 +16,17 @@ type RectType = InstanceType<typeof Rect>;
 export class HighlightDraw {
   private engine: BitmapGridEngine;
   private group: GroupType;
-  private highlightRect: RectType | null;
+  private highlightRect: RectType;
   private pulseAnimation: AnimationType | null;
 
   constructor(engine: BitmapGridEngine) {
     this.engine = engine;
     this.group = new Group({ name: 'highlight' });
-    this.highlightRect = null;
+    this.highlightRect = new Rect({
+      listening: false,
+      visible: false,
+    });
+    this.group.add(this.highlightRect);
     this.pulseAnimation = null;
   }
 
@@ -57,9 +61,7 @@ export class HighlightDraw {
     const cellSize = this.engine.getZoomLevel();
     const scrollState = this.engine.getScrollState();
 
-    this.clear();
-
-    this.highlightRect = new Rect({
+    this.highlightRect.setAttrs({
       x: col * cellSize - scrollState.scrollX,
       y: row * cellSize - scrollState.scrollY,
       width: cellSize,
@@ -70,12 +72,9 @@ export class HighlightDraw {
       shadowColor: theme.highlightColor,
       shadowBlur: Math.max(4, cellSize * 0.18),
       shadowOpacity: 0.35,
-      listening: false,
+      visible: true,
     });
 
-
-    console.log('绘制高亮:');
-    this.group.add(this.highlightRect);
     this.startPulse();
     this.group.getLayer()?.batchDraw();
   }
@@ -83,28 +82,30 @@ export class HighlightDraw {
   private startPulse(): void {
     const layer = this.group.getLayer();
 
-    if (!this.highlightRect || !layer) {
+    if (!layer) {
       return;
     }
 
-    const rect = this.highlightRect;
+    if (!this.pulseAnimation) {
+      const rect = this.highlightRect;
+      this.pulseAnimation = new Animation((frame) => {
+        const time = frame?.time ?? 0;
+        const wave = (Math.sin(time / 180) + 1) / 2;
 
-    this.pulseAnimation = new Animation((frame) => {
-      const time = frame?.time ?? 0;
-      const wave = (Math.sin(time / 180) + 1) / 2;
+        rect.opacity(0.45 + wave * 0.55);
+        rect.strokeWidth(2 + wave * 1.5);
+        rect.shadowOpacity(0.15 + wave * 0.35);
+      }, layer);
+    }
 
-      rect.opacity(0.45 + wave * 0.55);
-      rect.strokeWidth(2 + wave * 1.5);
-      rect.shadowOpacity(0.15 + wave * 0.35);
-    }, layer);
-
-    this.pulseAnimation.start();
+    if (!this.pulseAnimation.isRunning()) {
+      this.pulseAnimation.start();
+    }
   }
 
   private stopPulse(): void {
     if (this.pulseAnimation) {
       this.pulseAnimation.stop();
-      this.pulseAnimation = null;
     }
   }
 
@@ -114,9 +115,8 @@ export class HighlightDraw {
   clear(): void {
     this.stopPulse();
 
-    if (this.highlightRect) {
-      this.highlightRect.destroy();
-      this.highlightRect = null;
+    if (this.highlightRect.isVisible()) {
+      this.highlightRect.visible(false);
       this.group.getLayer()?.batchDraw();
     }
   }
