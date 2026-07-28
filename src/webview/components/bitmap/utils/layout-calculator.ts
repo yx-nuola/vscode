@@ -7,7 +7,6 @@ import type { LayoutConfig, LayoutResult, Area } from '../types';
 import {
   BITMAP_HEIGHT,
   BITMAP_WIDTH,
-  DEFAULT_CELL_SIZE,
   DEFAULT_COLS,
   DEFAULT_ROWS,
 } from '../constants';
@@ -18,13 +17,11 @@ export class LayoutCalculator {
   private config: LayoutConfig;
   private rows: number;
   private cols: number;
-  private cellSize: number;
 
   constructor(config: LayoutConfig) {
     this.config = config;
     this.rows = DEFAULT_ROWS;
     this.cols = DEFAULT_COLS;
-    this.cellSize = DEFAULT_CELL_SIZE;
   }
 
   /**
@@ -106,10 +103,9 @@ export class LayoutCalculator {
     this.config = { ...this.config, ...config };
   }
 
-  updateContentSize(rows: number, cols: number, cellSize: number): void {
+  updateContentSize(rows: number, cols: number): void {
     this.rows = Math.max(rows, DEFAULT_ROWS);
     this.cols = Math.max(cols, DEFAULT_COLS);
-    this.cellSize = cellSize;
   }
 
   /**

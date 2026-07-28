@@ -22,6 +22,7 @@ export class AxisLayer {
   private verticalAxisDraw: VerticalAxisDraw;
   private horizontalScrollbarDraw: HorizontalScrollbarDraw;
   private verticalScrollbarDraw: VerticalScrollbarDraw;
+  private renderFrame: number | null;
 
   constructor(engine: BitmapGridEngine) {
     this.engine = engine;
@@ -30,6 +31,7 @@ export class AxisLayer {
     this.verticalAxisDraw = new VerticalAxisDraw(engine);
     this.horizontalScrollbarDraw = new HorizontalScrollbarDraw(engine);
     this.verticalScrollbarDraw = new VerticalScrollbarDraw(engine);
+    this.renderFrame = null;
 
     this.layer.add(this.horizontalAxisDraw.getGroup());
     this.layer.add(this.verticalAxisDraw.getGroup());
@@ -51,38 +53,48 @@ export class AxisLayer {
     const eventBus = this.engine.getEventBus();
 
     eventBus.on('scroll:change', () => {
-      this.update();
+      this.scheduleUpdate();
     });
 
     eventBus.on('zoom:change', () => {
-      this.update();
+      this.scheduleUpdate();
     });
 
     eventBus.on('data:change', () => {
-      this.update();
+      this.scheduleUpdate();
     });
 
     eventBus.on('layout:change', () => {
-      this.update();
+      this.scheduleUpdate();
     });
 
     eventBus.on('theme:change', () => {
-      this.update();
+      this.scheduleUpdate();
     });
 
     this.update();
+  }
+
+  private scheduleUpdate(): void {
+    if (this.renderFrame !== null) {
+      return;
+    }
+
+    this.renderFrame = requestAnimationFrame(() => {
+      this.renderFrame = null;
+      this.update();
+    });
   }
 
   /**
    * 更新坐标轴和滚动条
    */
   private update(): void {
-    this.updatePositions();
-
     const virtualScrollSync = this.engine.getVirtualScrollSync();
     // 获取滚动位置
     const scrollState = this.engine.getScrollState();
     const layout = this.getLayout();
+    this.updatePositions(layout);
     // 格子显示的范围
     const visibleRange = virtualScrollSync.getVisibleRange(scrollState.scrollX, scrollState.scrollY);
     const axisState = {
@@ -144,9 +156,7 @@ export class AxisLayer {
     }
   }
 
-  private updatePositions(): void {
-    const layout = this.getLayout();
-
+  private updatePositions(layout: LayoutResult): void {
     this.horizontalAxisDraw.setPosition(layout.xAxis.x, layout.xAxis.y);
     this.verticalAxisDraw.setPosition(layout.yAxis.x, layout.yAxis.y);
     this.horizontalScrollbarDraw.setPosition(layout.horizontalScrollbar.x, layout.horizontalScrollbar.y);
@@ -161,6 +171,10 @@ export class AxisLayer {
    * 销毁图层
    */
   destroy(): void {
+    if (this.renderFrame !== null) {
+      cancelAnimationFrame(this.renderFrame);
+      this.renderFrame = null;
+    }
     this.horizontalAxisDraw.destroy();
     this.verticalAxisDraw.destroy();
     this.horizontalScrollbarDraw.destroy();

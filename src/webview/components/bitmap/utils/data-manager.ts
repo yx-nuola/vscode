@@ -8,12 +8,12 @@ import type { CellData, MatrixData } from '../types';
  * 数据管理器类
  */
 export class DataManager {
-  private cellMap: Map<string, CellData>;
+  private cellsByRow: Map<number, Map<number, CellData>>;
   private totalRows: number;
   private totalCols: number;
 
   constructor() {
-    this.cellMap = new Map();
+    this.cellsByRow = new Map();
     this.totalRows = 0;
     this.totalCols = 0;
   }
@@ -22,13 +22,17 @@ export class DataManager {
    * 设置数据
    */
   setData(data: MatrixData): void {
-    this.cellMap.clear();
+    this.cellsByRow.clear();
     this.totalRows = data.rows;
     this.totalCols = data.cols;
 
     for (const cell of data.cells) {
-      const key = `${cell.row},${cell.col}`;
-      this.cellMap.set(key, cell);
+      let rowCells = this.cellsByRow.get(cell.row);
+      if (!rowCells) {
+        rowCells = new Map();
+        this.cellsByRow.set(cell.row, rowCells);
+      }
+      rowCells.set(cell.col, cell);
     }
   }
 
@@ -36,8 +40,7 @@ export class DataManager {
    * 获取单个格子数据
    */
   getCell(row: number, col: number): CellData | undefined {
-    const key = `${row},${col}`;
-    return this.cellMap.get(key);
+    return this.cellsByRow.get(row)?.get(col);
   }
 
   /**
@@ -46,10 +49,12 @@ export class DataManager {
   getDataByArea(startRow: number, endRow: number, startCol: number, endCol: number): CellData[] {
     const result: CellData[] = [];
 
-    for (let row = startRow; row <= endRow; row++) {
-      for (let col = startCol; col <= endCol; col++) {
-        const cell = this.getCell(row, col);
-        if (cell) {
+    for (const [row, rowCells] of this.cellsByRow) {
+      if (row < startRow || row > endRow) {
+        continue;
+      }
+      for (const [col, cell] of rowCells) {
+        if (col >= startCol && col <= endCol) {
           result.push(cell);
         }
       }
@@ -76,7 +81,7 @@ export class DataManager {
    * 清除数据
    */
   clear(): void {
-    this.cellMap.clear();
+    this.cellsByRow.clear();
     this.totalRows = 0;
     this.totalCols = 0;
   }
@@ -85,6 +90,10 @@ export class DataManager {
    * 获取所有格子数据
    */
   getAllCells(): CellData[] {
-    return Array.from(this.cellMap.values());
+    const cells: CellData[] = [];
+    for (const rowCells of this.cellsByRow.values()) {
+      cells.push(...rowCells.values());
+    }
+    return cells;
   }
 }

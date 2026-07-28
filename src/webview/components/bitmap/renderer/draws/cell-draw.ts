@@ -142,34 +142,28 @@ export class CellDraw {
     const colorPaths = new Map<string, Path2D>();
     const textCells: PreparedTextCell[] = [];
 
-    for (let row = startRow; row <= endRow; row++) {
-      for (let col = startCol; col <= endCol; col++) {
-        const cell = dataManager.getCell(row, col);
-        if (!cell) {
-          continue;
-        }
-
-        const colorRule = this.mapColor(cell.value, colorRules);
-        if (showText) {
-          textCells.push({
-            x: col * cellSize + halfCellSize,
-            y: row * cellSize + halfCellSize,
-            value: colorRule?.value ?? 0,
-          });
-        }
-
-        const fill = colorRule?.color ?? theme.defaultCellColor;
-        if (fill === theme.defaultCellColor) {
-          continue;
-        }
-
-        let colorPath = colorPaths.get(fill);
-        if (!colorPath) {
-          colorPath = new Path2D();
-          colorPaths.set(fill, colorPath);
-        }
-        colorPath.rect(col * cellSize, row * cellSize, cellSize, cellSize);
+    const visibleCells = dataManager.getDataByArea(startRow, endRow, startCol, endCol);
+    for (const cell of visibleCells) {
+      const colorRule = this.mapColor(cell.value, colorRules);
+      if (showText) {
+        textCells.push({
+          x: cell.col * cellSize + halfCellSize,
+          y: cell.row * cellSize + halfCellSize,
+          value: colorRule?.value ?? 0,
+        });
       }
+
+      const fill = colorRule?.color ?? theme.defaultCellColor;
+      if (fill === theme.defaultCellColor) {
+        continue;
+      }
+
+      let colorPath = colorPaths.get(fill);
+      if (!colorPath) {
+        colorPath = new Path2D();
+        colorPaths.set(fill, colorPath);
+      }
+      colorPath.rect(cell.col * cellSize, cell.row * cellSize, cellSize, cellSize);
     }
 
     const startX = startCol * cellSize;

@@ -11,9 +11,8 @@ export class LocationManager {
     const virtualScrollSync = this.engine.getVirtualScrollSync();
     const cellSize = virtualScrollSync.currentCellSize;
 
-    const dataManager = this.engine.getDataManager();
-    const totalCols = dataManager.cols;
-    const totalRows = dataManager.rows;
+    const totalCols = virtualScrollSync.getTotalCols();
+    const totalRows = virtualScrollSync.getTotalRows();
 
     if (col < 0 || col >= totalCols || row < 0 || row >= totalRows) {
       return;

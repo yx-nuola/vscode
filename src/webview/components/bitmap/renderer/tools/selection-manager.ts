@@ -4,6 +4,7 @@
 
 import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 import type { CellData } from '../../types';
+import { EMPTY_CELL_VAL } from '../../constants';
 
 /**
  * 选择管理器类
@@ -21,14 +22,29 @@ export class SelectionManager {
    * 选择格子
    */
   selectCell(col: number, row: number): void {
+    const virtualScrollSync = this.engine.getVirtualScrollSync();
+    if (
+      !Number.isInteger(col) ||
+      !Number.isInteger(row) ||
+      col < 0 ||
+      col >= virtualScrollSync.getTotalCols() ||
+      row < 0 ||
+      row >= virtualScrollSync.getTotalRows()
+    ) {
+      return;
+    }
+
     const dataManager = this.engine.getDataManager();
     const cell = dataManager.getCell(row, col);
+    const selectedCell = cell ?? {
+      row,
+      col,
+      value: EMPTY_CELL_VAL,
+    };
 
-    if (cell) {
-      this.selectedCell = cell;
-      const eventBus = this.engine.getEventBus();
-      eventBus.emit('selection:change', cell);
-    }
+    this.selectedCell = selectedCell;
+    const eventBus = this.engine.getEventBus();
+    eventBus.emit('selection:change', selectedCell);
   }
 
   /**
@@ -44,7 +60,9 @@ export class SelectionManager {
    * 检查格子是否被选中
    */
   isSelected(col: number, row: number): boolean {
-    if (!this.selectedCell) return false;
+    if (!this.selectedCell) {
+      return false;
+    }
     return this.selectedCell.col === col && this.selectedCell.row === row;
   }
 

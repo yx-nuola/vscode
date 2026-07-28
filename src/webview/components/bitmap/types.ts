@@ -12,7 +12,7 @@ export interface CellData {
   /** 额外数据 */
   wl?: number;
   bl?: number;
-  vset?: string;
+  vset?: number;
   status?: string;
   vreset?: number;
   imeas?: number;
@@ -218,9 +218,9 @@ export interface BitmapEvents {
   /** 定位事件 */
   'locate': { col: number; row: number };
   /** 高亮事件 */
-  'highlight': { col: number; row: number } | null;
+  // 'highlight': { col: number; row: number } | null;
   /** 清除高亮事件 */
-  'clear-highlight': void;
+  // 'clear-highlight': void;
   /** 重置事件 */
   'reset': void;
   /** 数据变化事件 */

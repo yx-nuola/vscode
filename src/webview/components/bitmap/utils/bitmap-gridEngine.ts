@@ -3,8 +3,8 @@ import Konva from 'konva';
 import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData, LayoutResult } from '../types';
 import { VirtualScrollSync, DataManager, LayoutCalculator, EventBus } from './index';
 import { AxisLayer, CellLayer, HighlightLayer } from '../renderer/layers';
-import { LocationManager } from '../renderer/tools';
-import { DEFAULT_CELL_SIZE, MAX_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS, EMPTY_CELL_VAL } from '../constants';
+import { LocationManager, SelectionManager } from '../renderer/tools';
+import { DEFAULT_CELL_SIZE, MAX_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
 
 
 const { Stage } = Konva;
@@ -31,8 +31,8 @@ export class BitmapGridEngine {
   private container: HTMLElement | null;
   private scrollState: ScrollState;
   private cellSize: number;
-  private selectedCell: CellData | null;
   private locationManager: LocationManager;
+  private selectionManager: SelectionManager;
   private wheelHandler: ((event: WheelEvent) => void) | null;
   private keydownHandler: ((event: KeyboardEvent) => void) | null;
   private pointerDownHandler: (() => void) | null;
@@ -58,10 +58,11 @@ export class BitmapGridEngine {
     this.config = config;
     this.container = null;
     this.scrollState = { scrollX: 0, scrollY: 0 };
-    this.cellSize = DEFAULT_CELL_SIZE;
-    this.layoutCalculator.updateContentSize(DEFAULT_ROWS, DEFAULT_COLS, DEFAULT_CELL_SIZE);
-    this.selectedCell = null;
+    this.cellSize = this.clampCellSize(config.initialCellSize ?? DEFAULT_CELL_SIZE);
+    this.virtualScrollSync.updateCellSize(this.cellSize);
+    this.layoutCalculator.updateContentSize(DEFAULT_ROWS, DEFAULT_COLS);
     this.locationManager = new LocationManager(this);
+    this.selectionManager = new SelectionManager(this);
     this.wheelHandler = null;
     this.keydownHandler = null;
     this.pointerDownHandler = null;
@@ -82,18 +83,18 @@ export class BitmapGridEngine {
   /**
    * 初始化引擎
    */
-  initialize(container: HTMLElement): void {
+  initialize(container: HTMLDivElement): void {
     this.container = container;
     const initialLayout = this.getLayout();
 
     this.stage = new Stage({
-      container: container.id,
+      container,
       width: this.getStageWidth(initialLayout),
       height: this.getStageHeight(initialLayout),
       offset: { x: -0.5, y: -0.5 },
     });
 
-    // 只更新视口高度，宽度固定为 BITMAP_WIDTH
+    // 同步格子区域的实际视口尺寸
     this.virtualScrollSync.updateViewport(initialLayout.cellArea.width, initialLayout.cellArea.height);
     this.clampCurrentScroll();
 
@@ -140,7 +141,6 @@ export class BitmapGridEngine {
     });
 
     this.eventBus.on('selection:change', (cell) => {
-      this.selectedCell = cell;
       this.config.callbacks?.onSelectionChange?.(cell);
     });
 
@@ -150,8 +150,7 @@ export class BitmapGridEngine {
     });
 
     this.eventBus.on('cell:hover', (cell) => {
-      if(cell){
-        // console.log('cell:hover', cell);
+      if (cell) {
         this.config.callbacks?.onCellHover?.(cell);
       }
     });
@@ -421,7 +420,7 @@ export class BitmapGridEngine {
     this.stage.width(this.getStageWidth(layout));
     this.stage.height(this.getStageHeight(layout));
 
-    // 只更新视口高度，宽度固定为 BITMAP_WIDTH
+    // 同步格子区域的实际视口尺寸
     this.virtualScrollSync.updateViewport(layout.cellArea.width, layout.cellArea.height);
     this.clampCurrentScroll();
     this.eventBus.emit('layout:change', undefined);
@@ -466,16 +465,45 @@ export class BitmapGridEngine {
   }
 
   /**
+   * 同步 React 侧更新后的配置，避免回调和布局配置停留在初始化时的值。
+   */
+  updateConfig(config: BitmapGridConfig): void {
+    const previousLayout = this.config.layout;
+    const layoutChanged =
+      previousLayout.axisSize !== config.layout.axisSize ||
+      previousLayout.scrollbarSize !== config.layout.scrollbarSize ||
+      previousLayout.spacing !== config.layout.spacing;
+    const themeChanged = this.config.theme !== config.theme;
+    const colorRulesChanged = this.config.colorRules !== config.colorRules;
+
+    this.config = config;
+    this.layoutCalculator.updateConfig(config.layout);
+
+    const nextCellSize = this.clampCellSize(this.cellSize);
+    if (nextCellSize !== this.cellSize) {
+      this.setCellSize(nextCellSize);
+    } else if (layoutChanged) {
+      this.syncLayout();
+    }
+
+    if (themeChanged) {
+      this.eventBus.emit('theme:change', undefined);
+    }
+    if (colorRulesChanged) {
+      this.eventBus.emit('color-rules:change', undefined);
+    }
+  }
+
+  /**
    * 设置数据
    */
   setData(data: MatrixData): void {
-
     this.clearSelection();
     this.dataManager.setData(data);
     const rows = Math.max(DEFAULT_ROWS, data.rows);
     const cols = Math.max(DEFAULT_COLS, data.cols);
 
-    this.layoutCalculator.updateContentSize(rows, cols, this.cellSize);
+    this.layoutCalculator.updateContentSize(rows, cols);
     this.virtualScrollSync.updateDataSize(rows, cols);
     this.syncLayout();
 
@@ -541,7 +569,7 @@ export class BitmapGridEngine {
    * 放大
    */
   zoomIn(): void {
-    const newSize = Math.min(this.cellSize + 2, MAX_CELL_SIZE);
+    const newSize = Math.min(this.cellSize + 2, this.maxCellSize);
     this.setCellSize(newSize);
   }
 
@@ -549,7 +577,7 @@ export class BitmapGridEngine {
    * 缩小
    */
   zoomOut(): void {
-    const newSize = Math.max(this.cellSize - 2, DEFAULT_CELL_SIZE);
+    const newSize = Math.max(this.cellSize - 2, this.minCellSize);
     this.setCellSize(newSize);
   }
 
@@ -557,27 +585,44 @@ export class BitmapGridEngine {
    * 重置缩放
    */
   resetZoom(): void {
-    this.setCellSize(DEFAULT_CELL_SIZE);
+    this.setCellSize(this.config.initialCellSize ?? DEFAULT_CELL_SIZE);
   }
 
   /**
    * 设置格子尺寸
    */
   private setCellSize(size: number): void {
-    this.cellSize = size;
-    this.layoutCalculator.updateContentSize(
-      this.virtualScrollSync.getTotalRows(),
-      this.virtualScrollSync.getTotalCols(),
-      size
-    );
-    this.virtualScrollSync.updateCellSize(size);
-    this.syncLayout();
-
-    if (this.selectedCell) {
-      this.locationManager.ensureCellVisible(this.selectedCell.col, this.selectedCell.row);
+    const nextSize = this.clampCellSize(size);
+    if (nextSize === this.cellSize) {
+      return;
     }
 
-    this.eventBus.emit('zoom:change', size);
+    this.cellSize = nextSize;
+    this.layoutCalculator.updateContentSize(
+      this.virtualScrollSync.getTotalRows(),
+      this.virtualScrollSync.getTotalCols()
+    );
+    this.virtualScrollSync.updateCellSize(nextSize);
+    this.syncLayout();
+
+    const selectedCell = this.getSelectedCell();
+    if (selectedCell) {
+      this.locationManager.ensureCellVisible(selectedCell.col, selectedCell.row);
+    }
+
+    this.eventBus.emit('zoom:change', nextSize);
+  }
+
+  private clampCellSize(size: number): number {
+    return Math.max(this.minCellSize, Math.min(size, this.maxCellSize));
+  }
+
+  private get minCellSize(): number {
+    return this.config.minCellSize ?? DEFAULT_CELL_SIZE;
+  }
+
+  private get maxCellSize(): number {
+    return Math.max(this.minCellSize, this.config.maxCellSize ?? MAX_CELL_SIZE);
   }
 
   /**
@@ -610,23 +655,14 @@ export class BitmapGridEngine {
    * 选择格子
    */
   selectCell(col: number, row: number): void {
-    const cell = this.dataManager.getCell(row, col);
-    // 即使没有数据，也创建一个临时的格子对象用于选中
-    const selectedCell = cell || {
-      row,
-      col,
-      value: EMPTY_CELL_VAL, // 特殊值表示无数据
-    };
-    this.selectedCell = selectedCell;
-    this.eventBus.emit('selection:change', selectedCell);
+    this.selectionManager.selectCell(col, row);
   }
 
   /**
    * 清除选择
    */
   clearSelection(): void {
-    this.selectedCell = null;
-    this.eventBus.emit('selection:change', null);
+    this.selectionManager.clearSelection();
   }
 
   /**
@@ -656,7 +692,7 @@ export class BitmapGridEngine {
    * 获取选中的格子
    */
   getSelectedCell(): CellData | null {
-    return this.selectedCell;
+    return this.selectionManager.getSelectedCell();
   }
 
   /**

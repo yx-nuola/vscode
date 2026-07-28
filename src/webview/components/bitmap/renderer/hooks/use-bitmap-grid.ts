@@ -2,7 +2,7 @@
  * React Hook
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData } from '../../types';
 
@@ -49,22 +49,35 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
   const { containerId, config, data, theme, colorRules } = params;
 
   const engineRef = useRef<BitmapGridEngine | null>(null);
+  const [engine, setEngine] = useState<BitmapGridEngine | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const resolvedConfig = useMemo<BitmapGridConfig>(() => ({
+    ...config,
+    theme: theme ?? config.theme,
+    colorRules: colorRules ?? config.colorRules,
+  }), [config, theme, colorRules]);
 
   // 初始化引擎
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) {
+      return;
+    }
 
-    const engine = new BitmapGridEngine(config);
-    engineRef.current = engine;
+    const nextEngine = new BitmapGridEngine(resolvedConfig);
+    engineRef.current = nextEngine;
+    setEngine(nextEngine);
 
-    engine.initialize(containerRef.current);
+    nextEngine.initialize(containerRef.current);
 
     return () => {
-      engine.destroy();
+      nextEngine.destroy();
       engineRef.current = null;
     };
   }, [containerId]); // 只在 containerId 变化时重新初始化
+
+  useEffect(() => {
+    engineRef.current?.updateConfig(resolvedConfig);
+  }, [resolvedConfig]);
 
   // 更新数据
   useEffect(() => {
@@ -73,28 +86,13 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
     }
   }, [data]);
 
-  // 更新主题
-  useEffect(() => {
-    const nextTheme = theme ?? config.theme;
-    if (nextTheme && engineRef.current) {
-      engineRef.current.setTheme(nextTheme);
-    }
-  }, [theme, config.theme]);
-
-  // 更新颜色规则
-  useEffect(() => {
-    const nextColorRules = colorRules ?? config.colorRules;
-    if (nextColorRules && engineRef.current) {
-      engineRef.current.setColorRules(nextColorRules);
-    }
-  }, [colorRules, config.colorRules]);
-
   // 监听容器尺寸变化
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) {
+      return;
+    }
 
     const resizeObserver = new ResizeObserver((entries) => {
-      console.log('容器尺寸变化', entries);
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
         engineRef.current?.resize(width, height);
@@ -149,7 +147,7 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
   }, []);
 
   return {
-    engine: engineRef.current,
+    engine,
     containerRef,
     zoomIn,
     zoomOut,

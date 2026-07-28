@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "components/bitmap/constants.ts",
+    "components/bitmap/types.ts",
+    "components/bitmap/renderer/**/*",
+    "components/bitmap/utils/**/*"
+  ]
+}

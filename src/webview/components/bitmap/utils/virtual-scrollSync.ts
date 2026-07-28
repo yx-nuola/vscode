@@ -52,22 +52,31 @@ export class VirtualScrollSync {
    * 计算当前可视格子范围
    */
   getVisibleRange(scrollX: number, scrollY: number): VisibleRange {
+    if (this.totalRows <= 0 || this.totalCols <= 0 || this.cellSize <= 0) {
+      return {
+        startCol: 0,
+        endCol: -1,
+        startRow: 0,
+        endRow: -1,
+      };
+    }
+
     const startCol = Math.floor(scrollX / this.cellSize);
     const endCol = Math.min(
-      Math.ceil((scrollX + this.viewportWidth) / this.cellSize),
+      Math.ceil((scrollX + this.viewportWidth) / this.cellSize) - 1,
       this.totalCols - 1
     );
     const startRow = Math.floor(scrollY / this.cellSize);
     const endRow = Math.min(
-      Math.ceil((scrollY + this.viewportHeight) / this.cellSize),
+      Math.ceil((scrollY + this.viewportHeight) / this.cellSize) - 1,
       this.totalRows - 1
     );
 
     return {
       startCol: Math.max(0, startCol),
-      endCol: Math.max(startCol, Math.min(endCol, this.totalCols - 1)),
+      endCol: Math.max(-1, Math.min(endCol, this.totalCols - 1)),
       startRow: Math.max(0, startRow),
-      endRow: Math.max(startRow, Math.min(endRow, this.totalRows - 1)),
+      endRow: Math.max(-1, Math.min(endRow, this.totalRows - 1)),
     };
   }
 

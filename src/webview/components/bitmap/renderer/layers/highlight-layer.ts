@@ -4,6 +4,7 @@
 
 import Konva from 'konva';
 import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
+import type { CellData } from '../../types';
 import { HighlightDraw } from '../draws/highlight-draw';
 
 const { Layer } = Konva;
@@ -30,7 +31,7 @@ export class HighlightLayer {
     return this.layer;
   }
 
-  handle(data: any): void {
+  handle(data: CellData | null): void {
     if (data) {
       this.highlightDraw.draw(data.col, data.row);
     } else {
@@ -45,11 +46,11 @@ export class HighlightLayer {
     const eventBus = this.engine.getEventBus();
     this.updateLayout();
 
-    eventBus.on('highlight', (data) => this.handle(data));
+    // eventBus.on('highlight', (data) => this.handle(data));
 
-    eventBus.on('clear-highlight', () => {
-      this.highlightDraw.clear();
-    });
+    // eventBus.on('clear-highlight', () => {
+    //   this.highlightDraw.clear();
+    // });
 
     eventBus.on('selection:change', (data) => {
       this.handle(data);

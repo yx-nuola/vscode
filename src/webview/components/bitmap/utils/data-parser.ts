@@ -18,17 +18,22 @@ export class DataParser {
     let cols = typeof data.cols === 'number' ? Math.max(0, data.cols) : 0;
 
     for (const cell of data.cells) {
+      const value = Number(cell.imeas);
+      if (!Number.isFinite(value)) {
+        throw new Error(`Invalid imeas value at (${cell.bl}, ${cell.wl})`);
+      }
+
       rows = Math.max(cell.bl + 1, rows);
       cols = Math.max(cell.wl + 1, cols);
       cellsData.push({
         row: cell.bl,
         col: cell.wl,
-        value: parseFloat(String(cell.imeas)),
+        value,
         wl: cell.wl,
         bl: cell.bl,
-        vset: String(cell.vset),
-        vreset: String(cell.vreset),
-        imeas: String(cell.imeas),
+        vset: Number(cell.vset),
+        vreset: Number(cell.vreset),
+        imeas: value,
         status: cell.status,
       });
     }
@@ -59,11 +64,11 @@ export class DataParser {
     const mergedCells = Array.from(cellMap.values());
     const maxRow = mergedCells.reduce(
       (max, cell) => Math.max(max, cell.row + 1),
-      existingData.rows
+      Math.max(existingData.rows, newData.rows)
     );
     const maxCol = mergedCells.reduce(
       (max, cell) => Math.max(max, cell.col + 1),
-      existingData.cols
+      Math.max(existingData.cols, newData.cols)
     );
 
     return {
@@ -78,7 +83,10 @@ export class DataParser {
    */
   static parseJSON(jsonString: string): MatrixData {
     try {
-      const data = JSON.parse(jsonString) as DataType;
+      const data: unknown = JSON.parse(jsonString);
+      if (!this.validateData(data)) {
+        throw new Error('Invalid data format');
+      }
       return this.parseRRAMData(data);
     } catch (error) {
       throw new Error(`Failed to parse JSON: ${error instanceof Error ? error.message : String(error)}`);
@@ -94,18 +102,36 @@ export class DataParser {
     }
 
     const rramData = data as DataType;
+    const hasValidRows =
+      rramData.rows === undefined ||
+      (Number.isInteger(rramData.rows) && rramData.rows >= 0);
+    const hasValidCols =
+      rramData.cols === undefined ||
+      (Number.isInteger(rramData.cols) && rramData.cols >= 0);
 
     return (
+      hasValidRows &&
+      hasValidCols &&
       Array.isArray(rramData.cells) &&
       rramData.cells.every(
         (cell) =>
-          typeof cell.wl === 'number' &&
-          typeof cell.bl === 'number' &&
-          (typeof cell.vset === 'string' || typeof cell.vset === 'number') &&
-          (typeof cell.vreset === 'string' || typeof cell.vreset === 'number') &&
-          (typeof cell.imeas === 'string' || typeof cell.imeas === 'number') &&
+          Number.isInteger(cell.wl) &&
+          cell.wl >= 0 &&
+          Number.isInteger(cell.bl) &&
+          cell.bl >= 0 &&
+          this.isFiniteNumericValue(cell.vset) &&
+          this.isFiniteNumericValue(cell.vreset) &&
+          this.isFiniteNumericValue(cell.imeas) &&
           typeof cell.status === 'string'
       )
     );
+  }
+
+  private static isFiniteNumericValue(value: unknown): value is string | number {
+    if (typeof value !== 'string' && typeof value !== 'number') {
+      return false;
+    }
+
+    return (typeof value === 'number' || value.trim() !== '') && Number.isFinite(Number(value));
   }
 }
