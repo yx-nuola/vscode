@@ -224,6 +224,32 @@ export function VirtualTable({
       onRowClickRef.current?.(record.__index, record.__cell);
     });
 
+    table.on(TABLE_EVENT_TYPE.KEYDOWN, (event) => {
+      if (event.code !== 'ArrowUp' && event.code !== 'ArrowDown') {
+        return;
+      }
+
+      event.event.preventDefault();
+
+      const currentRow = highlightedRowRef.current;
+      const total = recordsRef.current.length;
+
+      if (total === 0) {
+        return;
+      }
+
+      const nextRow = event.code === 'ArrowDown'
+        ? currentRow === undefined ? 0 : Math.min(currentRow + 1, total - 1)
+        : currentRow === undefined ? total - 1 : Math.max(0, currentRow - 1);
+
+      if (nextRow === currentRow) {
+        return;
+      }
+
+      selectRecordRow(table, nextRow, true);
+      onRowClickRef.current?.(nextRow, recordsRef.current[nextRow]?.__cell);
+    });
+
     return () => {
       table.release();
       if (tableRef.current === table) {
