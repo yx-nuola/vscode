@@ -179,6 +179,18 @@ function buildChartOption(
       formatter: (parameter: unknown) =>
         formatTooltip(parameter, columns, xColumn, yColumn),
     },
+    toolbox: {
+      show: true,
+      feature: {
+        dataZoom: {
+          yAxisIndex: 'none'
+        },
+        // dataView: { readOnly: false },
+        magicType: { type: ['line', 'bar'] },
+        restore: {},
+        saveAsImage: {},
+      }
+    },
     xAxis: {
       type: 'value',
       name: xColumn ?? 'Index',
