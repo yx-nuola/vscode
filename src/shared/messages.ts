@@ -10,6 +10,7 @@ export const ViewIds = {
 export const WebviewRoutes = {
   home: '/',
   bitmap: '/bitmap',
+  lineChart: '/line-chart',
 } as const;
 
 export type WebviewRoute = typeof WebviewRoutes[keyof typeof WebviewRoutes];

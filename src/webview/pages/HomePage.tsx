@@ -10,6 +10,7 @@ export function HomePage() {
       </section>
       <nav className="home-page__actions">
         <Link to={WebviewRoutes.bitmap}>RRAM Bitmap</Link>
+        <Link to={WebviewRoutes.lineChart}>CSV 多分组折线图</Link>
       </nav>
     </main>
   );

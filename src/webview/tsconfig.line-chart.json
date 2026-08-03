@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "components/lint-chart/**/*.ts",
+    "components/lint-chart/**/*.tsx",
+    "pages/LineChartPage.tsx"
+  ]
+}
