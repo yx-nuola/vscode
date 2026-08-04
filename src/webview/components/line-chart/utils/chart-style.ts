@@ -56,4 +56,3 @@ export function formatAxisValue(value: number): string {
 
   return Number(value.toPrecision(5)).toString();
 }
-

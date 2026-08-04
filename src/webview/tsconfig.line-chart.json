@@ -1,8 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "include": [
-    "components/lint-chart/**/*.ts",
-    "components/lint-chart/**/*.tsx",
+    "vite-env.d.ts",
+    "components/line-chart/**/*.ts",
+    "components/line-chart/**/*.tsx",
     "pages/LineChartPage.tsx"
   ]
 }

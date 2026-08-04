@@ -1,3 +1,4 @@
+import * as Papa from 'papaparse';
 import type {
   ColumnType,
   CsvColumn,
@@ -6,16 +7,18 @@ import type {
   ParsedCsvRow,
 } from '../types';
 
-interface RawCsvParseResult {
-  records: string[][];
-  errors: CsvParseError[];
-}
-
-
-// 为什么不用papaparse解析csv？
 export function parseCsv(text: string): ParsedCsvData {
   const normalizedText = text.replace(/^\uFEFF/, '');
-  const { records, errors } = parseCsvRecords(normalizedText);
+  if (normalizedText === '') {
+    throw new Error('CSV 文件为空');
+  }
+
+  const parsed = Papa.parse<string[]>(normalizedText, {
+    delimiter: ',',
+    dynamicTyping: false,
+    skipEmptyLines: false,
+  });
+  const records = parsed.data;
 
   if (records.length === 0) {
     throw new Error('CSV 文件为空');
@@ -25,7 +28,10 @@ export function parseCsv(text: string): ParsedCsvData {
   validateHeaders(headers);
 
   const rows: ParsedCsvRow[] = [];
-  const rowErrors = [...errors];
+  const rowErrors: CsvParseError[] = parsed.errors.map((error) => ({
+    sourceRowIndex: (error.row ?? 0) + 1,
+    message: error.message,
+  }));
 
   for (let index = 1; index < records.length; index += 1) {
     const record = records[index];
@@ -70,70 +76,6 @@ export function parseFiniteNumber(value: string): number | null {
 
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : null;
-}
-
-function parseCsvRecords(text: string): RawCsvParseResult {
-  const records: string[][] = [];
-  const errors: CsvParseError[] = [];
-  let record: string[] = [];
-  let field = '';
-  let inQuotes = false;
-  let sourceRowIndex = 1;
-
-  const pushField = (): void => {
-    record.push(field);
-    field = '';
-  };
-
-  const pushRecord = (): void => {
-    pushField();
-    records.push(record);
-    record = [];
-  };
-
-  for (let index = 0; index < text.length; index += 1) {
-    const character = text[index];
-
-    if (character === '"') {
-      if (inQuotes && text[index + 1] === '"') {
-        field += '"';
-        index += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-      continue;
-    }
-
-    if (!inQuotes && character === ',') {
-      pushField();
-      continue;
-    }
-
-    if (!inQuotes && (character === '\n' || character === '\r')) {
-      pushRecord();
-      sourceRowIndex += 1;
-
-      if (character === '\r' && text[index + 1] === '\n') {
-        index += 1;
-      }
-      continue;
-    }
-
-    field += character;
-  }
-
-  if (inQuotes) {
-    errors.push({
-      sourceRowIndex,
-      message: '存在未闭合的引号字段',
-    });
-  }
-
-  if (field !== '' || record.length > 0) {
-    pushRecord();
-  }
-
-  return { records, errors };
 }
 
 function validateHeaders(headers: string[]): void {
@@ -211,4 +153,3 @@ function parseHeaderLabel(rawName: string): {
     unit: match[2].trim() || null,
   };
 }
-

@@ -4,10 +4,11 @@ import type {
   CsvColumn,
   CsvParseError,
   LineChartConfig,
-} from './types';
-import { LineChartCard } from './LineChartCard';
+} from '../types';
+import { ChartCard } from './ChartCard';
+import styles from '../styles.module.scss';
 
-interface LineChartContentProps {
+interface ChartContentProps {
   result: BuildChartResult | null;
   columns: CsvColumn[];
   config: LineChartConfig | null;
@@ -17,7 +18,7 @@ interface LineChartContentProps {
   onTitleChange: (chartId: string, title: string) => void;
 }
 
-export function LineChartContent({
+export function ChartContent({
   result,
   columns,
   config,
@@ -25,10 +26,10 @@ export function LineChartContent({
   parseErrors,
   titles,
   onTitleChange,
-}: LineChartContentProps) {
+}: ChartContentProps) {
   if (!result || !config) {
     return (
-      <main className="line-chart-content line-chart-content--empty">
+      <main className={`${styles.chart_content} ${styles.empty_content}`}>
         <Empty
           description={
             fileName
@@ -42,29 +43,34 @@ export function LineChartContent({
 
   if (result.groups.length === 0) {
     return (
-      <main className="line-chart-content line-chart-content--empty">
+      <main className={`${styles.chart_content} ${styles.empty_content}`}>
         <Empty description="没有可绘制的有效数据" />
       </main>
     );
   }
 
   const allErrors = [...parseErrors, ...result.errors];
-  const totalErrors = allErrors.length;
+  const totalSeries = result.groups.reduce(
+    (total, group) => total + group.series.length,
+    0,
+  );
   const mergedTitle = titles.__merged__ ?? fileName ?? 'CSV 折线图';
+  const gridClassName = config.drawMode === 'merge'
+    ? `${styles.chart_grid} ${styles.merged_grid}`
+    : styles.chart_grid;
 
   return (
-    <main className="line-chart-content">
-      <div className="line-chart-content__summary">
+    <main className={styles.chart_content}>
+      <div className={styles.chart_summary}>
         <span>{result.groups.length} 个大组</span>
-        <span>
-          {result.groups.reduce((total, group) => total + group.series.length, 0)} 条曲线
-        </span>
+        <span>{totalSeries} 条曲线</span>
         <span>{result.validRows} 个有效点</span>
-        {totalErrors > 0 && (
-          <div className="line-chart-content__issues">
+
+        {allErrors.length > 0 && (
+          <div className={styles.issue_panel}>
             <Alert
               type="warning"
-              content={`共发现 ${totalErrors} 条解析或数据问题，已跳过 ${result.skippedRows} 行无效绘图数据。`}
+              content={`共发现 ${allErrors.length} 条解析或数据问题，已跳过 ${result.skippedRows} 行无效绘图数据。`}
             />
             <details>
               <summary>查看问题明细</summary>
@@ -83,15 +89,9 @@ export function LineChartContent({
         )}
       </div>
 
-      <section
-        className={
-          config.drawMode === 'split'
-            ? 'line-chart-content__grid'
-            : 'line-chart-content__grid line-chart-content__grid--merged'
-        }
-      >
+      <section className={gridClassName}>
         {config.drawMode === 'merge' ? (
-          <LineChartCard
+          <ChartCard
             chartId="__merged__"
             title={mergedTitle}
             groups={result.groups}
@@ -103,7 +103,7 @@ export function LineChartContent({
           />
         ) : (
           result.groups.map((group) => (
-            <LineChartCard
+            <ChartCard
               key={group.id}
               chartId={group.id}
               title={titles[group.id] ?? group.title}

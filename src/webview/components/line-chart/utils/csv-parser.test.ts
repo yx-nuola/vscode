@@ -32,5 +32,13 @@ describe('parseCsv', () => {
       },
     ]);
   });
-});
 
+  test('reports malformed quoted fields through PapaParse', () => {
+    const result = parseCsv('A,B\n1,"unterminated');
+
+    expect(result.errors).toContainEqual({
+      sourceRowIndex: 2,
+      message: 'Quoted field unterminated',
+    });
+  });
+});

@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Button, Input } from '@arco-design/web-react';
 import { IconEdit } from '@arco-design/web-react/icon';
+import styles from '../styles.module.scss';
 
 interface EditableChartTitleProps {
   title: string;
@@ -12,20 +14,12 @@ export function EditableChartTitle({
 }: EditableChartTitleProps) {
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(title);
-  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!editing) {
       setDraftTitle(title);
     }
   }, [editing, title]);
-
-  useEffect(() => {
-    if (editing) {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }
-  }, [editing]);
 
   const save = (): void => {
     const nextTitle = draftTitle.trim();
@@ -35,16 +29,15 @@ export function EditableChartTitle({
 
   if (editing) {
     return (
-      <input
-        ref={inputRef}
-        className="line-chart-title__input"
+      <Input
+        autoFocus
+        className={styles.chart_title_input}
         value={draftTitle}
-        onChange={(event) => setDraftTitle(event.target.value)}
+        onChange={setDraftTitle}
         onBlur={save}
+        onPressEnter={save}
         onKeyDown={(event) => {
-          if (event.key === 'Enter') {
-            save();
-          } else if (event.key === 'Escape') {
+          if (event.key === 'Escape') {
             setDraftTitle(title);
             setEditing(false);
           }
@@ -55,15 +48,14 @@ export function EditableChartTitle({
   }
 
   return (
-    <button
-      type="button"
-      className="line-chart-title"
+    <Button
+      type="text"
+      className={styles.chart_title}
+      icon={<IconEdit />}
       onClick={() => setEditing(true)}
       title="点击修改标题"
     >
-      <span>{title}</span>
-      <IconEdit />
-    </button>
+      {title}
+    </Button>
   );
 }
-

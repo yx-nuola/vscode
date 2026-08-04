@@ -21,4 +21,3 @@ describe('createSeriesColors', () => {
     expect(new Set(colors).size).toBe(15);
   });
 });
-

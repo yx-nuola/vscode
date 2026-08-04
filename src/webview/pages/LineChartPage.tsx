@@ -1,6 +1,5 @@
-import { LineChartWorkbench } from '../components/lint-chart';
+import { LineChartWorkbench } from '../components/line-chart';
 
 export function LineChartPage() {
   return <LineChartWorkbench />;
 }
-
