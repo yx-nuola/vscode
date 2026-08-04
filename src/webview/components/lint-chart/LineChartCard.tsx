@@ -57,10 +57,13 @@ export function LineChartCard({
     () => createDisplaySeries(groups, isMerged),
     [groups, isMerged],
   );
+
   const option = useMemo(
     () => buildChartOption(displaySeries, columns, xColumn, yColumn),
     [columns, displaySeries, xColumn, yColumn],
   );
+
+  console.log('=------》 option', option)
 
   useEffect(() => {
     const container = containerRef.current;
@@ -127,7 +130,7 @@ function createDisplaySeries(
   groups: ChartGroupData[],
   isMerged: boolean,
 ): DisplaySeries[] {
-  return groups.flatMap((group) =>
+  const data = groups.flatMap((group) =>
     group.series.map((series) => ({
       id: series.id,
       name: isMerged
@@ -138,6 +141,8 @@ function createDisplaySeries(
       points: series.points,
     })),
   );
+  console.log('createDisplaySeries', data, groups, isMerged);
+  return data;
 }
 
 function buildChartOption(
@@ -159,9 +164,9 @@ function buildChartOption(
     animation: false,
     color: createSeriesColors(displaySeries.length),
     grid: {
-      top: 24,
+      top: 40,
       right: 20,
-      bottom: 92,
+      bottom: 40,
       left: 20,
       containLabel: true,
     },
@@ -177,7 +182,16 @@ function buildChartOption(
         type: 'cross',
       },
       formatter: (parameter: unknown) =>
-        formatTooltip(parameter, columns, xColumn, yColumn),
+        formatTooltip(parameter, columns),
+    },
+    emphasis: {
+      itemStyle: {
+        color: 'blue'
+      },
+      label: {
+        show: true,
+        // formatter: '哈哈哈哈哈哈'
+      }
     },
     toolbox: {
       show: true,
@@ -243,8 +257,6 @@ function buildChartOption(
 function formatTooltip(
   parameter: unknown,
   columns: CsvColumn[],
-  xColumn: string | null,
-  yColumn: string,
 ): string {
   const tooltipParameter = Array.isArray(parameter)
     ? parameter[0] as TooltipParameter | undefined
@@ -266,11 +278,11 @@ function formatTooltip(
 
   return [
     `<strong>${tooltipParameter?.marker ?? ''}${escapeHtml(tooltipParameter?.seriesName ?? '')}</strong>`,
-    `<div><span>大组:</span> ${escapeHtml(datum.deviceValue)}</div>`,
-    `<div><span>小组:</span> ${escapeHtml(datum.groupName)}</div>`,
-    `<div><span>${escapeHtml(xColumn ?? 'Index')}:</span> ${formatNumber(point.x)}</div>`,
-    `<div><span>${escapeHtml(yColumn)}:</span> ${formatNumber(point.y)}</div>`,
-    `<div><span>CSV Row:</span> ${point.sourceRowIndex}</div>`,
+    // `<div><span>大组:</span> ${escapeHtml(datum.deviceValue)}</div>`,
+    // `<div><span>小组:</span> ${escapeHtml(datum.groupName)}</div>`,
+    // `<div><span>${escapeHtml(xColumn ?? 'Index')}:</span> ${formatNumber(point.x)}</div>`,
+    // `<div><span>${escapeHtml(yColumn)}:</span> ${formatNumber(point.y)}</div>`,
+    // `<div><span>CSV Row:</span> ${point.sourceRowIndex}</div>`,
     ...detailRows,
   ].join('');
 }

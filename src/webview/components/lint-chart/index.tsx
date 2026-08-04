@@ -31,16 +31,22 @@ export function LineChartWorkbench() {
     return buildChartGroups(parsedData.rows, appliedConfig);
   }, [appliedConfig, parsedData]);
 
+
+  console.log('LineChartCard render', result)
+
   const handleFileSelect = async (file: File): Promise<void> => {
     setIsLoading(true);
     setFeedback(null);
 
     try {
       const text = await file.text();
+      debugger
       const data = addVirtualDeviceId(parseCsv(text));
       const nextConfig = createDefaultConfig(data);
 
       setFileName(file.name);
+
+      console.log('Parsed CSV Data:', data);
       setParsedData(data);
       setConfig(nextConfig);
       setAppliedConfig(null);

@@ -11,6 +11,8 @@ interface RawCsvParseResult {
   errors: CsvParseError[];
 }
 
+
+// 为什么不用papaparse解析csv？
 export function parseCsv(text: string): ParsedCsvData {
   const normalizedText = text.replace(/^\uFEFF/, '');
   const { records, errors } = parseCsvRecords(normalizedText);
@@ -44,12 +46,14 @@ export function parseCsv(text: string): ParsedCsvData {
       values[header] = record[columnIndex]?.trim() ?? '';
     });
 
+    //  为什么拼接成这种数据结构呢？？？为了后续方便处理还是？
     rows.push({
       sourceRowIndex: index + 1,
       values,
     });
   }
 
+  // 这都是为什么这么拼接？？？
   const columns = inferColumns(headers, rows);
 
   return {
