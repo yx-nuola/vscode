@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { LineChartFeedback, ParsedCsvData } from '../types';
-import { addVirtualDeviceId } from '../utils/data-adapter';
 import { parseCsv } from '../utils/csv-parser';
 
 interface CsvUploadState {
@@ -24,13 +23,13 @@ export function useCsvUpload(): CsvUploadState {
 
     try {
       const text = await file.text();
-      const data = addVirtualDeviceId(parseCsv(text));
+      const data = parseCsv(text);
 
       setFileName(file.name);
       setParsedData(data);
       setFeedback({
         tone: 'success',
-        message: `已解析 ${data.rows.length} 行数据，请选择配置后点击 Draw`,
+        message: `已解析 ${data.polylineData.length} 行数据，请选择配置后点击 Draw`,
       });
       return data;
     } catch (error) {

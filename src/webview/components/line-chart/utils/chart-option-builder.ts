@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
-import type { ChartGroupData, ChartPoint, CsvColumn } from '../types';
-import { calculateAxisRange } from './axis-range';
+import type { ChartGroupData, CsvColumn, ParsedCsvRow } from '../types';
+import { buildAxisRange } from './axis-range';
 import {
   createSeriesColors,
   formatAxisValue,
@@ -11,17 +11,11 @@ import {
 export interface DisplaySeries {
   id: string;
   name: string;
-  deviceValue: string;
-  groupName: string;
-  points: ChartPoint[];
-}
-
-interface TooltipDatum {
-  point: ChartPoint;
+  points: [number, number, number][];
 }
 
 interface TooltipParameter {
-  data?: TooltipDatum;
+  data?: [number, number, number];
   marker?: string;
   seriesName?: string;
 }
@@ -34,8 +28,6 @@ export function createDisplaySeries(
     group.series.map((series) => ({
       id: series.id,
       name: isMerged ? `${group.deviceValue} / ${series.name}` : series.name,
-      deviceValue: group.deviceValue,
-      groupName: series.name,
       points: series.points,
     })),
   );
@@ -43,18 +35,34 @@ export function createDisplaySeries(
 
 export function buildChartOption(
   displaySeries: DisplaySeries[],
-  columns: CsvColumn[],
+  tableHeader: CsvColumn[],
   xColumn: string | null,
   yColumn: string,
+  polylineData: ParsedCsvRow[],
 ): EChartsOption {
-  const xValues = displaySeries.flatMap((series) =>
-    series.points.map((point) => point.x),
-  );
-  const yValues = displaySeries.flatMap((series) =>
-    series.points.map((point) => point.y),
-  );
-  const xRange = calculateAxisRange(xValues);
-  const yRange = calculateAxisRange(yValues);
+
+  let xMin = Number.POSITIVE_INFINITY;
+  let xMax = Number.NEGATIVE_INFINITY;
+  let yMin = Number.POSITIVE_INFINITY;
+  let yMax = Number.NEGATIVE_INFINITY;
+
+  for (const series of displaySeries) {
+    for (const point of series.points) {
+      const x = point[0];
+      const y = point[1];
+      if (Number.isFinite(x)) {
+        xMin = Math.min(xMin, x);
+        xMax = Math.max(xMax, x);
+      }
+      if (Number.isFinite(y)) {
+        yMin = Math.min(yMin, y);
+        yMax = Math.max(yMax, y);
+      }
+    }
+  }
+
+  const xRange = buildAxisRange(xMin, xMax);
+  const yRange = buildAxisRange(yMin, yMax);
 
   return {
     animation: false,
@@ -75,7 +83,8 @@ export function buildChartOption(
     tooltip: {
       trigger: 'item',
       axisPointer: { type: 'cross' },
-      formatter: (parameter: unknown) => formatTooltip(parameter, columns),
+      formatter: (parameter: unknown) =>
+        formatTooltip(parameter, tableHeader, polylineData),
     },
     toolbox: {
       show: true,
@@ -118,39 +127,37 @@ export function buildChartOption(
       id: series.id,
       name: series.name,
       type: 'line',
-      showSymbol: true,
+      // showSymbol: true,
       symbol: SERIES_SYMBOLS[index % SERIES_SYMBOLS.length],
       symbolSize: 7,
       lineStyle: {
         type: SERIES_LINE_TYPES[index % SERIES_LINE_TYPES.length],
       },
       connectNulls: false,
-      data: series.points.map((point) => ({
-        value: [point.x, point.y],
-        point,
-        deviceValue: series.deviceValue,
-        groupName: series.groupName,
-      })),
+      data: series.points,
     })),
   };
 }
 
-function formatTooltip(parameter: unknown, columns: CsvColumn[]): string {
+function formatTooltip(
+  parameter: unknown,
+  tableHeader: CsvColumn[],
+  polylineData: ParsedCsvRow[],
+): string {
   const tooltipParameter = Array.isArray(parameter)
     ? parameter[0] as TooltipParameter | undefined
     : parameter as TooltipParameter;
-  const point = tooltipParameter?.data?.point;
+  const data = tooltipParameter?.data;
+  const row = Array.isArray(data) ? polylineData[data[2]] : undefined;
 
-  if (!point) {
+  if (!row) {
     return '';
   }
 
-  const detailRows = columns
-    .filter((column) => point.raw.values[column.rawName] !== undefined)
-    .map((column) => {
-      const value = point.raw.values[column.rawName];
-      return `<div><span>${escapeHtml(column.displayName)}:</span> ${escapeHtml(value)}</div>`;
-    });
+  const detailRows = tableHeader.map((column) => {
+    const value = row[column.rawName];
+    return `<div><span>${escapeHtml(column.displayName)}:</span> ${escapeHtml(value ?? '')}</div>`;
+  });
 
   return [
     `<strong>${tooltipParameter?.marker ?? ''}${escapeHtml(tooltipParameter?.seriesName ?? '')}</strong>`,

@@ -27,8 +27,9 @@ export function LineChartWorkbench() {
       return null;
     }
 
-    return buildChartGroups(parsedData.rows, appliedConfig);
+    return buildChartGroups(parsedData.polylineData, appliedConfig);
   }, [appliedConfig, parsedData]);
+
 
   const handleFileSelect = async (file: File): Promise<void> => {
     const data = await uploadFile(file);
@@ -51,6 +52,7 @@ export function LineChartWorkbench() {
   };
 
   const handleDraw = (): void => {
+    debugger;
     if (!parsedData || !draftConfig) {
       setFeedback({ tone: 'warning', message: '请先上传 CSV 文件' });
       return;
@@ -72,7 +74,6 @@ export function LineChartWorkbench() {
       <div className={styles.header_area}>
         <CsvUploadPanel
           fileName={fileName}
-          rowCount={parsedData?.rows.length ?? 0}
           isLoading={isLoading}
           onFileSelect={(file) => {
             void handleFileSelect(file);
@@ -80,7 +81,7 @@ export function LineChartWorkbench() {
         />
         <ChartFeedback feedback={feedback} />
         <ChartConfigPanel
-          columns={parsedData?.columns ?? []}
+          tableHeader={parsedData?.tableHeader ?? []}
           config={draftConfig}
           onConfigChange={handleConfigChange}
           onDraw={handleDraw}
@@ -89,11 +90,11 @@ export function LineChartWorkbench() {
 
       <ChartContent
         result={chartResult}
-        columns={parsedData?.columns ?? []}
+        tableHeader={parsedData?.tableHeader ?? []}
         config={appliedConfig}
         fileName={fileName}
-        parseErrors={parsedData?.errors ?? []}
         titles={titles}
+        polylineData={parsedData?.polylineData ?? []}
         onTitleChange={(chartId, title) => {
           setTitles((current) => ({ ...current, [chartId]: title }));
         }}

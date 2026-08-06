@@ -1,7 +1,6 @@
 import type {
   BuildChartResult,
   ChartGroupData,
-  ChartPoint,
   ChartSeriesData,
   LineChartConfig,
   ParsedCsvRow,
@@ -9,9 +8,13 @@ import type {
 import { parseFiniteNumber } from './csv-parser';
 
 export function shouldStartNewSmallGroup(
-  previousValues: number[],
-  currentValues: number[],
+  previousValues: number[] | null,
+  currentValues: number[] | null,
 ): boolean {
+  if (previousValues === null || currentValues === null) {
+    return false;
+  }
+
   if (previousValues.length !== currentValues.length) {
     throw new Error('Group 比较字段数量不一致');
   }
@@ -27,9 +30,11 @@ export function shouldStartNewSmallGroup(
 }
 
 export function buildChartGroups(
-  rows: ParsedCsvRow[],
+  polylineData: ParsedCsvRow[],
   config: LineChartConfig,
 ): BuildChartResult {
+
+  debugger;
   const groups: ChartGroupData[] = [];
   const errors: BuildChartResult['errors'] = [];
   let previousValidRow: ParsedCsvRow | null = null;
@@ -37,12 +42,11 @@ export function buildChartGroups(
   let currentSeries: ChartSeriesData | null = null;
   let validRows = 0;
 
-  for (const row of rows) {
+  for (const [rowIndex, row] of polylineData.entries()) {
     const validationError = getRowValidationError(row, config);
 
     if (validationError) {
       errors.push({
-        sourceRowIndex: row.sourceRowIndex,
         message: validationError,
       });
       continue;
@@ -77,7 +81,18 @@ export function buildChartGroups(
       throw new Error('无法创建折线小组');
     }
 
-    currentSeries.points.push(createChartPoint(row, config, currentSeries.points.length));
+    const point = createChartPoint(
+      row,
+      config,
+      currentSeries.points.length,
+      rowIndex,
+    );
+    if (point === null) {
+      previousValidRow = row;
+      continue;
+    }
+
+    currentSeries.points.push(point);
     validRows += 1;
     previousValidRow = row;
   }
@@ -85,7 +100,7 @@ export function buildChartGroups(
   return {
     groups,
     validRows,
-    skippedRows: rows.length - validRows,
+    skippedRows: polylineData.length - validRows,
     errors,
   };
 }
@@ -125,48 +140,48 @@ function createChartPoint(
   row: ParsedCsvRow,
   config: LineChartConfig,
   localIndex: number,
-): ChartPoint {
-  const y = parseFiniteNumber(row.values[config.yColumn]);
+  rowIndex: number,
+): [number, number, number] | null {
+  const y = parseFiniteNumber(row[config.yColumn]);
   const x = config.xColumn
-    ? parseFiniteNumber(row.values[config.xColumn])
+    ? parseFiniteNumber(row[config.xColumn])
     : localIndex;
 
   if (x === null || y === null) {
-    throw new Error('有效行无法转换为图表数据点');
+    return null;
   }
 
-  return {
+  return [
     x,
     y,
-    sourceRowIndex: row.sourceRowIndex,
-    raw: row,
-  };
+    rowIndex,
+  ];
 }
 
 function getRowValidationError(
   row: ParsedCsvRow,
   config: LineChartConfig,
 ): string | null {
-  if (config.deviceColumn && row.values[config.deviceColumn]?.trim() === '') {
+  if (config.deviceColumn && row[config.deviceColumn]?.trim() === '') {
     return `大组字段 ${config.deviceColumn} 为空`;
   }
 
-  if (
-    config.xColumn &&
-    parseFiniteNumber(row.values[config.xColumn] ?? '') === null
-  ) {
-    return `X 轴字段 ${config.xColumn} 不是有效数字`;
-  }
+  // if (
+  //   config.xColumn &&
+  //   parseFiniteNumber(row[config.xColumn]) === null
+  // ) {
+  //   return `X 轴字段 ${config.xColumn} 不是有效数字`;
+  // }
 
-  if (parseFiniteNumber(row.values[config.yColumn] ?? '') === null) {
-    return `Y 轴字段 ${config.yColumn} 不是有效数字`;
-  }
+  // if (parseFiniteNumber(row[config.yColumn]) === null) {
+  //   return `Y 轴字段 ${config.yColumn} 不是有效数字`;
+  // }
 
-  for (const column of config.groupColumns) {
-    if (parseFiniteNumber(row.values[column] ?? '') === null) {
-      return `Group 字段 ${column} 不是有效数字`;
-    }
-  }
+  // for (const column of config.groupColumns) {
+  //   if (parseFiniteNumber(row[column]) === null) {
+  //     return `Group 字段 ${column} 不是有效数字`;
+  //   }
+  // }
 
   return null;
 }
@@ -175,20 +190,24 @@ function getDeviceValue(
   row: ParsedCsvRow,
   deviceColumn: string | null,
 ): string {
-  return deviceColumn ? row.values[deviceColumn] : '__all__';
+  return deviceColumn ? row[deviceColumn] ?? '' : '__all__';
 }
 
 function getGroupValues(
   row: ParsedCsvRow,
   groupColumns: string[],
-): number[] {
-  return groupColumns.map((column) => {
-    const value = parseFiniteNumber(row.values[column]);
+): number[] | null {
+  const values: number[] = [];
+
+  for (const column of groupColumns) {
+    const value = parseFiniteNumber(row[column]);
 
     if (value === null) {
-      throw new Error(`Group 字段 ${column} 不是有效数字`);
+      return null;
     }
 
-    return value;
-  });
+    values.push(value);
+  }
+
+  return values;
 }

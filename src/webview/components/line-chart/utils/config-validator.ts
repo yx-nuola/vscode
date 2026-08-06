@@ -1,12 +1,13 @@
 import type { LineChartConfig, ParsedCsvData } from '../types';
-import { findDeviceColumn } from './data-adapter';
+import { findCurrentColumn, findDeviceColumn } from './data-adapter';
 
 export function createDefaultConfig(data: ParsedCsvData): LineChartConfig {
-  const deviceColumn = findDeviceColumn(data.columns);
+  const deviceColumn = findDeviceColumn(data.tableHeader);
+  const currentColumn = findCurrentColumn(data.tableHeader);
 
   return {
     xColumn: null,
-    yColumn: '',
+    yColumn: currentColumn?.rawName ?? '',
     deviceColumn: deviceColumn?.rawName ?? null,
     groupColumns: [],
     drawMode: 'split',
@@ -28,22 +29,18 @@ export function validateChartConfig(
   ];
 
   for (const selection of numericSelections) {
-    const column = data.columns.find(
+    const column = data.tableHeader.find(
       (candidate) => candidate.rawName === selection.name,
     );
 
     if (!column) {
       return `${selection.role}字段 ${selection.name} 不存在`;
     }
-
-    if (column.inferredType === 'string') {
-      return `${selection.role}字段 ${selection.name} 不能转换为数值`;
-    }
   }
 
   if (
     config.deviceColumn &&
-    !data.columns.some((column) => column.rawName === config.deviceColumn)
+    !data.tableHeader.some((column) => column.rawName === config.deviceColumn)
   ) {
     return `大组字段 ${config.deviceColumn} 不存在`;
   }

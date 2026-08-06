@@ -3,19 +3,7 @@ export interface AxisRange {
   max: number;
 }
 
-export function calculateAxisRange(values: number[]): AxisRange | null {
-  let min = Number.POSITIVE_INFINITY;
-  let max = Number.NEGATIVE_INFINITY;
-
-  for (const value of values) {
-    if (!Number.isFinite(value)) {
-      continue;
-    }
-
-    min = Math.min(min, value);
-    max = Math.max(max, value);
-  }
-
+export function buildAxisRange(min: number, max: number): AxisRange | null {
   if (!Number.isFinite(min) || !Number.isFinite(max)) {
     return null;
   }
@@ -30,3 +18,4 @@ export function calculateAxisRange(values: number[]): AxisRange | null {
     max: max + padding,
   };
 }
+

@@ -42,11 +42,11 @@ describe('buildChartGroups', () => {
       [1.7, 3.5],
       [1.7, 4],
     ];
-    const rows = pairs.map(([vwl, vbl], index) =>
-      createRow(index + 2, 'device-1', vwl, vbl),
+    const polylineData = pairs.map(([vwl, vbl]) =>
+      createRow('device-1', vwl, vbl),
     );
 
-    const result = buildChartGroups(rows, config);
+    const result = buildChartGroups(polylineData, config);
 
     expect(result.groups).toHaveLength(1);
     expect(result.groups[0].series.map((series) => series.points.length)).toEqual([
@@ -58,13 +58,13 @@ describe('buildChartGroups', () => {
   });
 
   test('starts a new big group when device-id changes', () => {
-    const rows = [
-      createRow(2, 'device-1', 1.6, 3),
-      createRow(3, 'device-2', 1.6, 3),
-      createRow(4, 'device-1', 1.6, 3),
+    const polylineData = [
+      createRow('device-1', 1.6, 3),
+      createRow('device-2', 1.6, 3),
+      createRow('device-1', 1.6, 3),
     ];
 
-    const result = buildChartGroups(rows, config);
+    const result = buildChartGroups(polylineData, config);
 
     expect(result.groups).toHaveLength(3);
     expect(result.groups.map((group) => group.deviceValue)).toEqual([
@@ -75,31 +75,27 @@ describe('buildChartGroups', () => {
   });
 
   test('keeps a repeated point as the first point in a new group', () => {
-    const rows = [
-      createRow(2, 'device-1', 1.6, 3),
-      createRow(3, 'device-1', 1.6, 3),
+    const polylineData = [
+      createRow('device-1', 1.6, 3),
+      createRow('device-1', 1.6, 3),
     ];
 
-    const result = buildChartGroups(rows, config);
+    const result = buildChartGroups(polylineData, config);
 
     expect(result.groups[0].series).toHaveLength(2);
-    expect(result.groups[0].series[1].points[0].sourceRowIndex).toBe(3);
+    expect(result.groups[0].series[1].points[0][2]).toBe(1);
   });
 });
 
 function createRow(
-  sourceRowIndex: number,
   deviceId: string,
   vwl: number,
   vbl: number,
 ): ParsedCsvRow {
   return {
-    sourceRowIndex,
-    values: {
-      'device-id': deviceId,
-      VWL: String(vwl),
-      VBL: String(vbl),
-      Current: String(vwl + vbl),
-    },
+    'device-id': deviceId,
+    VWL: String(vwl),
+    VBL: String(vbl),
+    Current: String(vwl + vbl),
   };
 }

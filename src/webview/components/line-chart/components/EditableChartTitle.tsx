@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Button, Input, Tooltip } from '@arco-design/web-react';
-import { IconEdit } from '@arco-design/web-react/icon';
 import styles from '../styles.module.scss';
 
 interface EditableChartTitleProps {
@@ -49,15 +48,16 @@ export function EditableChartTitle({
     );
   }
 
+  console.log('EditableChartTitle render', title, draftTitle, editing);
+
   return (
     <Button
       type="text"
       className={styles.chart_title}
-      // icon={<IconEdit />}
       onClick={() => setEditing(true)}
       title="点击修改标题"
     >
-      {title}
+      <Tooltip content={title}>{title}</Tooltip>
     </Button>
   );
 }

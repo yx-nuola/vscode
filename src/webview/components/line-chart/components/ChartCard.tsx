@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { ChartGroupData, CsvColumn } from '../types';
+import type { ChartGroupData, CsvColumn, ParsedCsvRow } from '../types';
 import { useLazyECharts } from '../hooks/useLazyECharts';
 import {
   buildChartOption,
@@ -12,10 +12,11 @@ interface ChartCardProps {
   chartId: string;
   title: string;
   groups: ChartGroupData[];
-  columns: CsvColumn[];
+  tableHeader: CsvColumn[];
   xColumn: string | null;
   yColumn: string;
   isMerged: boolean;
+  polylineData: ParsedCsvRow[];
   onTitleChange: (chartId: string, title: string) => void;
 }
 
@@ -23,10 +24,11 @@ export function ChartCard({
   chartId,
   title,
   groups,
-  columns,
+  tableHeader,
   xColumn,
   yColumn,
   isMerged,
+  polylineData,
   onTitleChange,
 }: ChartCardProps) {
   const displaySeries = useMemo(
@@ -34,8 +36,8 @@ export function ChartCard({
     [groups, isMerged],
   );
   const option = useMemo(
-    () => buildChartOption(displaySeries, columns, xColumn, yColumn),
-    [columns, displaySeries, xColumn, yColumn],
+    () => buildChartOption(displaySeries, tableHeader, xColumn, yColumn, polylineData),
+    [tableHeader, displaySeries, polylineData, xColumn, yColumn],
   );
   const containerRef = useLazyECharts(option);
 

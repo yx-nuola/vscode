@@ -4,6 +4,9 @@ import type { EChartsOption } from 'echarts';
 
 export function useLazyECharts(option: EChartsOption) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<echarts.EChartsType | null>(null);
+  const optionRef = useRef(option);
+  optionRef.current = option;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -12,18 +15,17 @@ export function useLazyECharts(option: EChartsOption) {
       return;
     }
 
-    let chart: echarts.EChartsType | null = null;
     let resizeObserver: ResizeObserver | null = null;
     let intersectionObserver: IntersectionObserver | null = null;
 
     const initializeChart = (): void => {
-      if (chart) {
+      if (chartRef.current) {
         return;
       }
 
-      chart = echarts.init(container);
-      chart.setOption(option, true);
-      resizeObserver = new ResizeObserver(() => chart?.resize());
+      chartRef.current = echarts.init(container);
+      chartRef.current.setOption(optionRef.current, true);
+      resizeObserver = new ResizeObserver(() => chartRef.current?.resize());
       resizeObserver.observe(container);
     };
 
@@ -46,8 +48,13 @@ export function useLazyECharts(option: EChartsOption) {
     return () => {
       intersectionObserver?.disconnect();
       resizeObserver?.disconnect();
-      chart?.dispose();
+      chartRef.current?.dispose();
+      chartRef.current = null;
     };
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.setOption(option, true);
   }, [option]);
 
   return containerRef;

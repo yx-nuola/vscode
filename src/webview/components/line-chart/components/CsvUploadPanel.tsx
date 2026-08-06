@@ -4,14 +4,12 @@ import styles from '../styles.module.scss';
 
 interface CsvUploadPanelProps {
   fileName: string | null;
-  rowCount: number;
   isLoading: boolean;
   onFileSelect: (file: File) => void;
 }
 
 export function CsvUploadPanel({
   fileName,
-  rowCount,
   isLoading,
   onFileSelect,
 }: CsvUploadPanelProps) {
@@ -36,9 +34,6 @@ export function CsvUploadPanel({
           <Typography.Text ellipsis>
             {fileName ?? '尚未选择文件'}
           </Typography.Text>
-          {/* {fileName && (
-            <Typography.Text type="secondary">{rowCount} 行数据</Typography.Text>
-          )} */}
         </div>
       </div>
     </section>

@@ -4,23 +4,28 @@ import type { CsvColumn, DrawMode, LineChartConfig } from '../types';
 import styles from '../styles.module.scss';
 
 interface ChartConfigPanelProps {
-  columns: CsvColumn[];
+  tableHeader: CsvColumn[];
   config: LineChartConfig | null;
   onConfigChange: (config: LineChartConfig) => void;
   onDraw: () => void;
 }
 
 export function ChartConfigPanel({
-  columns,
+  tableHeader,
   config,
   onConfigChange,
   onDraw,
 }: ChartConfigPanelProps) {
+
+  console.log('ChartConfigPanel render',  tableHeader,
+  config,
+  onConfigChange,
+  onDraw,);
   if (!config) {
     return null;
   }
 
-  const allOptions = columns.map((column) => ({
+  const allOptions = tableHeader.map((column) => ({
     label: column.rawName,
     value: column.rawName,
   }));
@@ -64,6 +69,7 @@ export function ChartConfigPanel({
             placeholder="整个文件作为一组"
             value={config.deviceColumn ?? undefined}
             options={allOptions}
+            disabled
             onChange={(value) => {
               updateConfig({ deviceColumn: value ? String(value) : null });
             }}
