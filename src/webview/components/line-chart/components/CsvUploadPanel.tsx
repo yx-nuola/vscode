@@ -17,7 +17,6 @@ export function CsvUploadPanel({
 }: CsvUploadPanelProps) {
   return (
     <section className={styles.upload_panel} aria-label="CSV 文件上传">
-      <div className={styles.section_title}>数据文件</div>
       <div className={styles.upload_content}>
         <Upload
           accept={{ type: '.csv,text/csv', strict: false }}
@@ -37,9 +36,9 @@ export function CsvUploadPanel({
           <Typography.Text ellipsis>
             {fileName ?? '尚未选择文件'}
           </Typography.Text>
-          {fileName && (
+          {/* {fileName && (
             <Typography.Text type="secondary">{rowCount} 行数据</Typography.Text>
-          )}
+          )} */}
         </div>
       </div>
     </section>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Input } from '@arco-design/web-react';
+import { Button, Input, Tooltip } from '@arco-design/web-react';
 import { IconEdit } from '@arco-design/web-react/icon';
 import styles from '../styles.module.scss';
 
@@ -29,6 +29,7 @@ export function EditableChartTitle({
 
   if (editing) {
     return (
+      <Tooltip content={draftTitle}>
       <Input
         autoFocus
         className={styles.chart_title_input}
@@ -44,6 +45,7 @@ export function EditableChartTitle({
         }}
         aria-label="编辑图表标题"
       />
+      </Tooltip>
     );
   }
 
@@ -51,7 +53,7 @@ export function EditableChartTitle({
     <Button
       type="text"
       className={styles.chart_title}
-      icon={<IconEdit />}
+      // icon={<IconEdit />}
       onClick={() => setEditing(true)}
       title="点击修改标题"
     >

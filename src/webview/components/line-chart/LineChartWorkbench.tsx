@@ -69,7 +69,7 @@ export function LineChartWorkbench() {
 
   return (
     <div className={styles.line_chart_workbench}>
-      <header className={styles.header_area}>
+      <div className={styles.header_area}>
         <CsvUploadPanel
           fileName={fileName}
           rowCount={parsedData?.rows.length ?? 0}
@@ -85,7 +85,7 @@ export function LineChartWorkbench() {
           onConfigChange={handleConfigChange}
           onDraw={handleDraw}
         />
-      </header>
+      </div>
 
       <ChartContent
         result={chartResult}

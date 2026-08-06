@@ -64,25 +64,30 @@
   margin-top: 14px;
   padding-top: 14px;
   border-top: 1px solid #f2f3f5;
-}
 
-.config_form {
-  display: grid;
-  width: 100%;
-  grid-template-columns:
-    minmax(150px, 0.85fr)
-    minmax(150px, 0.85fr)
-    minmax(170px, 1fr)
-    minmax(230px, 1.5fr)
-    auto
-    auto;
-  align-items: end;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 2px;
+  :global(.arco-form){
+    display: flex;
+    flex-direction: row;
+  }
 
-  :global(.arco-form-item) {
-    margin-bottom: 0;
+  .config_form {
+    display: grid;
+    width: 100%;
+    grid-template-columns:
+      minmax(150px, 0.85fr)
+      minmax(150px, 0.85fr)
+      minmax(170px, 1fr)
+      minmax(230px, 1.5fr)
+      auto
+      auto;
+    align-items: end;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+
+    :global(.arco-form-item) {
+      margin-bottom: 0;
+    }
   }
 }
 

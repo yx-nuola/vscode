@@ -40,17 +40,17 @@ export function ChartCard({
   const containerRef = useLazyECharts(option);
 
   return (
-    <article className={styles.chart_card}>
-      <header className={styles.chart_card_header}>
+    <div className={styles.chart_card}>
+      <div className={styles.chart_card_header}>
         <EditableChartTitle
           title={title}
           onChange={(nextTitle) => onTitleChange(chartId, nextTitle)}
         />
         <span className={styles.chart_card_meta}>
-          {displaySeries.length} 条曲线
+          {displaySeries.length} 条折线
         </span>
-      </header>
+      </div>
       <div ref={containerRef} className={styles.chart_canvas} />
-    </article>
+    </div>
   );
 }

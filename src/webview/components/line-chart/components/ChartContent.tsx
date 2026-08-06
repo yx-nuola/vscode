@@ -60,10 +60,10 @@ export function ChartContent({
     : styles.chart_grid;
 
   return (
-    <main className={styles.chart_content}>
+    <div className={styles.chart_content}>
       <div className={styles.chart_summary}>
         <span>{result.groups.length} 个大组</span>
-        <span>{totalSeries} 条曲线</span>
+        <span>{totalSeries} 条折线</span>
         <span>{result.validRows} 个有效点</span>
 
         {allErrors.length > 0 && (
@@ -89,7 +89,7 @@ export function ChartContent({
         )}
       </div>
 
-      <section className={gridClassName}>
+      <div className={gridClassName}>
         {config.drawMode === 'merge' ? (
           <ChartCard
             chartId="__merged__"
@@ -100,13 +100,14 @@ export function ChartContent({
             yColumn={config.yColumn}
             isMerged
             onTitleChange={onTitleChange}
+            key={mergedTitle}
           />
         ) : (
           result.groups.map((group) => (
             <ChartCard
-              key={group.id}
               chartId={group.id}
               title={titles[group.id] ?? group.title}
+              key={titles[group.id] ?? group.title}
               groups={[group]}
               columns={columns}
               xColumn={config.xColumn}
@@ -116,7 +117,7 @@ export function ChartContent({
             />
           ))
         )}
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }

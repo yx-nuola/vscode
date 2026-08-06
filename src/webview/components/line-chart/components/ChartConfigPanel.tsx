@@ -29,9 +29,8 @@ export function ChartConfigPanel({
   };
 
   return (
-    <section className={styles.config_panel} aria-label="折线图配置">
-      <div className={styles.section_title}>图表配置</div>
-      <Form className={styles.config_form} layout="vertical">
+    <div className={styles.config_panel} >
+      <Form className={styles.config_form} layout="horizontal">
         <Form.Item label="X 轴" className={styles.config_item}>
           <Select
             value={config.xColumn ?? '__index__'}
@@ -105,6 +104,6 @@ export function ChartConfigPanel({
           </Button>
         </div>
       </Form>
-    </section>
+    </div>
   );
 }
