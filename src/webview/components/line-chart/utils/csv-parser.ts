@@ -6,14 +6,7 @@ import type {
 } from '../types';
 
 export function parseCsv(text: string): ParsedCsvData {
-
-  debugger
-  const normalizedText = text.replace(/^\uFEFF/, '');
-  if (normalizedText === '') {
-    throw new Error('CSV 文件为空');
-  }
-
-  const parsed = Papa.parse<ParsedCsvRow>(normalizedText, {
+  const parsed = Papa.parse<ParsedCsvRow>(text, {
     delimiter: ',',
     header: true,
     dynamicTyping: false,
@@ -24,19 +17,19 @@ export function parseCsv(text: string): ParsedCsvData {
 
   const headers = parsed.meta.fields ?? [];
   if (headers.length === 0) {
-    throw new Error('CSV 缺少表头');
+    throw new Error('CSV missing header');
   }
 
   if (parsed.meta.renamedHeaders) {
-    throw new Error('CSV 存在重复表头');
+    throw new Error('CSV has duplicate headers');
   }
 
   if (!headers.some((header) => normalizeName(header) === 'deviceid')) {
-    throw new Error('CSV 缺少大组字段 DeviceID');
+    throw new Error('CSV missing DeviceID column');
   }
 
   if (parsed.errors.length > 0) {
-    throw new Error(`CSV 解析出错：${parsed.errors[0].message}`);
+    throw new Error(`CSV analysis error: ${parsed.errors[0].message}`);
   }
 
   const polylineData = parsed.data;

@@ -16,7 +16,7 @@ export function shouldStartNewSmallGroup(
   }
 
   if (previousValues.length !== currentValues.length) {
-    throw new Error('Group 比较字段数量不一致');
+    throw new Error('Group comparison fields count mismatch');
   }
 
   const hasDecrease = currentValues.some(
@@ -34,7 +34,7 @@ export function buildChartGroups(
   config: LineChartConfig,
 ): BuildChartResult {
 
-  debugger;
+  // debugger;
   const groups: ChartGroupData[] = [];
   const errors: BuildChartResult['errors'] = [];
   let previousValidRow: ParsedCsvRow | null = null;
@@ -78,7 +78,7 @@ export function buildChartGroups(
     }
 
     if (!currentSeries) {
-      throw new Error('无法创建折线小组');
+      throw new Error('Unable to create line group');
     }
 
     const point = createChartPoint(
@@ -163,7 +163,7 @@ function getRowValidationError(
   config: LineChartConfig,
 ): string | null {
   if (config.deviceColumn && row[config.deviceColumn]?.trim() === '') {
-    return `大组字段 ${config.deviceColumn} 为空`;
+    return `Device column ${config.deviceColumn} is empty`;
   }
 
   // if (

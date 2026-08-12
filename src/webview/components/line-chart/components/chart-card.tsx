@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import type { ChartGroupData, CsvColumn, ParsedCsvRow } from '../types';
-import { useLazyECharts } from '../hooks/useLazyECharts';
+import { useLazyECharts } from '../hooks/use-lazy-echarts';
 import {
   buildChartOption,
   createDisplaySeries,
 } from '../utils/chart-option-builder';
-import { EditableChartTitle } from './EditableChartTitle';
+import { EditableChartTitle } from './edit-chart-title';
 import styles from '../styles.module.scss';
 
 interface ChartCardProps {
@@ -36,8 +36,8 @@ export function ChartCard({
     [groups, isMerged],
   );
   const option = useMemo(
-    () => buildChartOption(displaySeries, tableHeader, xColumn, yColumn, polylineData),
-    [tableHeader, displaySeries, polylineData, xColumn, yColumn],
+    () => buildChartOption(displaySeries, tableHeader, xColumn, yColumn, polylineData, title),
+    [tableHeader, displaySeries, polylineData, xColumn, yColumn, title],
   );
   const containerRef = useLazyECharts(option);
 
@@ -49,7 +49,7 @@ export function ChartCard({
           onChange={(nextTitle) => onTitleChange(chartId, nextTitle)}
         />
         <span className={styles.chart_card_meta}>
-          {displaySeries.length} 条折线
+          {displaySeries.length} lines
         </span>
       </div>
       <div ref={containerRef} className={styles.chart_canvas} />

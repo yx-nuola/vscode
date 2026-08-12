@@ -36,11 +36,11 @@ export function ChartConfigPanel({
   return (
     <div className={styles.config_panel} >
       <Form className={styles.config_form} layout="horizontal">
-        <Form.Item label="X 轴" className={styles.config_item}>
+        <Form.Item label="XAxis" className={styles.config_item}>
           <Select
             value={config.xColumn ?? '__index__'}
             options={[
-              { label: 'Index（自动下标）', value: '__index__' },
+              { label: 'Index', value: '__index__' },
               ...allOptions,
             ]}
             onChange={(value) => {
@@ -51,10 +51,10 @@ export function ChartConfigPanel({
           />
         </Form.Item>
 
-        <Form.Item label="Y 轴" required className={styles.config_item}>
+        <Form.Item label="YAxis" required className={styles.config_item}>
           <Select
             allowClear
-            placeholder="请选择 Y 轴字段"
+            placeholder="Please select Y axis field"
             value={config.yColumn || undefined}
             options={allOptions}
             onChange={(value) => {
@@ -63,10 +63,10 @@ export function ChartConfigPanel({
           />
         </Form.Item>
 
-        <Form.Item label="大组" className={styles.config_item}>
+        <Form.Item label="Device" className={styles.config_item}>
           <Select
             allowClear
-            placeholder="整个文件作为一组"
+            placeholder="Entire file as one group"
             value={config.deviceColumn ?? undefined}
             options={allOptions}
             disabled
@@ -80,7 +80,7 @@ export function ChartConfigPanel({
           <Select
             mode="multiple"
             allowClear
-            placeholder="每个大组一条线"
+            placeholder="Each group as a line"
             value={config.groupColumns}
             options={allOptions}
             onChange={(value) => {
@@ -99,8 +99,8 @@ export function ChartConfigPanel({
               updateConfig({ drawMode: value as DrawMode });
             }}
           >
-            <Radio value="split">分图</Radio>
-            <Radio value="merge">合并</Radio>
+            <Radio value="split">Split</Radio>
+            <Radio value="merge">Merge</Radio>
           </Radio.Group>
         </Form.Item>
 

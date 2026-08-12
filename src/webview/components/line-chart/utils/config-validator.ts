@@ -19,12 +19,12 @@ export function validateChartConfig(
   config: LineChartConfig,
 ): string | null {
   if (!config.yColumn) {
-    return '请选择 Y 轴字段';
+    return 'please select a Y-axis column';
   }
 
   const numericSelections = [
-    ...(config.xColumn ? [{ role: 'X 轴', name: config.xColumn }] : []),
-    { role: 'Y 轴', name: config.yColumn },
+    ...(config.xColumn ? [{ role: 'X Axis', name: config.xColumn }] : []),
+    { role: 'Y Axis', name: config.yColumn },
     ...config.groupColumns.map((name) => ({ role: 'Group', name })),
   ];
 
@@ -34,7 +34,7 @@ export function validateChartConfig(
     );
 
     if (!column) {
-      return `${selection.role}字段 ${selection.name} 不存在`;
+      return `${selection.role} column ${selection.name} does not exist`;
     }
   }
 
@@ -42,7 +42,7 @@ export function validateChartConfig(
     config.deviceColumn &&
     !data.tableHeader.some((column) => column.rawName === config.deviceColumn)
   ) {
-    return `大组字段 ${config.deviceColumn} 不存在`;
+    return `Device column ${config.deviceColumn} does not exist`;
   }
 
   return null;

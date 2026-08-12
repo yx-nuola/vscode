@@ -22,18 +22,24 @@ export function useCsvUpload(): CsvUploadState {
     setFeedback(null);
 
     try {
-      const text = await file.text();
-      const data = parseCsv(text);
+      const text: any = (await file.text()) || '';
+      const normalizedText = text.replace(/^\uFEFF/, '');
+      const cleandText = normalizedText ? normalizedText.replaceAll(/\r\n/g, '\n').replaceAll(/\r/g, '\n').replaceAll(/\t/g, ',') : '';
+      if (cleandText === '') {
+        throw new Error('CSV file is empty');
+      }
+      const data = parseCsv(cleandText);
+      
 
       setFileName(file.name);
       setParsedData(data);
       setFeedback({
         tone: 'success',
-        message: `已解析 ${data.polylineData.length} 行数据，请选择配置后点击 Draw`,
+        message: `Analyzed ${data.polylineData.length} rows of data, please select configuration and click Draw`,
       });
       return data;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'CSV 解析失败';
+      const message = error instanceof Error ? error.message : 'CSV Analysis error';
 
       setFileName(null);
       setParsedData(null);

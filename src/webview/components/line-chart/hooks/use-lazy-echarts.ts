@@ -45,6 +45,8 @@ export function useLazyECharts(option: EChartsOption) {
       intersectionObserver.observe(container);
     }
 
+    console.log('useLazyECharts: chart initialized', resizeObserver , intersectionObserver);
+
     return () => {
       intersectionObserver?.disconnect();
       resizeObserver?.disconnect();

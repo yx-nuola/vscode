@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import { ChartConfigPanel } from './components/ChartConfigPanel';
-import { ChartContent } from './components/ChartContent';
-import { ChartFeedback } from './components/ChartFeedback';
-import { CsvUploadPanel } from './components/CsvUploadPanel';
-import { useCsvUpload } from './hooks/useCsvUpload';
+import { ChartConfigPanel } from './components/chart-config';
+import { ChartContent } from './components/chart-content';
+import { ChartFeedback } from './components/chart-feedback';
+import { CsvUploadPanel } from './components/csv-upload';
+import { useCsvUpload } from './hooks/use-csv-upload';
 import type { BuildChartResult, LineChartConfig } from './types';
 import { createDefaultConfig, validateChartConfig } from './utils/config-validator';
 import { buildChartGroups } from './utils/group-builder';
@@ -54,7 +54,7 @@ export function LineChartWorkbench() {
   const handleDraw = (): void => {
     debugger;
     if (!parsedData || !draftConfig) {
-      setFeedback({ tone: 'warning', message: '请先上传 CSV 文件' });
+      setFeedback({ tone: 'warning', message: 'Please upload a CSV file first' });
       return;
     }
 

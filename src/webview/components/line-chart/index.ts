@@ -1,1 +1,1 @@
-export { LineChartWorkbench } from './LineChartWorkbench';
+export { LineChartWorkbench } from './line-chart';

@@ -42,7 +42,7 @@ export function EditableChartTitle({
             setEditing(false);
           }
         }}
-        aria-label="编辑图表标题"
+        aria-label="Edit Chart Title"
       />
       </Tooltip>
     );
@@ -55,7 +55,7 @@ export function EditableChartTitle({
       type="text"
       className={styles.chart_title}
       onClick={() => setEditing(true)}
-      title="点击修改标题"
+      title="Click to edit title"
     >
       <Tooltip content={title}>{title}</Tooltip>
     </Button>

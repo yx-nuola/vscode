@@ -5,7 +5,7 @@ import type {
   LineChartConfig,
   ParsedCsvRow,
 } from '../types';
-import { ChartCard } from './ChartCard';
+import { ChartCard } from './chart-card';
 import styles from '../styles.module.scss';
 
 interface ChartContentProps {
@@ -36,8 +36,8 @@ export function ChartContent({
         <Empty
           description={
             fileName
-              ? '请选择 X 轴、Y 轴和 Group，点击 Draw 绘制折线图'
-              : '请先上传 CSV 文件'
+              ? 'Please select X axis, Y axis and Group, then click Draw to create the line chart'
+              : 'Please upload a CSV file first'
           }
         />
       </main>
@@ -47,7 +47,7 @@ export function ChartContent({
   if (result.groups.length === 0) {
     return (
       <main className={`${styles.chart_content} ${styles.empty_content}`}>
-        <Empty description="没有可绘制的有效数据" />
+        <Empty description="No valid data to plot" />
       </main>
     );
   }
@@ -56,7 +56,7 @@ export function ChartContent({
     (total, group) => total + group.series.length,
     0,
   );
-  const mergedTitle = titles.__merged__ ?? fileName ?? 'CSV 折线图';
+  const mergedTitle = titles.__merged__ ?? fileName ?? 'CSV Line Chart';
   const gridClassName = config.drawMode === 'merge'
     ? `${styles.chart_grid} ${styles.merged_grid}`
     : styles.chart_grid;
@@ -64,25 +64,25 @@ export function ChartContent({
   return (
     <div className={styles.chart_content}>
       <div className={styles.chart_summary}>
-        <span>{result.groups.length} 个大组</span>
-        <span>{totalSeries} 条折线</span>
-        <span>{result.validRows} 个有效点</span>
+        <span>{result.groups.length} groups</span>
+        <span>{totalSeries} lines</span>
+        <span>{result.validRows} valid points</span>
 
         {result.errors.length > 0 && (
           <div className={styles.issue_panel}>
             <Alert
               type="warning"
-              content={`共发现 ${result.errors.length} 条数据问题，已跳过 ${result.skippedRows} 行无效绘图数据。`}
+              content={`found ${result.errors.length} data issues, skipped ${result.skippedRows} rows of invalid plotting data.`}
             />
             <details>
-              <summary>查看问题明细</summary>
+              <summary>View Issue Details</summary>
               <ul>
                 {result.errors.slice(0, 20).map((error, index) => (
                   <li key={index}>{error.message}</li>
                 ))}
               </ul>
               {result.errors.length > 20 && (
-                <p>仅展示前 20 条，共 {result.errors.length} 条。</p>
+                <p>Only showing the first 20 issues, total {result.errors.length}.</p>
               )}
             </details>
           </div>

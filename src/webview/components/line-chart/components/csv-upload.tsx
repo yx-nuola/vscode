@@ -14,7 +14,7 @@ export function CsvUploadPanel({
   onFileSelect,
 }: CsvUploadPanelProps) {
   return (
-    <section className={styles.upload_panel} aria-label="CSV 文件上传">
+    <section className={styles.upload_panel} aria-label="CSV File Upload">
       <div className={styles.upload_content}>
         <Upload
           accept={{ type: '.csv,text/csv', strict: false }}
@@ -26,13 +26,13 @@ export function CsvUploadPanel({
           }}
         >
           <Button type="primary" icon={<IconFile />} loading={isLoading}>
-            上传 CSV
+            Upload CSV
           </Button>
         </Upload>
 
         <div className={styles.file_meta}>
           <Typography.Text ellipsis>
-            {fileName ?? '尚未选择文件'}
+            {fileName ?? 'No file selected'}
           </Typography.Text>
         </div>
       </div>
