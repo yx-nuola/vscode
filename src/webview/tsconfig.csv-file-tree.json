@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "vite-env.d.ts",
+    "components/csv-file-tree/**/*.ts",
+    "components/csv-file-tree/**/*.tsx"
+  ]
+}
