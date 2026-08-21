@@ -1,12 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  Button,
-  ColorPicker,
-  Input,
-  InputNumber,
-  Modal,
-  Typography,
-} from '@arco-design/web-react';
+import { Button, ColorPicker, Input, InputNumber, Modal, Typography } from '@arco-design/web-react';
 import { IconDelete } from '@arco-design/web-react/icon';
 import {
   createAdditionalColorRule,
@@ -23,12 +16,7 @@ interface ColorRulesModalProps {
   onSave: (rules: ColorRule[]) => void;
 }
 
-export function ColorRulesModal({
-  open,
-  rules,
-  onCancel,
-  onSave,
-}: ColorRulesModalProps) {
+export function ColorRulesModal({ open, rules, onCancel, onSave }: ColorRulesModalProps) {
   const [draftRules, setDraftRules] = useState<ColorRule[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,11 +41,11 @@ export function ColorRulesModal({
   };
 
   const handleAdd = () => {
-    setDraftRules((currentRules:any) => {
+    setDraftRules((currentRules: any) => {
       if (currentRules.length >= MAX_COLOR_RULE_COUNT) {
         return currentRules;
       }
-      console.log(currentRules, );
+      console.log(currentRules);
 
       return [...currentRules, createAdditionalColorRule(currentRules)];
     });
@@ -69,9 +57,7 @@ export function ColorRulesModal({
       return;
     }
 
-    setDraftRules((currentRules) =>
-      currentRules.filter((_, ruleIndex) => ruleIndex !== index)
-    );
+    setDraftRules((currentRules) => currentRules.filter((_, ruleIndex) => ruleIndex !== index));
     setError(null);
   };
 

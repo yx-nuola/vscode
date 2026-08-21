@@ -16,11 +16,7 @@ export function ChartConfigPanel({
   onConfigChange,
   onDraw,
 }: ChartConfigPanelProps) {
-
-  console.log('ChartConfigPanel render',  tableHeader,
-  config,
-  onConfigChange,
-  onDraw,);
+  console.log('ChartConfigPanel render', tableHeader, config, onConfigChange, onDraw);
   if (!config) {
     return null;
   }
@@ -34,15 +30,12 @@ export function ChartConfigPanel({
   };
 
   return (
-    <div className={styles.config_panel} >
+    <div className={styles.config_panel}>
       <Form className={styles.config_form} layout="horizontal">
         <Form.Item label="XAxis" className={styles.config_item}>
           <Select
             value={config.xColumn ?? '__index__'}
-            options={[
-              { label: 'Index', value: '__index__' },
-              ...allOptions,
-            ]}
+            options={[{ label: 'Index', value: '__index__' }, ...allOptions]}
             onChange={(value) => {
               updateConfig({
                 xColumn: value === '__index__' ? null : String(value),

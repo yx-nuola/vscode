@@ -1,9 +1,5 @@
 import * as Papa from 'papaparse';
-import type {
-  CsvColumn,
-  ParsedCsvData,
-  ParsedCsvRow,
-} from '../types';
+import type { CsvColumn, ParsedCsvData, ParsedCsvRow } from '../types';
 
 export function parseCsv(text: string): ParsedCsvData {
   const parsed = Papa.parse<ParsedCsvRow>(text, {
@@ -49,7 +45,6 @@ export function parseFiniteNumber(value: string | undefined): number | null {
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : null;
 }
-
 
 function normalizeName(name: string): string {
   return name.toLowerCase().replace(/[\s_-]/g, '');

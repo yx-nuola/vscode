@@ -27,7 +27,7 @@ const DEFAULT_LAYOUT: CardConfig[] = [
   { id: 'card-1', type: 'echarts', x: 0, y: 0, w: 6, h: 4, minW: 3, minH: 3 },
   { id: 'card-2', type: 'logicflow', x: 6, y: 0, w: 6, h: 4, minW: 3, minH: 3 },
   { id: 'card-3', type: 'canvas', x: 0, y: 4, w: 6, h: 4, minW: 3, minH: 3 },
-  { id: 'card-4', type: 'echarts', x: 6, y: 4, w: 6, h: 4, minW: 3, minH: 3 }
+  { id: 'card-4', type: 'echarts', x: 6, y: 4, w: 6, h: 4, minW: 3, minH: 3 },
 ];
 
 const WorkbenchLayout: React.FC<WorkbenchLayoutProps> = ({
@@ -36,12 +36,20 @@ const WorkbenchLayout: React.FC<WorkbenchLayoutProps> = ({
   visibleCards,
   onLayoutChange,
   onCardClose,
-  onVisibleCardsChange
+  onVisibleCardsChange,
 }) => {
   const [layout, setLayout] = useState<Layout[]>(() => {
     return cards.length > 0
-      ? cards.map(c => ({ i: c.id, x: c.x, y: c.y, w: c.w, h: c.h, minW: c.minW, minH: c.minH }))
-      : DEFAULT_LAYOUT.map(c => ({ i: c.id, x: c.x, y: c.y, w: c.w, h: c.h, minW: c.minW, minH: c.minH }));
+      ? cards.map((c) => ({ i: c.id, x: c.x, y: c.y, w: c.w, h: c.h, minW: c.minW, minH: c.minH }))
+      : DEFAULT_LAYOUT.map((c) => ({
+          i: c.id,
+          x: c.x,
+          y: c.y,
+          w: c.w,
+          h: c.h,
+          minW: c.minW,
+          minH: c.minH,
+        }));
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -59,17 +67,27 @@ const WorkbenchLayout: React.FC<WorkbenchLayoutProps> = ({
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
-  const handleLayoutChange = useCallback((newLayout: Layout[]) => {
-    setLayout(newLayout);
-    onLayoutChange(newLayout);
-  }, [onLayoutChange]);
+  const handleLayoutChange = useCallback(
+    (newLayout: Layout[]) => {
+      setLayout(newLayout);
+      onLayoutChange(newLayout);
+    },
+    [onLayoutChange]
+  );
 
-  const handleClose = useCallback((cardId: string) => {
-    onCardClose(cardId);
-  }, [onCardClose]);
+  const handleClose = useCallback(
+    (cardId: string) => {
+      onCardClose(cardId);
+    },
+    [onCardClose]
+  );
 
   return (
-    <div ref={containerRef} className="workbench-layout" style={{ height: '100%', overflow: 'auto' }}>
+    <div
+      ref={containerRef}
+      className="workbench-layout"
+      style={{ height: '100%', overflow: 'auto' }}
+    >
       <GridLayout
         className="layout"
         layout={layout}
@@ -84,7 +102,8 @@ const WorkbenchLayout: React.FC<WorkbenchLayoutProps> = ({
         margin={[16, 16]}
       >
         {layout.map((item) => {
-          const cardConfig = cards.find(c => c.id === item.i) || DEFAULT_LAYOUT.find(c => c.id === item.i);
+          const cardConfig =
+            cards.find((c) => c.id === item.i) || DEFAULT_LAYOUT.find((c) => c.id === item.i);
           return (
             <div key={item.i} className="grid-item">
               <Card

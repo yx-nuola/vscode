@@ -1,12 +1,34 @@
 import { useState, useEffect, useRef, forwardRef, useMemo, useCallback, memo } from 'react';
 import { onNotification } from '@/utils/messenger';
-import { messages, GlobalNotificationMethod, GlobalNotificationMethodParams, GlobalMethodType } from 'ate-tool-config';
+import {
+  messages,
+  GlobalNotificationMethod,
+  GlobalNotificationMethodParams,
+  GlobalMethodType,
+} from 'ate-tool-config';
 import { setLogLevel, saveLogFile, getIsFirstRender } from '@/services/panel/log-management-panel';
 import { IconExclamationCircle } from '@arco-design/web-react/icon';
 
-import { BaseInput, BaseList, BaseSelect, BaseTooltip, useViewportSize, BaseIconButtonGroup, usePanelIcons } from 'hf-components';
+import {
+  BaseInput,
+  BaseList,
+  BaseSelect,
+  BaseTooltip,
+  useViewportSize,
+  BaseIconButtonGroup,
+  usePanelIcons,
+} from 'hf-components';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
-import { options, showMaxLineCount, matchReg, levelRegex, LogDataEnum, DataFormatEnum, handleClassName, disposeMeasureContext } from './config';
+import {
+  options,
+  showMaxLineCount,
+  matchReg,
+  levelRegex,
+  LogDataEnum,
+  DataFormatEnum,
+  handleClassName,
+  disposeMeasureContext,
+} from './config';
 import { RangeChangedParams } from './type';
 import { logger } from '../utils/logger';
 import { debounce } from 'lodash-es';
@@ -49,10 +71,14 @@ const LogItem = memo(
     return (
       <BaseList.Item className={styles.lineStyle}>
         <span className={`${styles[handleClassName(logLevelKey)]}`}>{logTime}</span>
-        <span className={`${styles.logLevel} ${levelRegex.test(logLevel) ? handleClassName(logLevelKey) : ''}`}>
+        <span
+          className={`${styles.logLevel} ${levelRegex.test(logLevel) ? handleClassName(logLevelKey) : ''}`}
+        >
           {logLevel}
         </span>
-        <span className={`${styles.port} ${levelRegex.test(logServer) ? handleClassName(logLevelKey) : ''}`}>
+        <span
+          className={`${styles.port} ${levelRegex.test(logServer) ? handleClassName(logLevelKey) : ''}`}
+        >
           {logServer}
         </span>
         <span className={styles.logContent} dangerouslySetInnerHTML={{ __html: content }} />
@@ -72,7 +98,9 @@ const renderItemContent = (_: number, item: any) => <LogItem item={item} />;
 // ============================================
 // 优化 2: 处理日志数据的辅助函数(避免重复创建)
 // ============================================
-const processLogEntry = (data: string[] = []): { matchContent: string[]; content: string; data: string[] } => {
+const processLogEntry = (
+  data: string[] = []
+): { matchContent: string[]; content: string; data: string[] } => {
   if (!data || !data[DataFormatEnum.logData]) {
     return {
       matchContent: [],
@@ -83,7 +111,8 @@ const processLogEntry = (data: string[] = []): { matchContent: string[]; content
 
   const matchContent: string[] = data?.[DataFormatEnum.logData].match(matchReg) || [];
   const splitVal = matchContent?.slice(0, 3)?.join('');
-  const _content: string = matchContent.length > 1 ? data[DataFormatEnum.logData].split(splitVal)[1] || '' : '';
+  const _content: string =
+    matchContent.length > 1 ? data[DataFormatEnum.logData].split(splitVal)[1] || '' : '';
   const content = _content.replace(/\n/g, '<br />');
 
   return {
@@ -210,44 +239,44 @@ const LogMonitoring = () => {
               });
             }
           });
-    } else {
-      // ===== 非锁定模式: 基于索引偏移保持可视区内容不变 =====
-      if (freeScrollStateRef.current) {
-        const { startIndex: oldStartIndex } = freeScrollStateRef.current;
-        const addedCount = addedCountRef.current;
+        } else {
+          // ===== 非锁定模式: 基于索引偏移保持可视区内容不变 =====
+          if (freeScrollStateRef.current) {
+            const { startIndex: oldStartIndex } = freeScrollStateRef.current;
+            const addedCount = addedCountRef.current;
 
-        if (addedCount > 0) {
-          // 计算删除了多少条（超出限制时）
-          // 如果数据总数超过最大限制，则删除数量等于新增数量
-          const deletedCount = currentLogData.length >= showMaxLineCount ? addedCount : 0;
+            if (addedCount > 0) {
+              // 计算删除了多少条（超出限制时）
+              // 如果数据总数超过最大限制，则删除数量等于新增数量
+              const deletedCount = currentLogData.length >= showMaxLineCount ? addedCount : 0;
 
-          // 计算新的起始索引
-          const newStartIndex = Math.max(0, oldStartIndex - deletedCount);
+              // 计算新的起始索引
+              const newStartIndex = Math.max(0, oldStartIndex - deletedCount);
 
-          // 滚动到新的位置，保持可视区内容不变
-          if (newStartIndex < currentLogData.length) {
-            rafIdRef.current = requestAnimationFrame(() => {
-              rafIdRef.current = null;
-              if (logContainerRef.current) {
-                logContainerRef.current.scrollToIndex({
-                  index: newStartIndex,
-                  align: 'start',
-                  behavior: 'auto',
+              // 滚动到新的位置，保持可视区内容不变
+              if (newStartIndex < currentLogData.length) {
+                rafIdRef.current = requestAnimationFrame(() => {
+                  rafIdRef.current = null;
+                  if (logContainerRef.current) {
+                    logContainerRef.current.scrollToIndex({
+                      index: newStartIndex,
+                      align: 'start',
+                      behavior: 'auto',
+                    });
+                  }
                 });
               }
-            });
+
+              // 更新记录的状态
+              freeScrollStateRef.current = {
+                startIndex: newStartIndex,
+              };
+            }
+
+            // 重置新增计数
+            addedCountRef.current = 0;
           }
-
-          // 更新记录的状态
-          freeScrollStateRef.current = {
-            startIndex: newStartIndex,
-          };
         }
-
-        // 重置新增计数
-        addedCountRef.current = 0;
-      }
-    }
       }, 100),
     []
   );
@@ -363,22 +392,19 @@ const LogMonitoring = () => {
     }
   }, [isLocked, logData]);
 
-  const handleRangeChanged = useCallback(
-    (range: RangeChangedParams) => {
-      if (isRestoringScrollRef.current) return;
+  const handleRangeChanged = useCallback((range: RangeChangedParams) => {
+    if (isRestoringScrollRef.current) return;
 
-      const { startIndex, endIndex } = range;
-      rangeRef.current = { startIndex, endIndex };
+    const { startIndex, endIndex } = range;
+    rangeRef.current = { startIndex, endIndex };
 
-      // 在自由浏览模式下，记录当前可视区域状态
-      if (!isLockedRef.current && startIndex !== -1) {
-        freeScrollStateRef.current = {
-          startIndex,
-        };
-      }
-    },
-    []
-  );
+    // 在自由浏览模式下，记录当前可视区域状态
+    if (!isLockedRef.current && startIndex !== -1) {
+      freeScrollStateRef.current = {
+        startIndex,
+      };
+    }
+  }, []);
 
   const debouncedHandleEnter = useMemo(
     () =>
@@ -452,11 +478,11 @@ const LogMonitoring = () => {
             className={styles.selectStyle}
             allowClear
           >
-          {options.map((option: string) => (
-            <Option key={option} value={option}>
-              {option}
-            </Option>
-          ))}
+            {options.map((option: string) => (
+              <Option key={option} value={option}>
+                {option}
+              </Option>
+            ))}
           </BaseSelect>
         </div>
         <span className={styles.prompt}>

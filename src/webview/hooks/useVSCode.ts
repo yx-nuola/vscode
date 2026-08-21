@@ -34,7 +34,9 @@ export function useVSCode() {
   const vscode = getVSCodeApi();
 
   const send = (command: string, payload?: unknown): void => {
-    if (!vscode) return;
+    if (!vscode) {
+      return;
+    }
     const requestId = crypto.randomUUID();
     vscode.postMessage({ command, requestId, payload });
   };

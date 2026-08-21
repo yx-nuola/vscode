@@ -6,9 +6,7 @@ import { Notifications, Requests } from '../../shared/messages';
 declare const acquireVsCodeApi: (() => VsCodeApi) | undefined;
 
 const hasVsCodeApi = typeof acquireVsCodeApi === 'function';
-const vscodeApi = hasVsCodeApi
-  ? acquireVsCodeApi()
-  : createBrowserPreviewApi();
+const vscodeApi = hasVsCodeApi ? acquireVsCodeApi() : createBrowserPreviewApi();
 
 export const webviewMessenger = new Messenger(vscodeApi);
 
@@ -32,7 +30,12 @@ export function notifyRouteChanged(path: string): void {
 export async function requestData() {
   if (!hasVsCodeApi) {
     return [
-      { id: 'preview-1', name: 'Local preview', status: 'active', createdAt: new Date().toISOString() },
+      {
+        id: 'preview-1',
+        name: 'Local preview',
+        status: 'active',
+        createdAt: new Date().toISOString(),
+      },
     ];
   }
 

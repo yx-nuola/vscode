@@ -9,13 +9,7 @@ const BASE_COLORS = [
   '#3491fa',
 ];
 
-export const SERIES_SYMBOLS = [
-  'circle',
-  'rect',
-  'triangle',
-  'diamond',
-  'roundRect',
-] as const;
+export const SERIES_SYMBOLS = ['circle', 'rect', 'triangle', 'diamond', 'roundRect'] as const;
 
 export const SERIES_LINE_TYPES = ['solid', 'dashed', 'dotted'] as const;
 

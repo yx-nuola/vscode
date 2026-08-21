@@ -1,4 +1,3 @@
-
 /**
  * 单个格子数据
  */
@@ -216,13 +215,13 @@ export interface BitmapEvents {
   /** 格子悬停事件 */
   'cell:hover': CellData | null;
   /** 定位事件 */
-  'locate': { col: number; row: number };
+  locate: { col: number; row: number };
   /** 高亮事件 */
   // 'highlight': { col: number; row: number } | null;
   /** 清除高亮事件 */
   // 'clear-highlight': void;
   /** 重置事件 */
-  'reset': void;
+  reset: void;
   /** 数据变化事件 */
   'data:change': MatrixData;
   'layout:change': void;
@@ -230,19 +229,18 @@ export interface BitmapEvents {
   'color-rules:change': void;
 }
 
-
 /**
  * 数据导入模式
  */
 export type ImportMode = 'overwrite' | 'append';
 
 export interface CellType {
-  bl: number;      // 位线（行）
-  wl: number;      // 字线（列）
-  vset: string | number;    // 设置电压
-  vreset: string | number;  // 复位电压
-  imeas: string | number;   // 测量电流
-  status: string;  // 状态（pass/fail）
+  bl: number; // 位线（行）
+  wl: number; // 字线（列）
+  vset: string | number; // 设置电压
+  vreset: string | number; // 复位电压
+  imeas: string | number; // 测量电流
+  status: string; // 状态（pass/fail）
 }
 /**
  * RRAM 测试数据原始格式

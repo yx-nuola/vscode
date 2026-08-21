@@ -1,17 +1,13 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
-import { Button, } from '@arco-design/web-react';
+import { Button } from '@arco-design/web-react';
 import { IconFullscreenExit, IconPlusCircle, IconMinusCircle } from '@arco-design/web-react/icon';
 import { BitmapGrid, BitmapGridRef, BitmapGridProps } from './bitmap-grid';
-import {  VirtualTable } from './virtual-table';
+import { VirtualTable } from './virtual-table';
 import type { ScrollToRowRequest } from './virtual-table/types';
 import type { CellData } from '../types';
-import {
-  BITMAP_WIDTH,
-  DEFAULT_COLS,
-  DEFAULT_ROWS,
-} from '../constants';
+import { BITMAP_WIDTH, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
 
-const { Group: ButtonGroup } = Button
+const { Group: ButtonGroup } = Button;
 export interface BitmapTableLayoutProps extends Omit<BitmapGridProps, 'style'> {
   /** 表格行点击回调 */
   onTableRowClick?: (row: number, cell: CellData) => void;
@@ -38,8 +34,8 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
     config.layout.spacing +
     config.layout.scrollbarSize;
 
-    console.log('bitmapWidth', config,BITMAP_WIDTH, bitmapWidth);  
-  const axisW =  dataCols <= DEFAULT_COLS;
+  console.log('bitmapWidth', config, BITMAP_WIDTH, bitmapWidth);
+  const axisW = dataCols <= DEFAULT_COLS;
   const axisH = dataRows <= DEFAULT_ROWS;
 
   useEffect(() => {
@@ -113,10 +109,19 @@ export function BitmapLayout(props: BitmapTableLayoutProps) {
           }}
         >
           <ButtonGroup>
-            <Button  onClick={() => bitmapRef.current?.zoomIn()}icon={<IconPlusCircle  style={{ fontSize: '16px' }}/>} />
-            <Button  onClick={() => bitmapRef.current?.zoomOut()}icon={<IconMinusCircle   style={{ fontSize: '16px' }}/>} />
-          <Button  onClick={() => bitmapRef.current?.resetZoom()}icon={<IconFullscreenExit  style={{ fontSize: '16px' }}/>} />
-        </ButtonGroup>
+            <Button
+              onClick={() => bitmapRef.current?.zoomIn()}
+              icon={<IconPlusCircle style={{ fontSize: '16px' }} />}
+            />
+            <Button
+              onClick={() => bitmapRef.current?.zoomOut()}
+              icon={<IconMinusCircle style={{ fontSize: '16px' }} />}
+            />
+            <Button
+              onClick={() => bitmapRef.current?.resetZoom()}
+              icon={<IconFullscreenExit style={{ fontSize: '16px' }} />}
+            />
+          </ButtonGroup>
         </div>
         <div
           style={{

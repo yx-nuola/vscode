@@ -5,9 +5,12 @@
 import Konva from 'konva';
 import type { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
 import type { LayoutResult } from '../../types';
-import { HorizontalAxisDraw, VerticalAxisDraw, HorizontalScrollbarDraw, VerticalScrollbarDraw } from '../draws';
-
-
+import {
+  HorizontalAxisDraw,
+  VerticalAxisDraw,
+  HorizontalScrollbarDraw,
+  VerticalScrollbarDraw,
+} from '../draws';
 
 const { Layer } = Konva;
 type LayerType = InstanceType<typeof Layer>;
@@ -96,7 +99,10 @@ export class AxisLayer {
     const layout = this.getLayout();
     this.updatePositions(layout);
     // 格子显示的范围
-    const visibleRange = virtualScrollSync.getVisibleRange(scrollState.scrollX, scrollState.scrollY);
+    const visibleRange = virtualScrollSync.getVisibleRange(
+      scrollState.scrollX,
+      scrollState.scrollY
+    );
     const axisState = {
       cellSize: virtualScrollSync.currentCellSize,
       scrollX: scrollState.scrollX,
@@ -159,7 +165,10 @@ export class AxisLayer {
   private updatePositions(layout: LayoutResult): void {
     this.horizontalAxisDraw.setPosition(layout.xAxis.x, layout.xAxis.y);
     this.verticalAxisDraw.setPosition(layout.yAxis.x, layout.yAxis.y);
-    this.horizontalScrollbarDraw.setPosition(layout.horizontalScrollbar.x, layout.horizontalScrollbar.y);
+    this.horizontalScrollbarDraw.setPosition(
+      layout.horizontalScrollbar.x,
+      layout.horizontalScrollbar.y
+    );
     this.verticalScrollbarDraw.setPosition(layout.verticalScrollbar.x, layout.verticalScrollbar.y);
   }
 

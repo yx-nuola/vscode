@@ -1,7 +1,7 @@
 {
   "name": "my-extension",
   "displayName": "my-extension",
-  "description": "A simple validation helper extension for VS Code.",
+  "description": "RRAM 数据可视化 VS Code 插件",
   "version": "0.0.1",
   "publisher": "local",
   "engines": {
@@ -29,14 +29,6 @@
       {
         "command": "my-extension.openBitmapEditor",
         "title": "Open RRAM Bitmap Editor"
-      },
-      {
-        "command": "my-extension.openElectronWorkbench",
-        "title": "打开 Electron 工作台"
-      },
-      {
-        "command": "my-extension.closeElectronWorkbench",
-        "title": "关闭 Electron 工作台"
       }
     ],
     "viewsContainers": {
@@ -58,48 +50,36 @@
         }
       ]
     },
-    "menus": {
-      "editor/title": [
-        {
-          "command": "my-extension.openElectronWorkbench",
-          "when": "editorTextFocus",
-          "group": "navigation"
-        }
-      ],
-      "view/title": [
-        {
-          "command": "my-extension.openElectronWorkbench",
-          "when": "view == my-extension.dataPanel",
-          "group": "navigation"
-        }
-      ]
-    }
+    "menus": {}
   },
   "scripts": {
-    "vscode:prepublish": "npm run package",
-    "compile": "npm run check-types && npm run lint && node esbuild.js",
-    "watch": "npm-run-all -p watch:*",
+    "vscode:prepublish": "npm run build:prod",
+    "dev": "npm-run-all -p watch:esbuild watch:tsc watch:webview",
+    "dev:f5": "npm run build:webview && npm-run-all -p watch:esbuild watch:tsc watch:webview",
+    "watch": "npm-run-all -p watch:esbuild watch:tsc",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "watch:webview": "vite build --config src/webview/vite.config.mts --watch",
+    "build": "npm run build:extension && npm run build:webview",
+    "build:prod": "npm run build:extension && npm run build:webview",
+    "build:extension": "npm run check-types && npm run lint && node esbuild.js --production",
+    "build:webview": "vite build --config src/webview/vite.config.mts",
+    "package:vsix": "vsce package --no-dependencies --allow-missing-repository",
+    "package:vsix:install": "npm run package:vsix && code --install-extension my-extension-0.0.1.vsix",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "package": "npm run build:extension",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "pretest": "npm run validate && npm run compile-tests && npm run compile",
+    "validate": "npm run validate:json && npm run format:check && npm run check-types && npm run lint",
+    "validate:json": "node scripts/validate-formats.mjs",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,mjs,css,scss,json}\" \"scripts/**/*.mjs\" \"*.{json,js,mjs}\" \".vscode/**/*.json\" \"esbuild.js\" \"eslint.config.mjs\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,mjs,css,scss,json}\" \"scripts/**/*.mjs\" \"*.{json,js,mjs}\" \".vscode/**/*.json\" \"esbuild.js\" \"eslint.config.mjs\"",
     "check-types": "tsc --noEmit && npm run check-types:bitmap && npm run check-types:line-chart",
     "check-types:bitmap": "tsc --noEmit -p src/webview/tsconfig.bitmap.json",
     "check-types:line-chart": "tsc --noEmit -p src/webview/tsconfig.line-chart.json",
     "lint": "eslint src",
-    "test": "vscode-test",
-    "build:webview": "vite build --config src/webview/vite.config.mts",
-    "dev:webview": "vite --config src/webview/vite.config.mts",
-    "build:electron": "tsc -p src/electron/tsconfig.json",
-    "build:electron:renderer": "vite build --config src/electron/renderer/vite.config.mts",
-    "build:electron:all": "npm run build:electron && npm run build:electron:renderer",
-    "dev:electron:renderer": "vite --config src/electron/renderer/vite.config.mts",
-    "dev:electron:main": "tsc -p src/electron/tsconfig.json --watch",
-    "dev:electron": "npm-run-all -p dev:electron:*",
-    "start:electron:dev": "npm run build:electron && npm-run-all -p dev:electron:renderer dev:electron:main -s electron",
-    "start:electron:prod": "npm run build:electron:all && electron ."
+    "test": "vscode-test"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -111,11 +91,12 @@
     "@vitejs/plugin-react": "^5.1.4",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
-    "electron": "^33.4.11",
+    "@vscode/vsce": "^3.7.1",
     "esbuild": "^0.27.1",
     "eslint": "^9.39.1",
     "jsdom": "^28.1.0",
     "npm-run-all": "^4.1.5",
+    "prettier": "^3.9.6",
     "sass": "^1.102.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.1",
@@ -127,14 +108,12 @@
     "@visactor/vtable": "^1.26.0",
     "ahooks": "^3.9.7",
     "echarts": "^5.5.1",
-    "electron-store": "^10.0.0",
     "konva": "^10.2.5",
     "lru-cache": "^11.0.0",
     "mitt": "^3.0.1",
     "papaparse": "^5.5.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-grid-layout": "^1.5.0",
     "react-router-dom": "^7.15.1",
     "vscode-messenger": "^0.6.1",
     "vscode-messenger-common": "^0.6.1",

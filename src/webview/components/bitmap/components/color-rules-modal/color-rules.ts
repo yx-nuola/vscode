@@ -3,15 +3,7 @@ import type { ColorRule } from '../../types';
 export const DEFAULT_COLOR_RULE_COUNT = 3;
 export const MAX_COLOR_RULE_COUNT = 10;
 
-const COLOR_PALETTE = [
-  '#1890ff',
-  '#722ed1',
-  '#13c2c2',
-  '#eb2f96',
-  '#faad14',
-  '#52c41a',
-  '#f5222d',
-];
+const COLOR_PALETTE = ['#1890ff', '#722ed1', '#13c2c2', '#eb2f96', '#faad14', '#52c41a', '#f5222d'];
 
 export function createAdditionalColorRule(rules: ColorRule[]) {
   // const previousMax = rules.at(-1)?.max ?? 0;

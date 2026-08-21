@@ -4,12 +4,7 @@
 
 import type { LayoutConfig, LayoutResult, Area } from '../types';
 
-import {
-  BITMAP_HEIGHT,
-  BITMAP_WIDTH,
-  DEFAULT_COLS,
-  DEFAULT_ROWS,
-} from '../constants';
+import { BITMAP_HEIGHT, BITMAP_WIDTH, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
 
 const LAYOUT_EPSILON = 0.5;
 
@@ -29,10 +24,7 @@ export class LayoutCalculator {
    */
   calculate(containerWidth: number, containerHeight: number): LayoutResult {
     const { axisSize, scrollbarSize, spacing } = this.config;
-    const availableCellWidth = Math.max(
-      0,
-      containerWidth - axisSize - spacing * 2 - scrollbarSize
-    );
+    const availableCellWidth = Math.max(0, containerWidth - axisSize - spacing * 2 - scrollbarSize);
     const availableCellHeight = Math.max(
       0,
       containerHeight - axisSize - spacing * 2 - scrollbarSize
@@ -44,7 +36,6 @@ export class LayoutCalculator {
     const cellHeight = useIdealViewport
       ? this.getIdealViewportSize(availableCellHeight, BITMAP_HEIGHT)
       : availableCellHeight;
-
 
     // 小数据以 896x896 为理想视口，大数据使用容器中的全部可用空间。
     const cellArea: Area = {
@@ -115,10 +106,7 @@ export class LayoutCalculator {
     return { ...this.config };
   }
 
-  private getIdealViewportSize(
-    availableSize: number,
-    idealSize: number
-  ): number {
+  private getIdealViewportSize(availableSize: number, idealSize: number): number {
     if (availableSize >= idealSize - LAYOUT_EPSILON) {
       return idealSize;
     }

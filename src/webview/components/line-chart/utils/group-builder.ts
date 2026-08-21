@@ -9,7 +9,7 @@ import { parseFiniteNumber } from './csv-parser';
 
 export function shouldStartNewSmallGroup(
   previousValues: number[] | null,
-  currentValues: number[] | null,
+  currentValues: number[] | null
 ): boolean {
   if (previousValues === null || currentValues === null) {
     return false;
@@ -19,21 +19,16 @@ export function shouldStartNewSmallGroup(
     throw new Error('Group comparison fields count mismatch');
   }
 
-  const hasDecrease = currentValues.some(
-    (value, index) => value < previousValues[index],
-  );
-  const isExactRepeat = currentValues.every(
-    (value, index) => value === previousValues[index],
-  );
+  const hasDecrease = currentValues.some((value, index) => value < previousValues[index]);
+  const isExactRepeat = currentValues.every((value, index) => value === previousValues[index]);
 
   return hasDecrease || isExactRepeat;
 }
 
 export function buildChartGroups(
   polylineData: ParsedCsvRow[],
-  config: LineChartConfig,
+  config: LineChartConfig
 ): BuildChartResult {
-
   // debugger;
   const groups: ChartGroupData[] = [];
   const errors: BuildChartResult['errors'] = [];
@@ -56,8 +51,7 @@ export function buildChartGroups(
     const previousDeviceValue = previousValidRow
       ? getDeviceValue(previousValidRow, config.deviceColumn)
       : null;
-    const isNewBigGroup =
-      !previousValidRow || deviceValue !== previousDeviceValue;
+    const isNewBigGroup = !previousValidRow || deviceValue !== previousDeviceValue;
 
     if (isNewBigGroup) {
       currentBigGroup = createBigGroup(groups.length + 1, deviceValue, config);
@@ -81,12 +75,7 @@ export function buildChartGroups(
       throw new Error('Unable to create line group');
     }
 
-    const point = createChartPoint(
-      row,
-      config,
-      currentSeries.points.length,
-      rowIndex,
-    );
+    const point = createChartPoint(row, config, currentSeries.points.length, rowIndex);
     if (point === null) {
       previousValidRow = row;
       continue;
@@ -108,11 +97,9 @@ export function buildChartGroups(
 function createBigGroup(
   bigGroupIndex: number,
   deviceValue: string,
-  config: LineChartConfig,
+  config: LineChartConfig
 ): ChartGroupData {
-  const title = config.deviceColumn
-    ? `${config.deviceColumn}=${deviceValue}`
-    : '全部数据';
+  const title = config.deviceColumn ? deviceValue : '全部数据';
 
   return {
     id: `big-group-${bigGroupIndex}-${encodeURIComponent(deviceValue)}`,
@@ -140,28 +127,19 @@ function createChartPoint(
   row: ParsedCsvRow,
   config: LineChartConfig,
   localIndex: number,
-  rowIndex: number,
+  rowIndex: number
 ): [number, number, number] | null {
   const y = parseFiniteNumber(row[config.yColumn]);
-  const x = config.xColumn
-    ? parseFiniteNumber(row[config.xColumn])
-    : localIndex;
+  const x = config.xColumn ? parseFiniteNumber(row[config.xColumn]) : localIndex;
 
   if (x === null || y === null) {
     return null;
   }
 
-  return [
-    x,
-    y,
-    rowIndex,
-  ];
+  return [x, y, rowIndex];
 }
 
-function getRowValidationError(
-  row: ParsedCsvRow,
-  config: LineChartConfig,
-): string | null {
+function getRowValidationError(row: ParsedCsvRow, config: LineChartConfig): string | null {
   if (config.deviceColumn && row[config.deviceColumn]?.trim() === '') {
     return `Device column ${config.deviceColumn} is empty`;
   }
@@ -186,17 +164,11 @@ function getRowValidationError(
   return null;
 }
 
-function getDeviceValue(
-  row: ParsedCsvRow,
-  deviceColumn: string | null,
-): string {
-  return deviceColumn ? row[deviceColumn] ?? '' : '__all__';
+function getDeviceValue(row: ParsedCsvRow, deviceColumn: string | null): string {
+  return deviceColumn ? (row[deviceColumn] ?? '') : '__all__';
 }
 
-function getGroupValues(
-  row: ParsedCsvRow,
-  groupColumns: string[],
-): number[] | null {
+function getGroupValues(row: ParsedCsvRow, groupColumns: string[]): number[] | null {
   const values: number[] = [];
 
   for (const column of groupColumns) {

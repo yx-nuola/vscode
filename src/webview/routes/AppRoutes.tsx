@@ -3,6 +3,7 @@ import { WebviewRoutes } from '../../shared/messages';
 import { BitmapPage } from '../pages/BitmapPage';
 import { HomePage } from '../pages/HomePage';
 import { LineChartPage } from '../pages/LineChartPage';
+import { FileTreeWorkbench } from '../pages/FileTree';
 
 export function AppRoutes() {
   return (
@@ -10,6 +11,7 @@ export function AppRoutes() {
       <Route path={WebviewRoutes.home} element={<HomePage />} />
       <Route path={WebviewRoutes.bitmap} element={<BitmapPage />} />
       <Route path={WebviewRoutes.lineChart} element={<LineChartPage />} />
+      <Route path={WebviewRoutes.fileTree} element={<FileTreeWorkbench />} />
       <Route path="*" element={<Navigate to={WebviewRoutes.bitmap} replace />} />
     </Routes>
   );

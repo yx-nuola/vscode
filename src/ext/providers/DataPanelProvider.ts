@@ -17,9 +17,7 @@ export class DataPanelProvider implements vscode.WebviewViewProvider {
   resolveWebviewView(webviewView: vscode.WebviewView): void {
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [
-        vscode.Uri.joinPath(this.extensionUri, 'dist-webview'),
-      ],
+      localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'dist-webview')],
     };
 
     webviewView.webview.html = getWebviewHtml({

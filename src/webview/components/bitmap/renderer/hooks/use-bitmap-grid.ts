@@ -4,7 +4,14 @@
 
 import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import { BitmapGridEngine } from '../../utils/bitmap-gridEngine';
-import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData } from '../../types';
+import type {
+  BitmapGridConfig,
+  MatrixData,
+  ColorRule,
+  BitmapTheme,
+  ScrollState,
+  CellData,
+} from '../../types';
 
 export interface UseBitmapGridParams {
   /** 容器 ID */
@@ -51,11 +58,14 @@ export function useBitmapGrid(params: UseBitmapGridParams): UseBitmapGridReturn 
   const engineRef = useRef<BitmapGridEngine | null>(null);
   const [engine, setEngine] = useState<BitmapGridEngine | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const resolvedConfig = useMemo<BitmapGridConfig>(() => ({
-    ...config,
-    theme: theme ?? config.theme,
-    colorRules: colorRules ?? config.colorRules,
-  }), [config, theme, colorRules]);
+  const resolvedConfig = useMemo<BitmapGridConfig>(
+    () => ({
+      ...config,
+      theme: theme ?? config.theme,
+      colorRules: colorRules ?? config.colorRules,
+    }),
+    [config, theme, colorRules]
+  );
 
   // 初始化引擎
   useEffect(() => {

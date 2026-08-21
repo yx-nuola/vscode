@@ -24,12 +24,13 @@ export function useCsvUpload(): CsvUploadState {
     try {
       const text: any = (await file.text()) || '';
       const normalizedText = text.replace(/^\uFEFF/, '');
-      const cleandText = normalizedText ? normalizedText.replaceAll(/\r\n/g, '\n').replaceAll(/\r/g, '\n').replaceAll(/\t/g, ',') : '';
+      const cleandText = normalizedText
+        ? normalizedText.replaceAll(/\r\n/g, '\n').replaceAll(/\r/g, '\n').replaceAll(/\t/g, ',')
+        : '';
       if (cleandText === '') {
         throw new Error('CSV file is empty');
       }
       const data = parseCsv(cleandText);
-      
 
       setFileName(file.name);
       setParsedData(data);

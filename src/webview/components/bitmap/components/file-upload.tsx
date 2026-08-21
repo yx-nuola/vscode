@@ -4,7 +4,7 @@
  */
 
 import React, { useRef, useCallback } from 'react';
-import { DataParser} from '../utils/data-parser';
+import { DataParser } from '../utils/data-parser';
 import { MatrixData, ImportMode } from '../types';
 
 /**
@@ -119,9 +119,7 @@ export function FileUpload({
       />
 
       {/* 错误提示 */}
-      {error && (
-        <span style={{ color: 'red', fontSize: '12px' }}>{error}</span>
-      )}
+      {error && <span style={{ color: 'red', fontSize: '12px' }}>{error}</span>}
     </div>
   );
 }

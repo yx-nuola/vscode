@@ -65,7 +65,7 @@
   // padding-top: 14px;
   // border-top: 1px solid #f2f3f5;
 
-  :global(.arco-form){
+  :global(.arco-form) {
     display: flex;
     flex-direction: row;
   }
@@ -230,6 +230,23 @@
   gap: 12px;
   padding: 0 16px;
   border-bottom: 1px solid #f2f3f5;
+}
+
+.chart_card_titles {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart_title_display {
+  min-width: 0;
+  overflow: hidden;
+  color: #86909c;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chart_card_meta {

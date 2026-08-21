@@ -83,20 +83,17 @@ export class VirtualScrollSync {
   /**
    * 计算滚动条滑块位置和尺寸
    */
-  getScrollbarState(scrollX: number, scrollY: number, trackWidth: number, trackHeight: number): ScrollbarState {
+  getScrollbarState(
+    scrollX: number,
+    scrollY: number,
+    trackWidth: number,
+    trackHeight: number
+  ): ScrollbarState {
     const totalWidth = this.totalCols * this.cellSize;
     const totalHeight = this.totalRows * this.cellSize;
 
-    const sliderWidth = this.getSliderSize(
-      this.viewportWidth,
-      totalWidth,
-      trackWidth
-    );
-    const sliderHeight = this.getSliderSize(
-      this.viewportHeight,
-      totalHeight,
-      trackHeight
-    );
+    const sliderWidth = this.getSliderSize(this.viewportWidth, totalWidth, trackWidth);
+    const sliderHeight = this.getSliderSize(this.viewportHeight, totalHeight, trackHeight);
 
     const maxSliderX = trackWidth - sliderWidth;
     const maxSliderY = trackHeight - sliderHeight;
@@ -120,20 +117,17 @@ export class VirtualScrollSync {
   /**
    * 从滑块位置反算滚动偏移
    */
-  getScrollFromSlider(sliderX: number, sliderY: number, trackWidth: number, trackHeight: number): ScrollState {
+  getScrollFromSlider(
+    sliderX: number,
+    sliderY: number,
+    trackWidth: number,
+    trackHeight: number
+  ): ScrollState {
     const totalWidth = this.totalCols * this.cellSize;
     const totalHeight = this.totalRows * this.cellSize;
 
-    const sliderWidth = this.getSliderSize(
-      this.viewportWidth,
-      totalWidth,
-      trackWidth
-    );
-    const sliderHeight = this.getSliderSize(
-      this.viewportHeight,
-      totalHeight,
-      trackHeight
-    );
+    const sliderWidth = this.getSliderSize(this.viewportWidth, totalWidth, trackWidth);
+    const sliderHeight = this.getSliderSize(this.viewportHeight, totalHeight, trackHeight);
 
     // 计算滑块最大可移动范围
     const maxSliderX = trackWidth - sliderWidth;
@@ -158,11 +152,7 @@ export class VirtualScrollSync {
 
   getScrollXFromSlider(sliderX: number, trackWidth: number): number {
     const totalWidth = this.totalCols * this.cellSize;
-    const sliderWidth = this.getSliderSize(
-      this.viewportWidth,
-      totalWidth,
-      trackWidth
-    );
+    const sliderWidth = this.getSliderSize(this.viewportWidth, totalWidth, trackWidth);
     const maxSliderX = trackWidth - sliderWidth;
 
     if (this.fitsViewport(totalWidth, this.viewportWidth) || maxSliderX <= 0) {
@@ -177,11 +167,7 @@ export class VirtualScrollSync {
 
   getScrollYFromSlider(sliderY: number, trackHeight: number): number {
     const totalHeight = this.totalRows * this.cellSize;
-    const sliderHeight = this.getSliderSize(
-      this.viewportHeight,
-      totalHeight,
-      trackHeight
-    );
+    const sliderHeight = this.getSliderSize(this.viewportHeight, totalHeight, trackHeight);
     const maxSliderY = trackHeight - sliderHeight;
 
     if (this.fitsViewport(totalHeight, this.viewportHeight) || maxSliderY <= 0) {
@@ -244,11 +230,7 @@ export class VirtualScrollSync {
     return this.totalRows;
   }
 
-  private getSliderSize(
-    viewportSize: number,
-    contentSize: number,
-    trackSize: number
-  ): number {
+  private getSliderSize(viewportSize: number, contentSize: number, trackSize: number): number {
     if (trackSize <= 0) {
       return 0;
     }

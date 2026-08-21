@@ -27,26 +27,29 @@ class DataProcessor {
     const jsonString = JSON.stringify(cardData.data);
     const encoder = new TextEncoder();
     const encoded = encoder.encode(jsonString);
-    
+
     const chunks: DataChunk[] = [];
     const totalChunks = Math.ceil(encoded.length / CHUNK_SIZE);
-    
+
     for (let i = 0; i < totalChunks; i++) {
       const start = i * CHUNK_SIZE;
       const end = Math.min(start + CHUNK_SIZE, encoded.length);
       const chunkData = encoded.slice(start, end);
-      
+
       const chunk: DataChunk = {
         cardId: cardData.cardId,
         chunkIndex: i,
         totalChunks,
         isLast: i === totalChunks - 1,
-        data: chunkData.buffer.slice(chunkData.byteOffset, chunkData.byteOffset + chunkData.byteLength)
+        data: chunkData.buffer.slice(
+          chunkData.byteOffset,
+          chunkData.byteOffset + chunkData.byteLength
+        ),
       };
-      
+
       chunks.push(chunk);
     }
-    
+
     this.pendingChunks.set(cardData.cardId, chunks);
     return chunks;
   }
@@ -54,11 +57,11 @@ class DataProcessor {
   public async sendChunksWithBackpressure(chunks: DataChunk[]): Promise<void> {
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
-      
+
       if (this.onChunkCallback) {
         this.onChunkCallback(chunk);
       }
-      
+
       if (i < chunks.length - 1) {
         await this.delay(CHUNK_INTERVAL);
       }
@@ -85,23 +88,23 @@ class DataProcessor {
   public convertFloat32Array(data: { x: number; y: number }[]): ArrayBuffer {
     const buffer = new ArrayBuffer(data.length * 2 * 4);
     const view = new Float32Array(buffer);
-    
+
     for (let i = 0; i < data.length; i++) {
       view[i * 2] = data[i].x;
       view[i * 2 + 1] = data[i].y;
     }
-    
+
     return buffer;
   }
 
   public parseFloat32Array(buffer: ArrayBuffer): { x: number; y: number }[] {
     const view = new Float32Array(buffer);
     const result: { x: number; y: number }[] = [];
-    
+
     for (let i = 0; i < view.length; i += 2) {
       result.push({ x: view[i], y: view[i + 1] });
     }
-    
+
     return result;
   }
 

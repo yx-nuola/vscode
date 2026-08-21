@@ -37,7 +37,7 @@ export class HighlightLayer {
     } else {
       this.highlightDraw.clear();
     }
-  };
+  }
 
   /**
    * 初始化图层

@@ -11,9 +11,10 @@ export const WebviewRoutes = {
   home: '/',
   bitmap: '/bitmap',
   lineChart: '/line-chart',
+  fileTree: '/file-tree',
 } as const;
 
-export type WebviewRoute = typeof WebviewRoutes[keyof typeof WebviewRoutes];
+export type WebviewRoute = (typeof WebviewRoutes)[keyof typeof WebviewRoutes];
 
 export interface DataItem {
   id: string;

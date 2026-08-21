@@ -27,13 +27,13 @@ class ElectronMain {
           ...details.responseHeaders,
           'Content-Security-Policy': [
             "default-src 'self'; " +
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-            "style-src 'self' 'unsafe-inline'; " +
-            "img-src 'self' data: blob:; " +
-            "connect-src 'self' ws://localhost:*; " +
-            "worker-src 'self' blob:;"
-          ]
-        }
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+              "style-src 'self' 'unsafe-inline'; " +
+              "img-src 'self' data: blob:; " +
+              "connect-src 'self' ws://localhost:*; " +
+              "worker-src 'self' blob:;",
+          ],
+        },
       });
     });
   }
@@ -72,7 +72,13 @@ class ElectronMain {
     process.on('message', (message) => {
       console.log('[Electron Main] Received from VSCode:', message);
       if (this.mainWindow && !this.mainWindow.isDestroyed()) {
-        const msg = message as { type?: string; cardId?: string; chunk?: ArrayBuffer; meta?: { index?: number; total?: number }; isLast?: boolean };
+        const msg = message as {
+          type?: string;
+          cardId?: string;
+          chunk?: ArrayBuffer;
+          meta?: { index?: number; total?: number };
+          isLast?: boolean;
+        };
 
         if (msg.type === 'DATA_CHUNK') {
           this.mainWindow.webContents.send('renderer-message', {
@@ -80,13 +86,13 @@ class ElectronMain {
             cardId: msg.cardId,
             chunk: msg.chunk,
             meta: msg.meta,
-            isLast: msg.isLast
+            isLast: msg.isLast,
           });
         } else if (msg.type === 'DATA_ERROR') {
           this.mainWindow.webContents.send('renderer-message', {
             type: 'DATA_ERROR',
             cardId: msg.cardId,
-            error: (msg as { error?: string }).error
+            error: (msg as { error?: string }).error,
           });
         }
       }
@@ -102,9 +108,9 @@ class ElectronMain {
         contextIsolation: true,
         sandbox: false,
         preload: preloadPath,
-        webSecurity: true
+        webSecurity: true,
       },
-      show: false
+      show: false,
     });
 
     console.log('[Electron Main] Window created, loading URL...');
@@ -130,7 +136,7 @@ class ElectronMain {
     console.log('[Electron Main] Is dev mode:', isDev);
     console.log('[Electron Main] NODE_ENV:', process.env.NODE_ENV);
     console.log('[Electron Main] app.isPackaged:', app.isPackaged);
-    
+
     if (isDev) {
       console.log('[Electron Main] Loading dev URL: http://localhost:5173');
       window.loadURL('http://localhost:5173');
@@ -151,12 +157,18 @@ class ElectronMain {
 
     process.on('message', (message) => {
       if (this.mainWindow && !this.mainWindow.isDestroyed()) {
-        const msg = message as { type?: string; cardId?: string; chunk?: ArrayBuffer; meta?: { index?: number; total?: number }; isLast?: boolean };
-        
+        const msg = message as {
+          type?: string;
+          cardId?: string;
+          chunk?: ArrayBuffer;
+          meta?: { index?: number; total?: number };
+          isLast?: boolean;
+        };
+
         if (msg.type === 'LOAD_DATA' || msg.type === 'CANCEL_LOAD') {
           this.mainWindow.webContents.send('renderer-message', {
             type: msg.type === 'LOAD_DATA' ? 'REQUEST_LOAD' : 'CANCEL_LOAD',
-            cardIds: (msg as { cardIds?: string[] }).cardIds
+            cardIds: (msg as { cardIds?: string[] }).cardIds,
           });
         } else if (msg.type === 'DATA_CHUNK') {
           this.mainWindow.webContents.send('renderer-message', {
@@ -164,13 +176,13 @@ class ElectronMain {
             cardId: msg.cardId,
             chunk: msg.chunk,
             meta: msg.meta,
-            isLast: msg.isLast
+            isLast: msg.isLast,
           });
         } else if (msg.type === 'DATA_ERROR') {
           this.mainWindow.webContents.send('renderer-message', {
             type: 'DATA_ERROR',
             cardId: msg.cardId,
-            error: (msg as { error?: string }).error
+            error: (msg as { error?: string }).error,
           });
         }
       }

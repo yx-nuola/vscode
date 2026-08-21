@@ -20,7 +20,10 @@ declare module 'electron' {
   export const ipcRenderer: {
     send: (channel: string, ...args: unknown[]) => void;
     on: (channel: string, callback: (event: IpcRendererEvent, ...args: unknown[]) => void) => void;
-    once: (channel: string, callback: (event: IpcRendererEvent, ...args: unknown[]) => void) => void;
+    once: (
+      channel: string,
+      callback: (event: IpcRendererEvent, ...args: unknown[]) => void
+    ) => void;
     removeAllListeners: (channel: string) => void;
   };
   export const contextBridge: {

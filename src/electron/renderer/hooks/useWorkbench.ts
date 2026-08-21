@@ -35,13 +35,15 @@ const DEFAULT_CARDS: CardConfig[] = [
   { id: 'card-1', type: 'echarts', x: 0, y: 0, w: 6, h: 4, minW: 3, minH: 3 },
   { id: 'card-2', type: 'logicflow', x: 6, y: 0, w: 6, h: 4, minW: 3, minH: 3 },
   { id: 'card-3', type: 'canvas', x: 0, y: 4, w: 6, h: 4, minW: 3, minH: 3 },
-  { id: 'card-4', type: 'echarts', x: 6, y: 4, w: 6, h: 4, minW: 3, minH: 3 }
+  { id: 'card-4', type: 'echarts', x: 6, y: 4, w: 6, h: 4, minW: 3, minH: 3 },
 ];
 
 export function useWorkbench(): UseWorkbenchReturn {
   const [cards, setCards] = useState<CardConfig[]>(DEFAULT_CARDS);
   const [cardData, setCardData] = useState<Map<string, unknown[]>>(new Map());
-  const [visibleCards, setVisibleCards] = useState<Set<string>>(new Set(DEFAULT_CARDS.map(c => c.id)));
+  const [visibleCards, setVisibleCards] = useState<Set<string>>(
+    new Set(DEFAULT_CARDS.map((c) => c.id))
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [layout, setLayout] = useState<Layout[]>([]);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -75,7 +77,7 @@ export function useWorkbench(): UseWorkbenchReturn {
       const layoutData: LayoutData = {
         cards: newCards,
         visibleCardIds: Array.from(newVisibleCards),
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       if (window.electronAPI) {
@@ -84,49 +86,58 @@ export function useWorkbench(): UseWorkbenchReturn {
     }, 500);
   }, []);
 
-  const handleLayoutChange = useCallback((newLayout: Layout[]) => {
-    setLayout(newLayout);
+  const handleLayoutChange = useCallback(
+    (newLayout: Layout[]) => {
+      setLayout(newLayout);
 
-    setCards(prevCards => {
-      const newCards = prevCards.map(card => {
-        const layoutItem = newLayout.find(l => l.i === card.id);
-        if (layoutItem) {
-          return { ...card, x: layoutItem.x, y: layoutItem.y, w: layoutItem.w, h: layoutItem.h };
-        }
-        return card;
+      setCards((prevCards) => {
+        const newCards = prevCards.map((card) => {
+          const layoutItem = newLayout.find((l) => l.i === card.id);
+          if (layoutItem) {
+            return { ...card, x: layoutItem.x, y: layoutItem.y, w: layoutItem.w, h: layoutItem.h };
+          }
+          return card;
+        });
+        saveLayout(newCards, visibleCards);
+        return newCards;
       });
-      saveLayout(newCards, visibleCards);
-      return newCards;
-    });
-  }, [visibleCards, saveLayout]);
+    },
+    [visibleCards, saveLayout]
+  );
 
-  const handleCardClose = useCallback((cardId: string) => {
-    setCards(prevCards => {
-      const newCards = prevCards.filter(c => c.id !== cardId);
-      saveLayout(newCards, visibleCards);
-      return newCards;
-    });
-    setVisibleCards(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(cardId);
-      return newSet;
-    });
-  }, [visibleCards, saveLayout]);
+  const handleCardClose = useCallback(
+    (cardId: string) => {
+      setCards((prevCards) => {
+        const newCards = prevCards.filter((c) => c.id !== cardId);
+        saveLayout(newCards, visibleCards);
+        return newCards;
+      });
+      setVisibleCards((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(cardId);
+        return newSet;
+      });
+    },
+    [visibleCards, saveLayout]
+  );
 
-  const handleVisibleCardsChange = useCallback((visibleIds: string[]) => {
-    setVisibleCards(new Set(visibleIds));
-    saveLayout(cards, new Set(visibleIds));
-  }, [cards, saveLayout]);
+  const handleVisibleCardsChange = useCallback(
+    (visibleIds: string[]) => {
+      setVisibleCards(new Set(visibleIds));
+      saveLayout(cards, new Set(visibleIds));
+    },
+    [cards, saveLayout]
+  );
 
   const resetLayout = useCallback(() => {
     setCards(DEFAULT_CARDS);
-    setVisibleCards(new Set(DEFAULT_CARDS.map(c => c.id)));
+    setVisibleCards(new Set(DEFAULT_CARDS.map((c) => c.id)));
     setLayout([]);
-    saveLayout(DEFAULT_CARDS, new Set(DEFAULT_CARDS.map(c => c.id)));
+    saveLayout(DEFAULT_CARDS, new Set(DEFAULT_CARDS.map((c) => c.id)));
   }, [saveLayout]);
 
   const updateCardData = useCallback((cardId: string, data: unknown[]) => {
-    setCardData(prev => {
+    setCardData((prev) => {
       const newMap = new Map(prev);
       newMap.set(cardId, data);
       return newMap;
@@ -143,6 +154,6 @@ export function useWorkbench(): UseWorkbenchReturn {
     handleCardClose,
     handleVisibleCardsChange,
     resetLayout,
-    updateCardData
+    updateCardData,
   };
 }

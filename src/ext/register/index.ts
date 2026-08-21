@@ -7,10 +7,7 @@ export function registerAll(context: vscode.ExtensionContext, extensionUri: vsco
   const dataPanelProvider = new DataPanelProvider(extensionUri);
 
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      DataPanelProvider.viewType,
-      dataPanelProvider
-    )
+    vscode.window.registerWebviewViewProvider(DataPanelProvider.viewType, dataPanelProvider)
   );
 
   registerMessengerHandlers(context);

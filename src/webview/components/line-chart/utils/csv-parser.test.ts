@@ -4,8 +4,7 @@ import { parseCsv } from './csv-parser';
 describe('parseCsv', () => {
   test('parses BOM, quoted fields and units in headers', () => {
     const result = parseCsv(
-      '\uFEFFdevice-id,VBL(V),Current(uA),Note\n' +
-        '1,3.00,4.2,"hello, csv"\n',
+      '\uFEFFdevice-id,VBL(V),Current(uA),Note\n' + '1,3.00,4.2,"hello, csv"\n'
     );
 
     expect(result.polylineData).toHaveLength(1);
@@ -29,15 +28,11 @@ describe('parseCsv', () => {
   });
 
   test('rejects duplicate headers', () => {
-    expect(() => parseCsv('device-id,VBL,VBL\n1,2,3')).toThrow(
-      'CSV 存在重复表头',
-    );
+    expect(() => parseCsv('device-id,VBL,VBL\n1,2,3')).toThrow('CSV 存在重复表头');
   });
 
   test('rejects a file without a DeviceID column', () => {
-    expect(() => parseCsv('VBL,Current\n1,2')).toThrow(
-      'CSV 缺少大组字段 DeviceID',
-    );
+    expect(() => parseCsv('VBL,Current\n1,2')).toThrow('CSV 缺少大组字段 DeviceID');
   });
 
   test('skips empty lines while keeping the rest', () => {
@@ -48,14 +43,10 @@ describe('parseCsv', () => {
   });
 
   test('throws a generic parse error on a mismatched column count', () => {
-    expect(() => parseCsv('DeviceID,VBL\n121\n121,2')).toThrow(
-      'CSV 解析出错',
-    );
+    expect(() => parseCsv('DeviceID,VBL\n121\n121,2')).toThrow('CSV 解析出错');
   });
 
   test('throws a generic parse error on malformed quoted fields', () => {
-    expect(() => parseCsv('DeviceID,VBL\n121,"unterminated')).toThrow(
-      'CSV 解析出错',
-    );
+    expect(() => parseCsv('DeviceID,VBL\n121,"unterminated')).toThrow('CSV 解析出错');
   });
 });

@@ -101,7 +101,10 @@ export class CellLayer {
     const scrollState = this.engine.getScrollState();
 
     // 获取当前可视范围
-    const visibleRange = virtualScrollSync.getVisibleRange(scrollState.scrollX, scrollState.scrollY);
+    const visibleRange = virtualScrollSync.getVisibleRange(
+      scrollState.scrollX,
+      scrollState.scrollY
+    );
 
     // 渲染格子（传递滚动偏移）
     this.cellDraw.renderCells(visibleRange, scrollState.scrollX, scrollState.scrollY);

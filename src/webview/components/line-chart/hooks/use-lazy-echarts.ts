@@ -40,12 +40,12 @@ export function useLazyECharts(option: EChartsOption) {
             intersectionObserver = null;
           }
         },
-        { rootMargin: '400px 0px' },
+        { rootMargin: '400px 0px' }
       );
       intersectionObserver.observe(container);
     }
 
-    console.log('useLazyECharts: chart initialized', resizeObserver , intersectionObserver);
+    console.log('useLazyECharts: chart initialized', resizeObserver, intersectionObserver);
 
     return () => {
       intersectionObserver?.disconnect();

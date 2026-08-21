@@ -12,15 +12,8 @@ import styles from './styles.module.scss';
 export function LineChartWorkbench() {
   const [draftConfig, setDraftConfig] = useState<LineChartConfig | null>(null);
   const [appliedConfig, setAppliedConfig] = useState<LineChartConfig | null>(null);
-  const [titles, setTitles] = useState<Record<string, string>>({});
-  const {
-    fileName,
-    parsedData,
-    isLoading,
-    feedback,
-    setFeedback,
-    uploadFile,
-  } = useCsvUpload();
+  const [chartTitles, setChartTitles] = useState<Record<string, string>>({});
+  const { fileName, parsedData, isLoading, feedback, setFeedback, uploadFile } = useCsvUpload();
 
   const chartResult = useMemo<BuildChartResult | null>(() => {
     if (!parsedData || !appliedConfig) {
@@ -30,20 +23,19 @@ export function LineChartWorkbench() {
     return buildChartGroups(parsedData.polylineData, appliedConfig);
   }, [appliedConfig, parsedData]);
 
-
   const handleFileSelect = async (file: File): Promise<void> => {
     const data = await uploadFile(file);
 
     if (!data) {
       setDraftConfig(null);
       setAppliedConfig(null);
-      setTitles({});
+      setChartTitles({});
       return;
     }
 
     setDraftConfig(createDefaultConfig(data));
     setAppliedConfig(null);
-    setTitles({});
+    setChartTitles({});
   };
 
   const handleConfigChange = (config: LineChartConfig): void => {
@@ -93,10 +85,10 @@ export function LineChartWorkbench() {
         tableHeader={parsedData?.tableHeader ?? []}
         config={appliedConfig}
         fileName={fileName}
-        titles={titles}
+        chartTitles={chartTitles}
         polylineData={parsedData?.polylineData ?? []}
-        onTitleChange={(chartId, title) => {
-          setTitles((current) => ({ ...current, [chartId]: title }));
+        onChartTitleChange={(chartId, chartTitle) => {
+          setChartTitles((current) => ({ ...current, [chartId]: chartTitle }));
         }}
       />
     </div>

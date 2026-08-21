@@ -8,15 +8,6 @@ export function registerMessengerHandlers(context: vscode.ExtensionContext): voi
     extensionMessenger.onRequest(Requests.getData, async () => {
       return dataServer.fetchData();
     }),
-    extensionMessenger.onRequest(Requests.openElectron, async () => {
-      try {
-        await vscode.commands.executeCommand('my-extension.openElectronWorkbench');
-        return { ok: true };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        return { ok: false, message };
-      }
-    }),
     extensionMessenger.onNotification(Notifications.refreshData, async () => {
       const data = await dataServer.fetchData();
       extensionMessenger.sendNotification(Notifications.dataUpdated, { type: 'broadcast' }, data);

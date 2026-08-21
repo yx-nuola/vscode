@@ -8,11 +8,7 @@ interface CsvUploadPanelProps {
   onFileSelect: (file: File) => void;
 }
 
-export function CsvUploadPanel({
-  fileName,
-  isLoading,
-  onFileSelect,
-}: CsvUploadPanelProps) {
+export function CsvUploadPanel({ fileName, isLoading, onFileSelect }: CsvUploadPanelProps) {
   return (
     <section className={styles.upload_panel} aria-label="CSV File Upload">
       <div className={styles.upload_content}>
@@ -31,9 +27,7 @@ export function CsvUploadPanel({
         </Upload>
 
         <div className={styles.file_meta}>
-          <Typography.Text ellipsis>
-            {fileName ?? 'No file selected'}
-          </Typography.Text>
+          <Typography.Text ellipsis>{fileName ?? 'No file selected'}</Typography.Text>
         </div>
       </div>
     </section>

@@ -27,7 +27,7 @@ class CardDataManager {
       `;
       const blob = new Blob([workerCode], { type: 'application/javascript' });
       this.worker = new Worker(URL.createObjectURL(blob));
-      
+
       this.worker.onmessage = (event) => {
         const result = event.data;
         const callback = this.parseCallbacks.get(result.cardId);
@@ -53,7 +53,9 @@ class CardDataManager {
 
   assembleData(cardId) {
     const chunks = this.dataCache.get(cardId);
-    if (!chunks || chunks.size === 0) return null;
+    if (!chunks || chunks.size === 0) {
+      return null;
+    }
 
     const sortedChunks = Array.from(chunks.entries()).sort((a, b) => a[0] - b[0]);
     const totalLength = sortedChunks.reduce((sum, [, buffer]) => sum + buffer.byteLength, 0);

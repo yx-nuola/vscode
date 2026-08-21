@@ -17,7 +17,7 @@ const DEFAULT_CONFIG: IceServiceConfig = {
   endpoint: 'http://localhost:8080/api/data',
   timeout: 5000,
   retries: 3,
-  retryInterval: 500
+  retryInterval: 500,
 };
 
 class IceService {
@@ -28,7 +28,10 @@ class IceService {
     this.config = { ...DEFAULT_CONFIG, ...config };
   }
 
-  public async fetchCardData(cardId: string, type: 'echarts' | 'logicflow' | 'canvas'): Promise<IceServiceResponse> {
+  public async fetchCardData(
+    cardId: string,
+    type: 'echarts' | 'logicflow' | 'canvas'
+  ): Promise<IceServiceResponse> {
     const controller = new AbortController();
     this.abortControllers.set(cardId, controller);
 
@@ -40,7 +43,7 @@ class IceService {
         return response;
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         if (this.isAbortError(error)) {
           throw new Error(`请求已取消: ${cardId}`);
         }
@@ -86,21 +89,21 @@ class IceService {
   ): Promise<IceServiceResponse> {
     const url = `${this.config.endpoint}?cardId=${encodeURIComponent(cardId)}&type=${type}`;
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
 
-      try {
-        const response = await fetch(url, {
-          method: 'GET',
-          signal: signal,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }).catch(() => {
-          return this.getMockResponse(cardId, type) as unknown as Response;
-        });
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        signal: signal,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).catch(() => {
+        return this.getMockResponse(cardId, type) as unknown as Response;
+      });
 
-        clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
       if (!response || response.status === 404) {
         return this.getMockResponse(cardId, type);
@@ -110,24 +113,27 @@ class IceService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const jsonData = await response.json() as { data?: unknown[] };
+      const jsonData = (await response.json()) as { data?: unknown[] };
       return {
         cardId,
         type,
-        data: jsonData.data || []
+        data: jsonData.data || [],
       };
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       if (signal.aborted) {
         throw new Error('请求被取消');
       }
-      
+
       throw error;
     }
   }
 
-  private getMockResponse(cardId: string, type: 'echarts' | 'logicflow' | 'canvas'): IceServiceResponse {
+  private getMockResponse(
+    cardId: string,
+    type: 'echarts' | 'logicflow' | 'canvas'
+  ): IceServiceResponse {
     const data = this.generateMockData(type);
     return { cardId, type, data };
   }
@@ -138,7 +144,7 @@ class IceService {
         return Array.from({ length: 5000 }, (_, i) => ({
           value: Math.random() * 1000,
           index: i,
-          name: `数据点 ${i}`
+          name: `数据点 ${i}`,
         }));
       case 'logicflow':
         return Array.from({ length: 50 }, (_, i) => ({
@@ -146,13 +152,13 @@ class IceService {
           label: `节点 ${i + 1}`,
           x: Math.random() * 800,
           y: Math.random() * 600,
-          type: i % 3 === 0 ? 'start' : i % 3 === 1 ? 'process' : 'end'
+          type: i % 3 === 0 ? 'start' : i % 3 === 1 ? 'process' : 'end',
         }));
       case 'canvas':
         return Array.from({ length: 10000 }, (_, i) => ({
           x: Math.random() * 2000,
           y: Math.random() * 2000,
-          value: Math.random() * 100
+          value: Math.random() * 100,
         }));
       default:
         return [];
@@ -170,10 +176,11 @@ class IceService {
   }
 
   private isAbortError(error: unknown): boolean {
-    return error instanceof Error && (
-      error.message.includes('aborted') ||
-      error.message.includes('canceled') ||
-      error.message.includes('请求被取消')
+    return (
+      error instanceof Error &&
+      (error.message.includes('aborted') ||
+        error.message.includes('canceled') ||
+        error.message.includes('请求被取消'))
     );
   }
 

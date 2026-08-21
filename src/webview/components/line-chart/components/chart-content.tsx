@@ -1,10 +1,5 @@
 import { Alert, Empty } from '@arco-design/web-react';
-import type {
-  BuildChartResult,
-  CsvColumn,
-  LineChartConfig,
-  ParsedCsvRow,
-} from '../types';
+import type { BuildChartResult, CsvColumn, LineChartConfig, ParsedCsvRow } from '../types';
 import { ChartCard } from './chart-card';
 import styles from '../styles.module.scss';
 
@@ -13,9 +8,9 @@ interface ChartContentProps {
   tableHeader: CsvColumn[];
   config: LineChartConfig | null;
   fileName: string | null;
-  titles: Record<string, string>;
+  chartTitles: Record<string, string>;
   polylineData: ParsedCsvRow[];
-  onTitleChange: (chartId: string, title: string) => void;
+  onChartTitleChange: (chartId: string, chartTitle: string) => void;
 }
 
 export function ChartContent({
@@ -23,21 +18,18 @@ export function ChartContent({
   tableHeader,
   config,
   fileName,
-  titles,
+  chartTitles,
   polylineData,
-  onTitleChange,
+  onChartTitleChange,
 }: ChartContentProps) {
-
-  console.log('ChartContent render', result, tableHeader, config, fileName, titles, polylineData);
-
   if (!result || !config) {
     return (
       <main className={`${styles.chart_content} ${styles.empty_content}`}>
         <Empty
           description={
             fileName
-              ? 'Please select X axis, Y axis and Group, then click Draw to create the line chart'
-              : 'Please upload a CSV file first'
+              ? 'Configure the chart and click Draw to render'
+              : 'Upload a CSV file to start building line charts'
           }
         />
       </main>
@@ -52,14 +44,14 @@ export function ChartContent({
     );
   }
 
-  const totalSeries = result.groups.reduce(
-    (total, group) => total + group.series.length,
-    0,
-  );
-  const mergedTitle = titles.__merged__ ?? fileName ?? 'CSV Line Chart';
-  const gridClassName = config.drawMode === 'merge'
-    ? `${styles.chart_grid} ${styles.merged_grid}`
-    : styles.chart_grid;
+  const totalSeries = result.groups.reduce((total, group) => total + group.series.length, 0);
+  const mergedDisplayTitle = result.groups
+    .map((group) => group.title)
+    .filter((value, index, all) => all.indexOf(value) === index)
+    .join(', ');
+  const defaultChartTitle = '折线图';
+  const gridClassName =
+    config.drawMode === 'merge' ? `${styles.chart_grid} ${styles.merged_grid}` : styles.chart_grid;
 
   return (
     <div className={styles.chart_content}>
@@ -93,20 +85,22 @@ export function ChartContent({
         {config.drawMode === 'merge' ? (
           <ChartCard
             chartId="__merged__"
-            title={mergedTitle}
+            title={mergedDisplayTitle}
+            chartTitle={chartTitles.__merged__ ?? defaultChartTitle}
             groups={result.groups}
             tableHeader={tableHeader}
             xColumn={config.xColumn}
             yColumn={config.yColumn}
             isMerged
             polylineData={polylineData}
-            onTitleChange={onTitleChange}
+            onChartTitleChange={onChartTitleChange}
           />
         ) : (
           result.groups.map((group) => (
             <ChartCard
               chartId={group.id}
-              title={titles[group.id] ?? group.title}
+              title={group.title}
+              chartTitle={chartTitles[group.id] ?? defaultChartTitle}
               key={group.id}
               groups={[group]}
               tableHeader={tableHeader}
@@ -114,7 +108,7 @@ export function ChartContent({
               yColumn={config.yColumn}
               isMerged={false}
               polylineData={polylineData}
-              onTitleChange={onTitleChange}
+              onChartTitleChange={onChartTitleChange}
             />
           ))
         )}

@@ -14,10 +14,7 @@ export function createDefaultConfig(data: ParsedCsvData): LineChartConfig {
   };
 }
 
-export function validateChartConfig(
-  data: ParsedCsvData,
-  config: LineChartConfig,
-): string | null {
+export function validateChartConfig(data: ParsedCsvData, config: LineChartConfig): string | null {
   if (!config.yColumn) {
     return 'please select a Y-axis column';
   }
@@ -29,9 +26,7 @@ export function validateChartConfig(
   ];
 
   for (const selection of numericSelections) {
-    const column = data.tableHeader.find(
-      (candidate) => candidate.rawName === selection.name,
-    );
+    const column = data.tableHeader.find((candidate) => candidate.rawName === selection.name);
 
     if (!column) {
       return `${selection.role} column ${selection.name} does not exist`;

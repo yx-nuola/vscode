@@ -22,7 +22,7 @@ const electronAPI = {
 
   saveLayout: (windowId, layout) => {
     ipcRenderer.send('save-layout', { windowId, layout });
-  }
+  },
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);

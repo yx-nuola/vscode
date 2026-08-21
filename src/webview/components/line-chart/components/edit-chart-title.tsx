@@ -7,10 +7,7 @@ interface EditableChartTitleProps {
   onChange: (title: string) => void;
 }
 
-export function EditableChartTitle({
-  title,
-  onChange,
-}: EditableChartTitleProps) {
+export function EditableChartTitle({ title, onChange }: EditableChartTitleProps) {
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(title);
 
@@ -29,26 +26,24 @@ export function EditableChartTitle({
   if (editing) {
     return (
       <Tooltip content={draftTitle}>
-      <Input
-        autoFocus
-        className={styles.chart_title_input}
-        value={draftTitle}
-        onChange={setDraftTitle}
-        onBlur={save}
-        onPressEnter={save}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') {
-            setDraftTitle(title);
-            setEditing(false);
-          }
-        }}
-        aria-label="Edit Chart Title"
-      />
+        <Input
+          autoFocus
+          className={styles.chart_title_input}
+          value={draftTitle}
+          onChange={setDraftTitle}
+          onBlur={save}
+          onPressEnter={save}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              setDraftTitle(title);
+              setEditing(false);
+            }
+          }}
+          aria-label="Edit Chart Title"
+        />
       </Tooltip>
     );
   }
-
-  console.log('EditableChartTitle render', title, draftTitle, editing);
 
   return (
     <Button

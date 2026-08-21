@@ -9,14 +9,7 @@ interface CardProps {
   isVisible?: boolean;
 }
 
-const Card: React.FC<CardProps> = ({
-  id,
-  type,
-  title,
-  data,
-  onClose,
-  isVisible = true
-}) => {
+const Card: React.FC<CardProps> = ({ id, type, title, data, onClose, isVisible = true }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -65,7 +58,9 @@ const Card: React.FC<CardProps> = ({
     <div className="card" data-card-id={id} style={{ willChange: 'transform' }}>
       <div className="card-header">
         <span className="card-title">{title || `${type} 卡片`}</span>
-        <button className="card-close" onClick={handleClose}>×</button>
+        <button className="card-close" onClick={handleClose}>
+          ×
+        </button>
       </div>
       <div className="card-content" ref={containerRef}>
         {renderContent()}
@@ -74,7 +69,10 @@ const Card: React.FC<CardProps> = ({
   );
 };
 
-const EChartsRenderer: React.FC<{ data?: unknown[]; containerRef: React.RefObject<HTMLDivElement> }> = ({ data, containerRef }) => {
+const EChartsRenderer: React.FC<{
+  data?: unknown[];
+  containerRef: React.RefObject<HTMLDivElement>;
+}> = ({ data, containerRef }) => {
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -84,17 +82,19 @@ const EChartsRenderer: React.FC<{ data?: unknown[]; containerRef: React.RefObjec
       try {
         const echarts = await import('echarts');
         const chart = echarts.init(chartRef.current!);
-        
+
         const option = {
           title: { text: '数据图表' },
           tooltip: {},
           xAxis: { type: 'category', data: data.map((_, i) => i) },
           yAxis: { type: 'value' },
-          series: [{
-            type: 'line',
-            data: data.map((d: unknown) => (d as { value?: number }).value ?? 0),
-            smooth: true
-          }]
+          series: [
+            {
+              type: 'line',
+              data: data.map((d: unknown) => (d as { value?: number }).value ?? 0),
+              smooth: true,
+            },
+          ],
         };
 
         chart.setOption(option);
@@ -123,7 +123,10 @@ const LogicFlowRenderer: React.FC<{ data?: unknown[] }> = ({ data }) => {
   );
 };
 
-const CanvasRenderer: React.FC<{ data?: unknown[]; containerRef: React.RefObject<HTMLDivElement> }> = ({ data, containerRef }) => {
+const CanvasRenderer: React.FC<{
+  data?: unknown[];
+  containerRef: React.RefObject<HTMLDivElement>;
+}> = ({ data, containerRef }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -144,7 +147,7 @@ const CanvasRenderer: React.FC<{ data?: unknown[]; containerRef: React.RefObject
 
       const sampleSize = Math.min(data.length, 1000);
       const step = Math.floor(data.length / sampleSize);
-      
+
       ctx.beginPath();
       ctx.strokeStyle = '#1890ff';
       ctx.lineWidth = 1;
@@ -162,7 +165,7 @@ const CanvasRenderer: React.FC<{ data?: unknown[]; containerRef: React.RefObject
           }
         }
       }
-      
+
       ctx.stroke();
     };
 

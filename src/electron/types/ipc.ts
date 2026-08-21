@@ -13,7 +13,12 @@ export type ExtToMain =
   | { type: 'GET_VISIBLE_CARDS' };
 
 export type MainToRenderer =
-  | { type: 'DATA_CHUNK'; cardId: string; chunk: ArrayBuffer; meta: { index: number; total: number } }
+  | {
+      type: 'DATA_CHUNK';
+      cardId: string;
+      chunk: ArrayBuffer;
+      meta: { index: number; total: number };
+    }
   | { type: 'DATA_COMPLETE'; cardId: string }
   | { type: 'DATA_ERROR'; cardId: string; error: string }
   | { type: 'WINDOW_READY_ACK' }

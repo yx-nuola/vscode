@@ -5,9 +5,7 @@ import type { DataType, MatrixData } from '../types';
 describe('DataParser.parseRRAMData', () => {
   test('infers dimensions and normalizes numeric measurements', () => {
     const data: DataType = {
-      cells: [
-        { bl: 4, wl: 4, vset: '1.2', vreset: '0.5', imeas: '8.5', status: 'pass' },
-      ],
+      cells: [{ bl: 4, wl: 4, vset: '1.2', vreset: '0.5', imeas: '8.5', status: 'pass' }],
     };
 
     expect(DataParser.validateData(data)).toBe(true);
@@ -34,9 +32,7 @@ describe('DataParser.parseRRAMData', () => {
     const data: DataType = {
       rows: 64,
       cols: 64,
-      cells: [
-        { bl: 100, wl: 128, vset: 1, vreset: 0, imeas: 12, status: 'pass' },
-      ],
+      cells: [{ bl: 100, wl: 128, vset: 1, vreset: 0, imeas: 12, status: 'pass' }],
     };
 
     const matrixData = DataParser.parseRRAMData(data);
@@ -72,7 +68,9 @@ describe('DataParser validation', () => {
 
     expect(DataParser.validateData({ cells: [{ ...baseCell, bl: -1 }] })).toBe(false);
     expect(DataParser.validateData({ cells: [{ ...baseCell, wl: 1.5 }] })).toBe(false);
-    expect(DataParser.validateData({ cells: [{ ...baseCell, imeas: 'not-a-number' }] })).toBe(false);
+    expect(DataParser.validateData({ cells: [{ ...baseCell, imeas: 'not-a-number' }] })).toBe(
+      false
+    );
   });
 
   test('parseJSON validates the parsed payload', () => {

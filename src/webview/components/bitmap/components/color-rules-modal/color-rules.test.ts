@@ -31,15 +31,12 @@ describe('color rules', () => {
 
     expect(validateColorRules(invalidRangeRules)).toContain('最小值不能大于最大值');
 
-    const tooManyRules = Array.from(
-      { length: MAX_COLOR_RULE_COUNT + 1 },
-      (_, index) => ({
-        title: `Rule ${index + 1}`,
-        min: index,
-        max: index + 1,
-        color: '#1890ff',
-      })
-    );
+    const tooManyRules = Array.from({ length: MAX_COLOR_RULE_COUNT + 1 }, (_, index) => ({
+      title: `Rule ${index + 1}`,
+      min: index,
+      max: index + 1,
+      color: '#1890ff',
+    }));
 
     expect(validateColorRules(tooManyRules)).toContain('最多支持');
   });

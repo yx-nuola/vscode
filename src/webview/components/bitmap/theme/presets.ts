@@ -1,4 +1,3 @@
-
 import type { BitmapTheme } from '../types';
 
 /**

@@ -7,7 +7,13 @@ export class VerticalAxisDraw extends BaseAxisDraw {
   }
 
   protected renderAxisLine(state: AxisRenderState): void {
-    this.renderTitle({ x: state.area.width - 25, y: -18, text: 'BL', align: 'center', verticalAlign: 'middle' });
+    this.renderTitle({
+      x: state.area.width - 25,
+      y: -18,
+      text: 'BL',
+      align: 'center',
+      verticalAlign: 'middle',
+    });
     this.addLine([state.area.width - 1, 0, state.area.width - 1, state.area.height]);
   }
 
@@ -16,7 +22,7 @@ export class VerticalAxisDraw extends BaseAxisDraw {
     const firstTick = Math.max(0, state.visibleRange.startRow);
     const lastTick = Math.min(state.visibleRange.endRow + 1, state.totalRows);
 
-    for (let row = firstTick; row <= lastTick; row ++) {
+    for (let row = firstTick; row <= lastTick; row++) {
       if (row < 0 || row > state.totalRows) {
         continue;
       }
@@ -24,7 +30,7 @@ export class VerticalAxisDraw extends BaseAxisDraw {
       if (y < 0 || y > state.area.height) {
         continue;
       }
-      if(row % step === 0){
+      if (row % step === 0) {
         this.addLabel({
           x: state.area.width - 30,
           y: y - 6,
@@ -33,7 +39,7 @@ export class VerticalAxisDraw extends BaseAxisDraw {
           verticalAlign: 'middle',
         });
         this.addLine([state.area.width - 10, y, state.area.width - 1, y]);
-      }else{
+      } else {
         this.addLine([state.area.width - 6, y, state.area.width - 1, y]);
       }
     }

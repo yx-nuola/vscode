@@ -27,7 +27,10 @@ export class VerticalScrollbarDraw extends BaseScrollbarDraw {
     return state.scrollbar.sliderHeight;
   }
 
-  protected getDragBound(pos: { x: number; y: number }, state: ScrollbarRenderState): { x: number; y: number } {
+  protected getDragBound(
+    pos: { x: number; y: number },
+    state: ScrollbarRenderState
+  ): { x: number; y: number } {
     const local = this.toLocalPosition(pos);
     const maxSliderY = state.area.height - state.scrollbar.sliderHeight;
     const clampedY = Math.max(0, Math.min(local.y, maxSliderY));
@@ -40,10 +43,9 @@ export class VerticalScrollbarDraw extends BaseScrollbarDraw {
 
   protected getScrollStateFromSlider(state: ScrollbarRenderState): ScrollState {
     const currentScrollState = this.engine.getScrollState();
-    const scrollY = this.engine.getVirtualScrollSync().getScrollYFromSlider(
-      this.slider?.y() ?? 0,
-      state.area.height
-    );
+    const scrollY = this.engine
+      .getVirtualScrollSync()
+      .getScrollYFromSlider(this.slider?.y() ?? 0, state.area.height);
 
     return {
       scrollX: currentScrollState.scrollX,
@@ -51,17 +53,19 @@ export class VerticalScrollbarDraw extends BaseScrollbarDraw {
     };
   }
 
-  protected getScrollStateFromTrackClick(state: ScrollbarRenderState, pointer: { x: number; y: number }): ScrollState {
+  protected getScrollStateFromTrackClick(
+    state: ScrollbarRenderState,
+    pointer: { x: number; y: number }
+  ): ScrollState {
     const sliderCenterY = Math.max(
       state.scrollbar.sliderHeight / 2,
       Math.min(pointer.y, state.area.height - state.scrollbar.sliderHeight / 2)
     );
 
     const currentScrollState = this.engine.getScrollState();
-    const scrollY = this.engine.getVirtualScrollSync().getScrollYFromSlider(
-      sliderCenterY - state.scrollbar.sliderHeight / 2,
-      state.area.height
-    );
+    const scrollY = this.engine
+      .getVirtualScrollSync()
+      .getScrollYFromSlider(sliderCenterY - state.scrollbar.sliderHeight / 2, state.area.height);
 
     return {
       scrollX: currentScrollState.scrollX,

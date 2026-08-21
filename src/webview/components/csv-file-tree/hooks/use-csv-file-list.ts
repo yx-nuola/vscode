@@ -23,16 +23,14 @@ export function useCsvFileList(): CsvFileListState {
 
   const addFiles = useCallback((incomingFiles: File[]): CsvFileItem[] => {
     const existingIds = new Set(filesRef.current.map((file) => file.id));
-    const newFiles = incomingFiles
-      .map(createCsvFileItem)
-      .filter((file) => {
-        if (existingIds.has(file.id)) {
-          return false;
-        }
+    const newFiles = incomingFiles.map(createCsvFileItem).filter((file) => {
+      if (existingIds.has(file.id)) {
+        return false;
+      }
 
-        existingIds.add(file.id);
-        return true;
-      });
+      existingIds.add(file.id);
+      return true;
+    });
 
     if (newFiles.length === 0) {
       return [];

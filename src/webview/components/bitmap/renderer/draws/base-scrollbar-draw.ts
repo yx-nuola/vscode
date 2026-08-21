@@ -73,11 +73,17 @@ export abstract class BaseScrollbarDraw {
 
   protected abstract getSliderHeight(state: ScrollbarRenderState): number;
 
-  protected abstract getDragBound(pos: { x: number; y: number }, state: ScrollbarRenderState): { x: number; y: number };
+  protected abstract getDragBound(
+    pos: { x: number; y: number },
+    state: ScrollbarRenderState
+  ): { x: number; y: number };
 
   protected abstract getScrollStateFromSlider(state: ScrollbarRenderState): ScrollState;
 
-  protected abstract getScrollStateFromTrackClick(state: ScrollbarRenderState, pointer: { x: number; y: number }): ScrollState;
+  protected abstract getScrollStateFromTrackClick(
+    state: ScrollbarRenderState,
+    pointer: { x: number; y: number }
+  ): ScrollState;
 
   private createScrollbar(state: ScrollbarRenderState): void {
     const theme = this.engine.getConfig().theme;
@@ -185,7 +191,12 @@ export abstract class BaseScrollbarDraw {
     };
   }
 
-  protected toLocalPosition(pos: { x: number; y: number }): { x: number; y: number; groupX: number; groupY: number } {
+  protected toLocalPosition(pos: { x: number; y: number }): {
+    x: number;
+    y: number;
+    groupX: number;
+    groupY: number;
+  } {
     const groupPos = this.group.getAbsolutePosition();
     return {
       x: pos.x - groupPos.x,

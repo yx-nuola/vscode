@@ -13,7 +13,6 @@ import type {
 import type { CellData } from '../../types';
 import type { TableColumn, TableRecord, VirtualTableProps } from './types';
 
-
 const TABLE_COLUMNS: TableColumn[] = [
   { key: 'bl', title: 'BL', width: 60 },
   { key: 'wl', title: 'WL', width: 60 },
@@ -47,7 +46,6 @@ function stringifyCellValue(value: unknown): string {
 
   return JSON.stringify(value);
 }
-
 
 function getTableRowByRecordIndex(table: ListTable, recordIndex: number): number | undefined {
   const tableRow = table.getTableIndexByRecordIndex(recordIndex);
@@ -104,7 +102,6 @@ export function VirtualTable({
     [data]
   );
 
-
   const vtableColumns = useMemo<VTableColumnDefine[]>(
     () =>
       TABLE_COLUMNS.map((column) => ({
@@ -120,13 +117,14 @@ export function VirtualTable({
 
           return {
             bgColor: isHighlighted ? '#e3f2fd' : '#ffffff',
-            color: column.key === 'status'
-              ? status === 'pass'
-                ? '#2e7d32'
-                : status === 'fail'
-                  ? '#c62828'
-                  : '#666666'
-              : '#1f2329',
+            color:
+              column.key === 'status'
+                ? status === 'pass'
+                  ? '#2e7d32'
+                  : status === 'fail'
+                    ? '#c62828'
+                    : '#666666'
+                : '#1f2329',
             fontSize: 12,
             padding: [0, 8, 0, 8],
             textOverflow: 'ellipsis',
@@ -238,9 +236,14 @@ export function VirtualTable({
         return;
       }
 
-      const nextRow = event.code === 'ArrowDown'
-        ? currentRow === undefined ? 0 : Math.min(currentRow + 1, total - 1)
-        : currentRow === undefined ? total - 1 : Math.max(0, currentRow - 1);
+      const nextRow =
+        event.code === 'ArrowDown'
+          ? currentRow === undefined
+            ? 0
+            : Math.min(currentRow + 1, total - 1)
+          : currentRow === undefined
+            ? total - 1
+            : Math.max(0, currentRow - 1);
 
       if (nextRow === currentRow) {
         return;

@@ -1,12 +1,34 @@
 import { useState, useEffect, useRef, forwardRef, useMemo, useCallback, memo } from 'react';
 import { onNotification } from '@/utils/messenger';
-import { messages, GlobalNotificationMethod, GlobalNotificationMethodParams, GlobalMethodType } from 'ate-tool-config';
+import {
+  messages,
+  GlobalNotificationMethod,
+  GlobalNotificationMethodParams,
+  GlobalMethodType,
+} from 'ate-tool-config';
 import { setLogLevel, saveLogFile, getIsFirstRender } from '@/services/panel/log-management-panel';
 import { IconExclamationCircle } from '@arco-design/web-react/icon';
 
-import { BaseInput, BaseList, BaseSelect, BaseTooltip, useViewportSize, BaseIconButtonGroup, usePanelIcons } from 'hf-components';
+import {
+  BaseInput,
+  BaseList,
+  BaseSelect,
+  BaseTooltip,
+  useViewportSize,
+  BaseIconButtonGroup,
+  usePanelIcons,
+} from 'hf-components';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
-import { options, showMaxLineCount, matchReg, levelRegex, LogDataEnum, DataFormatEnum, handleClassName, disposeMeasureContext } from './config';
+import {
+  options,
+  showMaxLineCount,
+  matchReg,
+  levelRegex,
+  LogDataEnum,
+  DataFormatEnum,
+  handleClassName,
+  disposeMeasureContext,
+} from './config';
 import { RangeChangedParams } from './type';
 import { logger } from '../utils/logger';
 import { debounce } from 'lodash-es';
@@ -48,13 +70,23 @@ const renderItemContent = (_: any, item: any) => {
       <span key={logTime} className={`${styles[handleClassName(logLevelKey)]}`}>
         {logTime}
       </span>
-      <span key={logLevel} className={`${styles.logLevel} ${levelRegex.test(logLevel) ? handleClassName(logLevelKey) : ''} || ''`}>
+      <span
+        key={logLevel}
+        className={`${styles.logLevel} ${levelRegex.test(logLevel) ? handleClassName(logLevelKey) : ''} || ''`}
+      >
         {logLevel}
       </span>
-      <span key={logServer} className={`${styles.port} ${levelRegex.test(logServer) ? handleClassName(logLevelKey) : ''} || ''}`}>
+      <span
+        key={logServer}
+        className={`${styles.port} ${levelRegex.test(logServer) ? handleClassName(logLevelKey) : ''} || ''}`}
+      >
         {logServer}
       </span>
-      <span key={content} className={styles.logContent} dangerouslySetInnerHTML={{ __html: content }}></span>
+      <span
+        key={content}
+        className={styles.logContent}
+        dangerouslySetInnerHTML={{ __html: content }}
+      ></span>
     </BaseList.Item>
   );
 };
@@ -163,7 +195,7 @@ const LogMonitoring = () => {
           firstRef.current = false;
         }
       }
-    },
+    }
   );
 
   onNotification(
@@ -172,7 +204,7 @@ const LogMonitoring = () => {
     },
     async (datalist: string[][]) => {
       dealMessageData(datalist);
-    },
+    }
   );
 
   const handleSaveLogFile = () => {
@@ -211,7 +243,8 @@ const LogMonitoring = () => {
 
       const matchContent: string[] = data?.[DataFormatEnum.logData].match(matchReg) || [];
       const splitVal = matchContent?.slice(0, 3)?.join('');
-      const _content: string = matchContent.length > 1 ? data[DataFormatEnum.logData].split(splitVal)[1] || '' : '';
+      const _content: string =
+        matchContent.length > 1 ? data[DataFormatEnum.logData].split(splitVal)[1] || '' : '';
       const content = _content.replace(/\n/g, '<br />');
       return {
         matchContent,
@@ -251,7 +284,7 @@ const LogMonitoring = () => {
         : logAllDataRef.current;
       setLogData(newList || []);
     }, 100),
-    [],
+    []
   );
 
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -387,8 +420,8 @@ const LogMonitoring = () => {
           initialTopMostItemIndex={logData.length - 1} // 初始滚动到底部
           rangeChanged={handleRangeChanged}
           overscan={{
-                  main: 20,
-                  reverse: 10,
+            main: 20,
+            reverse: 10,
           }}
           computeItemKey={computeItemKey}
         />
@@ -398,4 +431,3 @@ const LogMonitoring = () => {
 };
 
 export default LogMonitoring;
-

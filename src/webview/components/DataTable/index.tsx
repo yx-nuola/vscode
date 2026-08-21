@@ -19,11 +19,13 @@ const columns = [
     dataIndex: 'status',
     render: (status: string) => {
       const statusColor: Record<string, string> = {
-        '活跃': 'green',
-        '非活跃': 'red',
-        '待审核': 'orange',
+        活跃: 'green',
+        非活跃: 'red',
+        待审核: 'orange',
       };
-      return <span className={`status-badge status-${statusColor[status] || 'default'}`}>{status}</span>;
+      return (
+        <span className={`status-badge status-${statusColor[status] || 'default'}`}>{status}</span>
+      );
     },
   },
   {

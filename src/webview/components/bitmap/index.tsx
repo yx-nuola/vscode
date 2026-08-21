@@ -8,18 +8,17 @@ import { IconSettings } from '@arco-design/web-react/icon';
 import { BitmapLayout } from './components/bitmap-layout';
 import { ColorRulesModal } from './components/color-rules-modal';
 import { FileUpload } from './components/file-upload';
-import {
-  DataParser,
-} from './utils';
+import { DataParser } from './utils';
 
-import type {
-  MatrixData,
-  BitmapGridConfig,
-  ColorRule,
-  BitmapTheme,
-  ImportMode,
-} from './types';
-import { MAX_CELL_SIZE, DEFAULT_CELL_SIZE, START_POSITION, PADDING, SCROLL, defaultColorRule } from './constants';
+import type { MatrixData, BitmapGridConfig, ColorRule, BitmapTheme, ImportMode } from './types';
+import {
+  MAX_CELL_SIZE,
+  DEFAULT_CELL_SIZE,
+  START_POSITION,
+  PADDING,
+  SCROLL,
+  defaultColorRule,
+} from './constants';
 
 import { DARK_THEME, LIGHT_THEME } from './theme/presets';
 import { requestData, requestOpenElectron } from '../../messenger/webviewMessenger';
@@ -35,18 +34,21 @@ export function BitmapTestPage() {
   const [isColorRulesModalOpen, setIsColorRulesModalOpen] = useState(false);
   const theme: BitmapTheme = themeMode === 'light' ? LIGHT_THEME : DARK_THEME;
 
-  const config: BitmapGridConfig = useMemo(() => ({
-    layout: {
-      axisSize: START_POSITION,
-      scrollbarSize: SCROLL,
-      spacing: PADDING,
-    },
-    theme,
-    colorRules,
-    initialCellSize: DEFAULT_CELL_SIZE,
-    minCellSize: DEFAULT_CELL_SIZE,
-    maxCellSize: MAX_CELL_SIZE,
-  }), [colorRules, theme]);
+  const config: BitmapGridConfig = useMemo(
+    () => ({
+      layout: {
+        axisSize: START_POSITION,
+        scrollbarSize: SCROLL,
+        spacing: PADDING,
+      },
+      theme,
+      colorRules,
+      initialCellSize: DEFAULT_CELL_SIZE,
+      minCellSize: DEFAULT_CELL_SIZE,
+      maxCellSize: MAX_CELL_SIZE,
+    }),
+    [colorRules, theme]
+  );
 
   // 处理数据加载
   const handleDataLoad = useCallback(
@@ -72,7 +74,7 @@ export function BitmapTestPage() {
 
   // 处理格子点击
   const handleThemeToggle = useCallback(() => {
-    setThemeMode((mode) => mode === 'light' ? 'dark' : 'light');
+    setThemeMode((mode) => (mode === 'light' ? 'dark' : 'light'));
   }, []);
 
   const handleColorRulesSave = useCallback((rules: ColorRule[]) => {
@@ -96,7 +98,9 @@ export function BitmapTestPage() {
   const handleOpenElectron = useCallback(async () => {
     try {
       const result = await requestOpenElectron();
-      setExtensionStatus(result.ok ? 'Electron launch requested' : result.message ?? 'Electron launch failed');
+      setExtensionStatus(
+        result.ok ? 'Electron launch requested' : (result.message ?? 'Electron launch failed')
+      );
     } catch (error) {
       setExtensionStatus(error instanceof Error ? error.message : String(error));
     }

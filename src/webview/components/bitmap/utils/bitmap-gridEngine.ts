@@ -1,11 +1,17 @@
-
 import Konva from 'konva';
-import type { BitmapGridConfig, MatrixData, ColorRule, BitmapTheme, ScrollState, CellData, LayoutResult } from '../types';
+import type {
+  BitmapGridConfig,
+  MatrixData,
+  ColorRule,
+  BitmapTheme,
+  ScrollState,
+  CellData,
+  LayoutResult,
+} from '../types';
 import { VirtualScrollSync, DataManager, LayoutCalculator, EventBus } from './index';
 import { AxisLayer, CellLayer, HighlightLayer } from '../renderer/layers';
 import { LocationManager, SelectionManager } from '../renderer/tools';
 import { DEFAULT_CELL_SIZE, MAX_CELL_SIZE, DEFAULT_COLS, DEFAULT_ROWS } from '../constants';
-
 
 const { Stage } = Konva;
 type StageType = InstanceType<typeof Stage>;
@@ -95,7 +101,10 @@ export class BitmapGridEngine {
     });
 
     // 同步格子区域的实际视口尺寸
-    this.virtualScrollSync.updateViewport(initialLayout.cellArea.width, initialLayout.cellArea.height);
+    this.virtualScrollSync.updateViewport(
+      initialLayout.cellArea.width,
+      initialLayout.cellArea.height
+    );
     this.clampCurrentScroll();
 
     // 初始化并添加图层
@@ -190,8 +199,7 @@ export class BitmapGridEngine {
     this.container.addEventListener('wheel', this.wheelHandler, { passive: false });
   }
 
-
-    /**
+  /**
    * 设置键盘快捷键事件
    */
   private setupKeydownEvents(): void {
@@ -649,7 +657,6 @@ export class BitmapGridEngine {
       this.eventBus.emit('scroll:change', this.scrollState);
     }
   }
-  
 
   /**
    * 选择格子

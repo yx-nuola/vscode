@@ -12,30 +12,30 @@ type GroupType = InstanceType<typeof Group>;
 type RectType = InstanceType<typeof Rect>;
 
 interface RenderState {
-  visibleRange: VisibleRange
-  cellSize: number
-  scrollX: number
-  scrollY: number
-  theme: { borderColor: string; defaultCellColor: string; axisTextColor: string }
-  colorRules: ColorRule[]
+  visibleRange: VisibleRange;
+  cellSize: number;
+  scrollX: number;
+  scrollY: number;
+  theme: { borderColor: string; defaultCellColor: string; axisTextColor: string };
+  colorRules: ColorRule[];
 }
 
 interface PreparedTextCell {
-  x: number
-  y: number
-  value: number
+  x: number;
+  y: number;
+  value: number;
 }
 
 interface RenderCache {
-  key: string
-  startX: number
-  startY: number
-  width: number
-  height: number
-  colorPaths: Array<[color: string, path: Path2D]>
-  gridPath: Path2D | null
-  textCells: PreparedTextCell[]
-  fontSize: number
+  key: string;
+  startX: number;
+  startY: number;
+  width: number;
+  height: number;
+  colorPaths: Array<[color: string, path: Path2D]>;
+  gridPath: Path2D | null;
+  textCells: PreparedTextCell[];
+  fontSize: number;
 }
 
 export class CellDraw {
@@ -121,11 +121,7 @@ export class CellDraw {
       visibleRange.endRow,
       cellSize,
     ].join(':');
-    const themeKey = [
-      theme.defaultCellColor,
-      theme.borderColor,
-      theme.axisTextColor,
-    ].join(':');
+    const themeKey = [theme.defaultCellColor, theme.borderColor, theme.axisTextColor].join(':');
     const rulesKey = colorRules
       .map((rule) => `${rule.min ?? ''}:${rule.max ?? ''}:${rule.color}:${rule.value ?? ''}`)
       .join('|');
@@ -253,7 +249,9 @@ export class CellDraw {
   }
 
   private bindHitRectEvents(): void {
-    if (this.hitRect) { return; }
+    if (this.hitRect) {
+      return;
+    }
 
     const clipWidth = this.group.clipWidth() || 0;
     const clipHeight = this.group.clipHeight() || 0;
@@ -295,13 +293,19 @@ export class CellDraw {
 
   private getCellFromPointer(): CellData | null {
     const state = this.lastState;
-    if (!state) { return null; }
+    if (!state) {
+      return null;
+    }
 
     const stage = this.group.getStage();
-    if (!stage) { return null; }
+    if (!stage) {
+      return null;
+    }
 
     const pointerPos = stage.getPointerPosition();
-    if (!pointerPos) { return null; }
+    if (!pointerPos) {
+      return null;
+    }
 
     const groupPos = this.group.getPosition();
     const localX = pointerPos.x - groupPos.x;
@@ -321,11 +325,13 @@ export class CellDraw {
       return null;
     }
 
-    return this.engine.getDataManager().getCell(row, col) ?? {
-      row,
-      col,
-      value: EMPTY_CELL_VAL,
-    };
+    return (
+      this.engine.getDataManager().getCell(row, col) ?? {
+        row,
+        col,
+        value: EMPTY_CELL_VAL,
+      }
+    );
   }
 
   private isSameCell(first: CellData | null, second: CellData | null): boolean {
@@ -337,7 +343,9 @@ export class CellDraw {
   }
 
   private mapColor(value: number, rules: ColorRule[]): ColorRule | undefined {
-    if (!rules || !rules.length) { return undefined; }
+    if (!rules || !rules.length) {
+      return undefined;
+    }
     for (const rule of rules) {
       const { max, min } = rule || {};
       if (max !== undefined && min !== undefined && value >= min && value < max) {

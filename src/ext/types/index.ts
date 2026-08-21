@@ -1,8 +1,4 @@
-export {
-  EXTENSION_ID,
-  ViewIds,
-  WebviewRoutes,
-} from '../../shared/messages';
+export { EXTENSION_ID, ViewIds, WebviewRoutes } from '../../shared/messages';
 
 export type {
   DataItem,

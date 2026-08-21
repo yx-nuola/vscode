@@ -1,9 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import type { LineChartConfig, ParsedCsvRow } from '../types';
-import {
-  buildChartGroups,
-  shouldStartNewSmallGroup,
-} from './group-builder';
+import { buildChartGroups, shouldStartNewSmallGroup } from './group-builder';
 
 const config: LineChartConfig = {
   xColumn: 'VBL',
@@ -42,19 +39,21 @@ describe('buildChartGroups', () => {
       [1.7, 3.5],
       [1.7, 4],
     ];
-    const polylineData = pairs.map(([vwl, vbl]) =>
-      createRow('device-1', vwl, vbl),
-    );
+    const polylineData = pairs.map(([vwl, vbl]) => createRow('device-1', vwl, vbl));
 
     const result = buildChartGroups(polylineData, config);
 
     expect(result.groups).toHaveLength(1);
-    expect(result.groups[0].series.map((series) => series.points.length)).toEqual([
-      3,
-      4,
-      3,
-      3,
-    ]);
+    expect(result.groups[0].series.map((series) => series.points.length)).toEqual([3, 4, 3, 3]);
+  });
+
+  test('uses device value as group title', () => {
+    const polylineData = [createRow('125-15', 1.6, 3)];
+
+    const result = buildChartGroups(polylineData, config);
+
+    expect(result.groups[0].title).toBe('125-15');
+    expect(result.groups[0].deviceValue).toBe('125-15');
   });
 
   test('starts a new big group when device-id changes', () => {
@@ -75,10 +74,7 @@ describe('buildChartGroups', () => {
   });
 
   test('keeps a repeated point as the first point in a new group', () => {
-    const polylineData = [
-      createRow('device-1', 1.6, 3),
-      createRow('device-1', 1.6, 3),
-    ];
+    const polylineData = [createRow('device-1', 1.6, 3), createRow('device-1', 1.6, 3)];
 
     const result = buildChartGroups(polylineData, config);
 
@@ -87,11 +83,7 @@ describe('buildChartGroups', () => {
   });
 });
 
-function createRow(
-  deviceId: string,
-  vwl: number,
-  vbl: number,
-): ParsedCsvRow {
+function createRow(deviceId: string, vwl: number, vbl: number): ParsedCsvRow {
   return {
     'device-id': deviceId,
     VWL: String(vwl),

@@ -9,19 +9,19 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
-    host: true
+    host: true,
   },
   root: resolve(__dirname),
   build: {
     outDir: resolve(__dirname, '../../../dist-electron/renderer'),
     emptyOutDir: true,
     rollupOptions: {
-      input: resolve(__dirname, 'index.html')
-    }
+      input: resolve(__dirname, 'index.html'),
+    },
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname)
-    }
-  }
+      '@': resolve(__dirname),
+    },
+  },
 });

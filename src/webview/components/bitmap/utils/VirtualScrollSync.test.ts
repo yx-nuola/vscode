@@ -49,10 +49,7 @@ describe('VirtualScrollSync scrollbar conversion', () => {
     sync.updateViewport(640, 480);
 
     const currentScrollbar = sync.getScrollbarState(120, 3200, 640, 12);
-    const nextScrollX = sync.getScrollXFromSlider(
-      currentScrollbar.sliderX + 100,
-      640
-    );
+    const nextScrollX = sync.getScrollXFromSlider(currentScrollbar.sliderX + 100, 640);
 
     expect(nextScrollX).toBeGreaterThan(120);
   });
@@ -62,10 +59,7 @@ describe('VirtualScrollSync scrollbar conversion', () => {
     sync.updateViewport(640, 480);
 
     const currentScrollbar = sync.getScrollbarState(120, 3200, 12, 480);
-    const nextScrollY = sync.getScrollYFromSlider(
-      currentScrollbar.sliderY + 100,
-      480
-    );
+    const nextScrollY = sync.getScrollYFromSlider(currentScrollbar.sliderY + 100, 480);
 
     expect(nextScrollY).toBeGreaterThan(3200);
   });

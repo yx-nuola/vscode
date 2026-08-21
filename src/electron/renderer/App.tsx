@@ -15,7 +15,7 @@ const App: React.FC = () => {
     handleCardClose,
     handleVisibleCardsChange,
     resetLayout,
-    updateCardData
+    updateCardData,
   } = useWorkbench();
 
   const [showSkeleton, setShowSkeleton] = useState(true);
@@ -42,31 +42,33 @@ const App: React.FC = () => {
       if (message.type === 'DATA_CHUNK' && message.cardId && message.chunk) {
         const chunkIndex = message.meta?.index || 0;
         const totalChunks = message.meta?.total || 1;
-        
+
         cardDataManager.addChunk(message.cardId, chunkIndex, message.chunk);
 
         const isLastChunk = chunkIndex === totalChunks - 1 || totalChunks === 1;
-        
+
         if (isLastChunk) {
-          cardDataManager.parseData(message.cardId).then((result: { error?: string; data: unknown[] }) => {
-            if (!result.error && result.data) {
-              updateCardData(message.cardId!, result.data);
-              
-              if (window.electronAPI) {
-                window.electronAPI.sendToMain({
-                  type: 'CHUNK_PROCESSED',
-                  cardId: message.cardId,
-                  chunkIndex: chunkIndex
-                });
+          cardDataManager
+            .parseData(message.cardId)
+            .then((result: { error?: string; data: unknown[] }) => {
+              if (!result.error && result.data) {
+                updateCardData(message.cardId!, result.data);
+
+                if (window.electronAPI) {
+                  window.electronAPI.sendToMain({
+                    type: 'CHUNK_PROCESSED',
+                    cardId: message.cardId,
+                    chunkIndex: chunkIndex,
+                  });
+                }
               }
-            }
-          });
+            });
         } else {
           if (window.electronAPI) {
             window.electronAPI.sendToMain({
               type: 'CHUNK_PROCESSED',
               cardId: message.cardId,
-              chunkIndex: chunkIndex
+              chunkIndex: chunkIndex,
             });
           }
         }

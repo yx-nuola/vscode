@@ -48,7 +48,9 @@ class ElectronLauncher {
 
       const electronInfo = this.findElectronPath();
       if (!electronInfo) {
-        throw new Error('未找到 Electron 可执行文件，请确保已安装 electron: npm install electron --save-dev');
+        throw new Error(
+          '未找到 Electron 可执行文件，请确保已安装 electron: npm install electron --save-dev'
+        );
       }
 
       const mainPath = this.getMainProcessPath();
@@ -65,8 +67,8 @@ class ElectronLauncher {
           shell: true,
           env: {
             ...process.env,
-            NODE_ENV: 'development'
-          }
+            NODE_ENV: 'development',
+          },
         });
       } else {
         // 直接使用 electron 可执行文件
@@ -77,14 +79,14 @@ class ElectronLauncher {
           shell: isWindowsCmd,
           env: {
             ...process.env,
-            NODE_ENV: 'development'
-          }
+            NODE_ENV: 'development',
+          },
         });
       }
 
       this.currentProcess = {
         process: childProcess,
-        windowId: this.windowId++
+        windowId: this.windowId++,
       };
 
       childProcess.on('message', (message) => {
@@ -122,7 +124,6 @@ class ElectronLauncher {
 
       this.updateStatus('Electron 工作台已启动');
       vscode.window.showInformationMessage('Electron 工作台已启动');
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error('[ElectronLauncher] Launch error:', error);
@@ -135,7 +136,7 @@ class ElectronLauncher {
     console.log('[ElectronLauncher] Received message:', message);
 
     const msg = message as { type?: string; cardId?: string; chunkIndex?: number };
-    
+
     if (msg.type === 'WINDOW_READY_ACK') {
       this.isReady = true;
       this.updateStatus('Electron 工作台已就绪');
@@ -152,7 +153,7 @@ class ElectronLauncher {
       { id: 'card-1', type: 'echarts' as const },
       { id: 'card-2', type: 'logicflow' as const },
       { id: 'card-3', type: 'canvas' as const },
-      { id: 'card-4', type: 'echarts' as const }
+      { id: 'card-4', type: 'echarts' as const },
     ];
 
     this.updateStatus('正在加载卡片数据...');
@@ -173,21 +174,20 @@ class ElectronLauncher {
 
     try {
       this.updateStatus(`正在加载卡片数据: ${cardId}`);
-      
+
       const cardData = await iceService.fetchCardData(cardId, this.getCardType(cardId));
-      
+
       const cardDataObj: CardData = {
         cardId: cardData.cardId,
         type: cardData.type,
-        data: cardData.data
+        data: cardData.data,
       };
 
       const chunks = dataProcessor.processCardData(cardDataObj);
-      
+
       await dataProcessor.sendChunksWithBackpressure(chunks);
 
       this.updateStatus('Electron 工作台已就绪');
-
     } catch (error) {
       console.error(`[ElectronLauncher] Failed to load card data: ${cardId}`, error);
       this.sendError(cardId, error instanceof Error ? error.message : String(error));
@@ -215,9 +215,9 @@ class ElectronLauncher {
         chunk: chunk.data,
         meta: {
           index: chunk.chunkIndex,
-          total: chunk.totalChunks
+          total: chunk.totalChunks,
         },
-        isLast: chunk.isLast
+        isLast: chunk.isLast,
       });
     }
   }
@@ -227,7 +227,7 @@ class ElectronLauncher {
       this.currentProcess.process.send!({
         type: 'DATA_ERROR',
         cardId,
-        error
+        error,
       });
     }
   }
@@ -282,9 +282,7 @@ class ElectronLauncher {
     }
 
     // 备选：查找其他可能的位置
-    const possiblePaths = [
-      path.join(process.cwd(), 'node_modules/electron/dist/electron.exe'),
-    ];
+    const possiblePaths = [path.join(process.cwd(), 'node_modules/electron/dist/electron.exe')];
 
     for (const p of possiblePaths) {
       if (p && fs.existsSync(p)) {
@@ -300,7 +298,7 @@ class ElectronLauncher {
   private getMainProcessPath(): string | null {
     const possiblePaths = [
       path.join(__dirname, '../../dist-electron/main/index.js'),
-      path.join(__dirname, '../dist-electron/main/index.js')
+      path.join(__dirname, '../dist-electron/main/index.js'),
     ];
 
     for (const p of possiblePaths) {
@@ -323,27 +321,49 @@ let launcher: ElectronLauncher | null = null;
 export function registerElectronCommands(context: vscode.ExtensionContext): void {
   launcher = new ElectronLauncher();
 
-  const openCommand = vscode.commands.registerCommand('my-extension.openElectronWorkbench', async () => {
-    await launcher?.launch();
-  });
+  const openCommand = vscode.commands.registerCommand(
+    'my-extension.openElectronWorkbench',
+    async () => {
+      await launcher?.launch();
+    }
+  );
 
-  const closeCommand = vscode.commands.registerCommand('my-extension.closeElectronWorkbench', () => {
-    launcher?.terminate();
-  });
+  const closeCommand = vscode.commands.registerCommand(
+    'my-extension.closeElectronWorkbench',
+    () => {
+      launcher?.terminate();
+    }
+  );
 
-  const sendDataCommand = vscode.commands.registerCommand('my-extension.sendDataToElectron', (data: object) => {
-    launcher?.sendToElectron(data);
-  });
+  const sendDataCommand = vscode.commands.registerCommand(
+    'my-extension.sendDataToElectron',
+    (data: object) => {
+      launcher?.sendToElectron(data);
+    }
+  );
 
-  const loadDataCommand = vscode.commands.registerCommand('my-extension.loadCardData', async (cardId: string) => {
-    await launcher?.loadCardData(cardId);
-  });
+  const loadDataCommand = vscode.commands.registerCommand(
+    'my-extension.loadCardData',
+    async (cardId: string) => {
+      await launcher?.loadCardData(cardId);
+    }
+  );
 
-  const requestDataCommand = vscode.commands.registerCommand('my-extension.requestCardData', (cardIds: string[]) => {
-    launcher?.requestCardData(cardIds);
-  });
+  const requestDataCommand = vscode.commands.registerCommand(
+    'my-extension.requestCardData',
+    (cardIds: string[]) => {
+      launcher?.requestCardData(cardIds);
+    }
+  );
 
-  context.subscriptions.push(openCommand, closeCommand, sendDataCommand, loadDataCommand, requestDataCommand, launcher!);
+  context.subscriptions.push(
+    openCommand,
+    closeCommand,
+    sendDataCommand,
+    loadDataCommand,
+    requestDataCommand,
+    launcher!
+  );
 }
 
 export { ElectronLauncher };

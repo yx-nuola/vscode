@@ -1,7 +1,7 @@
 import * as echarts from 'echarts';
 import type { EChartsOption } from 'echarts';
 import type { ChartGroupData, CsvColumn, ParsedCsvRow } from '../types';
-import { buildAxisRange, type AxisRange } from './axis-range';
+import { buildAxisRange, buildNiceAxisRange, type AxisRange } from './axis-range';
 import {
   createSeriesColors,
   formatAxisValue,
@@ -21,21 +21,20 @@ interface TooltipParameter {
   seriesName?: string;
 }
 
-export function createDisplaySeries(
-  groups: ChartGroupData[],
-  isMerged: boolean,
-): DisplaySeries[] {
+export function createDisplaySeries(groups: ChartGroupData[], isMerged: boolean): DisplaySeries[] {
   const result = groups.flatMap((group) =>
     group.series.map((series) => ({
       id: series.id,
       name: isMerged ? `${group.deviceValue} / ${series.name}` : series.name,
       points: series.points,
-    })),
+    }))
   );
 
   console.log('createDisplaySeries', { groups, isMerged, result });
   return result;
 }
+
+const DEFAULT_CHART_TITLE = '折线图';
 
 export function buildChartOption(
   displaySeries: DisplaySeries[],
@@ -43,9 +42,9 @@ export function buildChartOption(
   xColumn: string | null,
   yColumn: string,
   polylineData: ParsedCsvRow[],
-  chartTitle: string | null,
+  chartTitle = DEFAULT_CHART_TITLE
 ): EChartsOption {
-
+  const exportChartTitle = chartTitle.trim() || DEFAULT_CHART_TITLE;
   let xMin = Number.POSITIVE_INFINITY;
   let xMax = Number.NEGATIVE_INFINITY;
   let yMin = Number.POSITIVE_INFINITY;
@@ -69,8 +68,10 @@ export function buildChartOption(
   }
 
   const xRange = buildAxisRange(xMin, xMax);
-  const yRange = buildAxisRange(yMin, yMax);
+  const yRange = buildNiceAxisRange(yMin, yMax, 10);
   const xPadding = computeXPadding(xValues, xRange);
+  const xAxisName = xColumn ? resolveColumnDisplayName(tableHeader, xColumn) : 'Index';
+  const yAxisName = resolveColumnDisplayName(tableHeader, yColumn);
 
   return {
     animation: false,
@@ -79,7 +80,7 @@ export function buildChartOption(
       top: 40,
       right: 20,
       bottom: 56,
-      left: 20,
+      left: 56,
       containLabel: true,
     },
     legend: {
@@ -92,14 +93,13 @@ export function buildChartOption(
       trigger: 'item',
       axisPointer: { type: 'cross' },
       // backgroundColor: 'rgba(50, 50, 50, 0.7)',
-      formatter: (parameter: unknown) =>
-        formatTooltip(parameter, tableHeader, polylineData),
+      formatter: (parameter: unknown) => formatTooltip(parameter, tableHeader, polylineData),
     },
     toolbox: {
       show: true,
       feature: {
         dataZoom: { yAxisIndex: 'none' },
-        magicType: { type: [ 'bar'] },
+        magicType: { type: ['bar'] },
         restore: {},
         mySaveAsImage: {
           show: true,
@@ -111,16 +111,14 @@ export function buildChartOption(
               return;
             }
 
-            if (chartTitle) {
-              chart.setOption({
-                title: {
-                  text: chartTitle,
-                  left: 16,
-                  top: 8,
-                  textStyle: { fontSize: 14, fontWeight: 600 },
-                },
-              });
-            }
+            chart.setOption({
+              title: {
+                text: exportChartTitle,
+                left: 16,
+                top: 8,
+                textStyle: { fontSize: 14, fontWeight: 600 },
+              },
+            });
 
             const url = chart.getDataURL({
               type: 'png',
@@ -132,7 +130,7 @@ export function buildChartOption(
             chart.setOption({ title: { show: false } });
 
             const anchor = document.createElement('a');
-            anchor.download = `${chartTitle || 'chart'}.png`;
+            anchor.download = `${exportChartTitle}.png`;
             anchor.target = '_blank';
             anchor.href = url;
             anchor.dispatchEvent(
@@ -140,7 +138,7 @@ export function buildChartOption(
                 view: document.defaultView,
                 bubbles: true,
                 cancelable: false,
-              }),
+              })
             );
           },
         },
@@ -148,7 +146,7 @@ export function buildChartOption(
     },
     xAxis: {
       type: 'value',
-      name: xColumn ?? 'Index',
+      name: xAxisName,
       nameLocation: 'middle',
       nameGap: 28,
       min: xRange ? xRange.min - xPadding : undefined,
@@ -163,17 +161,22 @@ export function buildChartOption(
     },
     yAxis: {
       type: 'value',
-      name: yColumn,
+      name: yAxisName,
+      nameTextStyle: {
+        color: '#4e5969',
+        fontSize: 12,
+      },
       nameLocation: 'middle',
-      nameGap: 50,
+      nameGap: 28,
       min: yRange?.min,
       max: yRange?.max,
-      splitNumber: 6,
+      interval: yRange?.interval,
       axisLine: { onZero: false },
-      scale: true,
       axisLabel: {
-        color: 'red',
-        hideOverlap: true,
+        show: true,
+        hideOverlap: false,
+        showMinLabel: true,
+        showMaxLabel: true,
         formatter: (value: number) => formatAxisValue(value),
       },
       // splitLine: { show: false },
@@ -217,10 +220,7 @@ function computeMinGap(values: number[]): number | null {
   return Number.isFinite(minGap) ? minGap : null;
 }
 
-function computeXPadding(
-  xValues: number[],
-  xRange: AxisRange | null,
-): number {
+function computeXPadding(xValues: number[], xRange: AxisRange | null): number {
   const minGap = computeMinGap(xValues);
   if (minGap !== null) {
     return minGap / 2;
@@ -228,14 +228,18 @@ function computeXPadding(
   return xRange ? (xRange.max - xRange.min) * 0.02 : 0;
 }
 
+function resolveColumnDisplayName(tableHeader: CsvColumn[], columnName: string): string {
+  return tableHeader.find((column) => column.rawName === columnName)?.displayName ?? columnName;
+}
+
 function formatTooltip(
   parameter: unknown,
   tableHeader: CsvColumn[],
-  polylineData: ParsedCsvRow[],
+  polylineData: ParsedCsvRow[]
 ): string {
   const tooltipParameter = Array.isArray(parameter)
-    ? parameter[0] as TooltipParameter | undefined
-    : parameter as TooltipParameter;
+    ? (parameter[0] as TooltipParameter | undefined)
+    : (parameter as TooltipParameter);
   const data = tooltipParameter?.data;
   const row = Array.isArray(data) ? polylineData[data[2]] : undefined;
 

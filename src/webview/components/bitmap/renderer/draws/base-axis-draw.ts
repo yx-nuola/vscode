@@ -37,7 +37,7 @@ export abstract class BaseAxisDraw {
     this.group.destroyChildren();
     this.renderAxisLine(state);
     this.renderTicks(state);
-   }
+  }
 
   destroy(): void {
     this.group.destroy();
@@ -47,7 +47,7 @@ export abstract class BaseAxisDraw {
 
   protected abstract renderTicks(state: AxisRenderState): void;
 
-  protected addLine(points: number[], strokeWidth: number=1): void {
+  protected addLine(points: number[], strokeWidth: number = 1): void {
     const theme = this.engine.getConfig().theme;
     this.group.add(
       new Line({
@@ -100,20 +100,21 @@ export abstract class BaseAxisDraw {
     text: string;
     align: 'center' | 'right';
     verticalAlign: 'top' | 'middle';
-  }): void{
+  }): void {
     const theme = this.engine.getConfig().theme;
-    this.group.add(new Konva.Text({
-      x: options.x,
-      y: options.y,
-      text: options.text,
-      fontSize: 10,
-      fontFamily: 'Arial',
-      fill: theme.axisTitleColor,
-      align: options.align,
-      verticalAlign: options.verticalAlign,
-      offsetX: 0,
-      offsetY: 0,
-    })
-  );
+    this.group.add(
+      new Konva.Text({
+        x: options.x,
+        y: options.y,
+        text: options.text,
+        fontSize: 10,
+        fontFamily: 'Arial',
+        fill: theme.axisTitleColor,
+        align: options.align,
+        verticalAlign: options.verticalAlign,
+        offsetX: 0,
+        offsetY: 0,
+      })
+    );
   }
 }

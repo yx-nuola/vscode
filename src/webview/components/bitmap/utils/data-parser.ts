@@ -89,7 +89,9 @@ export class DataParser {
       }
       return this.parseRRAMData(data);
     } catch (error) {
-      throw new Error(`Failed to parse JSON: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to parse JSON: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -103,11 +105,9 @@ export class DataParser {
 
     const rramData = data as DataType;
     const hasValidRows =
-      rramData.rows === undefined ||
-      (Number.isInteger(rramData.rows) && rramData.rows >= 0);
+      rramData.rows === undefined || (Number.isInteger(rramData.rows) && rramData.rows >= 0);
     const hasValidCols =
-      rramData.cols === undefined ||
-      (Number.isInteger(rramData.cols) && rramData.cols >= 0);
+      rramData.cols === undefined || (Number.isInteger(rramData.cols) && rramData.cols >= 0);
 
     return (
       hasValidRows &&

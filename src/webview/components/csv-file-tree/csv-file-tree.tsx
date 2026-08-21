@@ -29,11 +29,12 @@ export function CsvFileTree({
   onActiveFileIdChange,
   onRemoveFile,
 }: CsvFileTreeProps) {
+  console.log('CsvFileTree render', { files, checkedFileIds, activeFileId });
   const treeData = buildCsvTree(files);
 
   const renderTitle = (node: TreeNodeProps): ReactNode => {
     const data = getTreeNodeData(node);
-    const title = typeof node.title === 'string' ? node.title : data?.title ?? '';
+    const title = typeof node.title === 'string' ? node.title : (data?.title ?? '');
     const titleContent = (
       <span className={styles.tree_title}>
         {data?.nodeType === 'file' ? <IconFile /> : null}
@@ -93,9 +94,7 @@ export function CsvFileTree({
           onCheckedFileIdsChange(fileIds);
         }}
         onSelect={(selectedKeys) => {
-          const selectedFileId = selectedKeys[0]
-            ? getCsvFileIdFromTreeKey(selectedKeys[0])
-            : null;
+          const selectedFileId = selectedKeys[0] ? getCsvFileIdFromTreeKey(selectedKeys[0]) : null;
           if (selectedFileId) {
             onActiveFileIdChange(selectedFileId);
           }
@@ -111,9 +110,7 @@ export interface CsvFileTreeWorkbenchProps {
   onActiveFileChange?: (file: CsvFileItem | null) => void;
 }
 
-export function CsvFileTreeWorkbench({
-  onActiveFileChange,
-}: CsvFileTreeWorkbenchProps) {
+export function CsvFileTreeWorkbench({ onActiveFileChange }: CsvFileTreeWorkbenchProps) {
   const {
     files,
     checkedFileIds,

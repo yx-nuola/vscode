@@ -1,0 +1,57 @@
+[
+  {
+    "key": "C:/Users/User/Downloads/测试数据/polyline",
+    "title": "polyline",
+    "isLeaf": false,
+    "children": [
+      {
+        "key": "C:/Users/User/Downloads/测试数据/polyline/有deviceID",
+        "title": "有deviceID",
+        "isLeaf": false,
+        "children": [
+          {
+            "key": "C:/Users/User/Downloads/测试数据/polyline/有deviceID/图4.csv",
+            "title": "图4.csv",
+            "isLeaf": true
+          }
+        ]
+      },
+      {
+        "key": "C:/Users/User/Downloads/测试数据/polyline/无deviceID",
+        "title": "无deviceID",
+        "isLeaf": false,
+        "children": [
+          {
+            "key": "C:/Users/User/Downloads/测试数据/polyline/无deviceID/图5.csv",
+            "title": "图5.csv",
+            "isLeaf": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "C:/Users/User/Downloads/测试数据/点数据",
+    "title": "点数据",
+    "isLeaf": false,
+    "children": [
+      {
+        "key": "C:/Users/User/Downloads/测试数据/点数据/图1.csv",
+        "title": "图1.csv",
+        "isLeaf": true
+      }
+    ]
+  },
+  {
+    "key": "D:/archive",
+    "title": "archive",
+    "isLeaf": false,
+    "children": [
+      {
+        "key": "D:/archive/old-data.csv",
+        "title": "old-data.csv",
+        "isLeaf": true
+      }
+    ]
+  }
+]

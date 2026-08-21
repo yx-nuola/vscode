@@ -12,3 +12,26 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+
+# Electron（当前不打包）
+dist-electron/**
+
+# 开发/文档/示例数据
+.claude/**
+.opencode/**
+.playwright-mcp/**
+demoData/**
+docs/**
+doc/**
+plans/**
+task/**
+pictures/**
+AGENTS.md
+CLAUDE.md
+plan.md
+preview.html
+echarts-drilldown-demo.html
+vsc-extension-Electron.md
+vscode-webview-vite-troubleshooting.md
+nul
+openspec/**

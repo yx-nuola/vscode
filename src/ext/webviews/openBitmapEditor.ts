@@ -11,9 +11,7 @@ export function openBitmapEditorPanel(context: vscode.ExtensionContext): vscode.
     {
       enableScripts: true,
       retainContextWhenHidden: true,
-      localResourceRoots: [
-        vscode.Uri.joinPath(context.extensionUri, 'dist-webview'),
-      ],
+      localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'dist-webview')],
     }
   );
 
